@@ -1,0 +1,28 @@
+/* Burgland Homes Admin Styles */
+
+.burgland-homes-dashboard .dashboard-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.burgland-homes-dashboard .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.burgland-homes-dashboard h2 {
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.burgland-homes-dashboard .dashicons {
+    vertical-align: middle;
+}
+
+/* ACF Field Groups */
+.acf-field[data-name="floor_plan_community"],
+.acf-field[data-name="lot_community"],
+.acf-field[data-name="lot_floor_plan"] {
+    background: #f9fafb;
+    padding: 15px;
+    border-left: 3px solid #2563eb;
+}
