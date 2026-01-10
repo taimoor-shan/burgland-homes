@@ -90,7 +90,7 @@ $available_lots = new WP_Query(array(
       <article <?php post_class('community-single'); ?>>
         
         <!-- Page Header -->
-        <section class="page-header bg-light py-5">
+        <section class="mt-10 bg-light py-5">
           <div class="container">
             <div class="row align-items-center">
               <div class="col-lg-8">

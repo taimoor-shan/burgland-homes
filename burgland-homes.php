@@ -63,6 +63,7 @@ class Burgland_Homes_Plugin {
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-templates.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-gallery.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-communities-filter.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-shortcodes.php';
     }
     
     /**
@@ -96,6 +97,7 @@ class Burgland_Homes_Plugin {
         Burgland_Homes_Templates::get_instance();
         Burgland_Homes_Gallery::get_instance();
         Burgland_Homes_Communities_Filter::get_instance();
+        Burgland_Homes_Shortcodes::get_instance();
     }
     
     /**

@@ -123,9 +123,9 @@ class Burgland_Homes_Admin {
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
                     
                     <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h2 style="margin-top: 0; color: #1e40af;">
+                        <h2 class="dashboard-card-title" style="margin-top: 0; color: #1e40af;">
                             <span class="dashicons dashicons-admin-multisite" style="font-size: 30px;"></span>
-                            <?php echo esc_html($communities_count); ?>
+                            <span style=""><?php echo esc_html($communities_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Communities</p>
                         <a href="<?php echo admin_url('edit.php?post_type=bh_community'); ?>" class="button" style="margin-top: 10px;">
@@ -134,9 +134,9 @@ class Burgland_Homes_Admin {
                     </div>
                     
                     <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h2 style="margin-top: 0; color: #059669;">
+                        <h2 class="dashboard-card-title" style="margin-top: 0; color: #059669;">
                             <span class="dashicons dashicons-layout" style="font-size: 30px;"></span>
-                            <?php echo esc_html($floor_plans_count); ?>
+                            <span><?php echo esc_html($floor_plans_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Floor Plans</p>
                         <a href="<?php echo admin_url('edit.php?post_type=bh_floor_plan'); ?>" class="button" style="margin-top: 10px;">
@@ -145,9 +145,9 @@ class Burgland_Homes_Admin {
                     </div>
                     
                     <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h2 style="margin-top: 0; color: #dc2626;">
+                        <h2 class="dashboard-card-title" style="margin-top: 0; color: #dc2626;">
                             <span class="dashicons dashicons-location" style="font-size: 30px;"></span>
-                            <?php echo esc_html($lots_count); ?>
+                            <span><?php echo esc_html($lots_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Total Lots</p>
                         <a href="<?php echo admin_url('edit.php?post_type=bh_lot'); ?>" class="button" style="margin-top: 10px;">
@@ -156,9 +156,9 @@ class Burgland_Homes_Admin {
                     </div>
                     
                     <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                        <h2 style="margin-top: 0; color: #16a34a;">
+                        <h2 class="dashboard-card-title" style="margin-top: 0; color: #16a34a;">
                             <span class="dashicons dashicons-yes-alt" style="font-size: 30px;"></span>
-                            <?php echo esc_html($available_lots->found_posts); ?>
+                            <span><?php echo esc_html($available_lots->found_posts); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Available Lots</p>
                         <a href="<?php echo admin_url('edit.php?post_type=bh_lot&bh_lot_status=available'); ?>" class="button" style="margin-top: 10px;">
@@ -192,7 +192,27 @@ class Burgland_Homes_Admin {
      */
     public function enqueue_admin_assets($hook) {
         $screen = get_current_screen();
-        if (!$screen || !in_array($screen->post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
+        
+        // Check if we're on our plugin's admin pages
+        $is_plugin_page = false;
+        
+        // Check for custom post type pages
+        if ($screen && in_array($screen->post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
+            $is_plugin_page = true;
+        }
+        
+        // Check for main plugin dashboard and community management pages
+        if ($screen && ($screen->id === 'toplevel_page_burgland-homes' || 
+                       $screen->id === 'burgland-homes_page_burgland-homes-manage-community')) {
+            $is_plugin_page = true;
+        }
+        
+        // Also check for other potential plugin pages
+        if ($screen && strpos($screen->id, 'burgland-homes') !== false) {
+            $is_plugin_page = true;
+        }
+        
+        if (!$is_plugin_page) {
             return;
         }
         

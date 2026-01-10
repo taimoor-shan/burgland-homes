@@ -40,6 +40,17 @@ class Burgland_Homes_ACF_Fields {
         // Pre-populate community field when adding from community context
         add_filter('acf/load_value/name=lot_community', array($this, 'prepopulate_lot_community'), 10, 3);
         add_filter('acf/load_value/name=floor_plan_community', array($this, 'prepopulate_floor_plan_community'), 10, 3);
+        
+        // Add inheritance mechanism for lot fields
+        add_filter('acf/load_value/name=lot_bedrooms', array($this, 'load_inherited_values'), 10, 3);
+        add_filter('acf/load_value/name=lot_bathrooms', array($this, 'load_inherited_values'), 10, 3);
+        add_filter('acf/load_value/name=lot_square_feet', array($this, 'load_inherited_values'), 10, 3);
+        add_filter('acf/load_value/name=lot_garage', array($this, 'load_inherited_values'), 10, 3);
+        add_filter('acf/load_value/name=lot_stories', array($this, 'load_inherited_values'), 10, 3);
+        add_filter('acf/load_value/name=lot_features', array($this, 'load_inherited_values'), 10, 3);
+        
+        // Add field instruction updates to show inherited values
+        add_filter('acf/prepare_field', array($this, 'display_inherited_values'), 10, 2);
     }
     
     /**
@@ -357,59 +368,6 @@ class Burgland_Homes_ACF_Fields {
                     ),
                 ),
                 array(
-                    'key' => 'field_lot_bedrooms',
-                    'label' => 'Bedrooms',
-                    'name' => 'lot_bedrooms',
-                    'type' => 'number',
-                    'instructions' => 'Number of bedrooms',
-                    'required' => 0,
-                    'min' => 1,
-                    'max' => 10,
-                    'conditional_logic' => array(
-                        array(
-                            array(
-                                'field' => 'field_lot_state',
-                                'operator' => '!=',
-                                'value' => 'empty_lot',
-                            ),
-                        ),
-                    ),
-                ),
-                array(
-                    'key' => 'field_lot_bathrooms',
-                    'label' => 'Bathrooms',
-                    'name' => 'lot_bathrooms',
-                    'type' => 'text',
-                    'instructions' => 'e.g., 2.5',
-                    'required' => 0,
-                    'conditional_logic' => array(
-                        array(
-                            array(
-                                'field' => 'field_lot_state',
-                                'operator' => '!=',
-                                'value' => 'empty_lot',
-                            ),
-                        ),
-                    ),
-                ),
-                array(
-                    'key' => 'field_lot_square_feet',
-                    'label' => 'Square Feet',
-                    'name' => 'lot_square_feet',
-                    'type' => 'number',
-                    'instructions' => 'Total living area in square feet',
-                    'required' => 0,
-                    'conditional_logic' => array(
-                        array(
-                            array(
-                                'field' => 'field_lot_state',
-                                'operator' => '!=',
-                                'value' => 'empty_lot',
-                            ),
-                        ),
-                    ),
-                ),
-                array(
                     'key' => 'field_lot_premium',
                     'label' => 'Premium Lot',
                     'name' => 'lot_premium',
@@ -487,5 +445,121 @@ class Burgland_Homes_ACF_Fields {
         }
         
         return $value;
+    }
+    
+    /**
+     * Get value from associated floor plan if not set on lot
+     */
+    public function get_inherited_value($lot_post_id, $field_name, $floor_plan_field_name = null) {
+        if (!$floor_plan_field_name) {
+            $floor_plan_field_name = $field_name;
+        }
+        
+        // Get the lot's floor plan assignment
+        $floor_plan_id = get_field('lot_floor_plan', $lot_post_id);
+        
+        if ($floor_plan_id) {
+            // Get the value from the floor plan
+            $floor_plan_value = get_field($floor_plan_field_name, $floor_plan_id);
+            
+            // If floor plan has a value and lot doesn't have its own value, use the floor plan's value
+            $lot_value = get_field($field_name, $lot_post_id);
+            
+            if ($lot_value === false || $lot_value === null || $lot_value === '') {
+                return $floor_plan_value;
+            }
+        }
+        
+        return get_field($field_name, $lot_post_id);
+    }
+    
+    /**
+     * Hook to display inherited values in admin
+     */
+    public function display_inherited_values($field) {
+        // Get the post ID from the field or global context
+        $post_id = isset($field['post_id']) ? $field['post_id'] : get_the_ID();
+        
+        if (!$post_id || get_post_type($post_id) !== 'bh_lot') {
+            return $field;
+        }
+        
+        $inherited_fields = array(
+            'lot_bedrooms' => 'floor_plan_bedrooms',
+            'lot_bathrooms' => 'floor_plan_bathrooms',
+            'lot_square_feet' => 'floor_plan_square_feet',
+            'lot_garage' => 'floor_plan_garage',
+            'lot_stories' => 'floor_plan_stories',
+            'lot_features' => 'floor_plan_features'
+        );
+        
+        if (isset($inherited_fields[$field['name']])) {
+            $floor_plan_field = $inherited_fields[$field['name']];
+            $floor_plan_id = get_field('lot_floor_plan', $post_id);
+            
+            if ($floor_plan_id) {
+                $floor_plan_value = get_field($floor_plan_field, $floor_plan_id);
+                
+                if ($floor_plan_value) {
+                    $field['instructions'] = ($field['instructions'] ? $field['instructions'] . ' ' : '') . 
+                        '<em>Inherited from floor plan: ' . $floor_plan_value . '</em>';
+                }
+            }
+        }
+        
+        return $field;
+    }
+    
+    /**
+     * Filter to load inherited values
+     */
+    public function load_inherited_values($value, $post_id, $field) {
+        if (get_post_type($post_id) !== 'bh_lot') {
+            return $value;
+        }
+        
+        $inherited_fields = array(
+            'lot_bedrooms' => 'floor_plan_bedrooms',
+            'lot_bathrooms' => 'floor_plan_bathrooms',
+            'lot_square_feet' => 'floor_plan_square_feet',
+            'lot_garage' => 'floor_plan_garage',
+            'lot_stories' => 'floor_plan_stories',
+            'lot_features' => 'floor_plan_features'
+        );
+        
+        if (isset($inherited_fields[$field['name']])) {
+            $floor_plan_field = $inherited_fields[$field['name']];
+            $floor_plan_id = get_field('lot_floor_plan', $post_id);
+            
+            if ($floor_plan_id) {
+                $floor_plan_value = get_field($floor_plan_field, $floor_plan_id);
+                
+                // Only inherit if the lot doesn't have its own value
+                if (($value === false || $value === null || $value === '') && $floor_plan_value) {
+                    return $floor_plan_value;
+                }
+            }
+        }
+        
+        return $value;
+    }
+    
+    /**
+     * Public method to get inherited value for use in templates
+     */
+    public function get_lot_inherited_value($post_id, $field_name) {
+        $inherited_fields = array(
+            'bedrooms' => 'floor_plan_bedrooms',
+            'bathrooms' => 'floor_plan_bathrooms',
+            'square_feet' => 'floor_plan_square_feet',
+            'garage' => 'floor_plan_garage',
+            'stories' => 'floor_plan_stories',
+            'features' => 'floor_plan_features'
+        );
+        
+        $lot_field_name = 'lot_' . $field_name;
+        $floor_plan_field_name = isset($inherited_fields[$field_name]) ? $inherited_fields[$field_name] : 'floor_plan_' . $field_name;
+        
+        return $this->get_inherited_value($post_id, $lot_field_name, $floor_plan_field_name);
     }
 }
