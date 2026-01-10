@@ -269,168 +269,174 @@ class Burgland_Homes_Shortcodes {
 		</div>
 
 		<script type="text/javascript">
-			(function($) {
-				var featuredMap = null;
-				var featuredMarkers = [];
-				var featuredInfoWindows = [];
-				var featuredCommunityData = <?php echo json_encode( $communities_data ); ?>;
-				var mapContainerId = '<?php echo esc_js( $map_id ); ?>';
+			function initFeaturedMapWithJQuery() {
+				if (typeof jQuery === 'undefined') {
+					// Wait a bit and try again if jQuery isn't loaded yet
+					setTimeout(initFeaturedMapWithJQuery, 100);
+					return;
+				}
 				
-				function initFeaturedMap() {
-					// Check if Google Maps is loaded
-					if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-						console.warn('Google Maps API not loaded.');
-						return;
-					}
+				jQuery(function($) {
+					var featuredMap = null;
+					var featuredMarkers = [];
+					var featuredInfoWindows = [];
+					var featuredCommunityData = <?php echo json_encode( $communities_data ); ?>;
+					var mapContainerId = '<?php echo esc_js( $map_id ); ?>';
 					
-					var mapElement = document.getElementById(mapContainerId);
-					if (!mapElement) return;
-
-					// Calculate center of all communities
-					let centerLat = 0;
-					let centerLng = 0;
-					let validCount = 0;
-
-					featuredCommunityData.forEach(function(community) {
-						if (community.latitude && community.longitude) {
-							centerLat += parseFloat(community.latitude);
-							centerLng += parseFloat(community.longitude);
-							validCount++;
+					function initFeaturedMap() {
+						// Check if Google Maps is loaded
+						if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+							console.warn('Google Maps API not loaded.');
+							return;
 						}
-					});
-
-					if (validCount === 0) {
-						$(mapElement).html(
-							'<div class="d-flex align-items-center justify-content-center h-100 text-center p-4">' +
-								'<div>' +
-									'<i class="bi bi-map fs-1 text-muted d-block mb-3"></i>' +
-									'<p class="text-muted">No communities with location data available.</p>' +
-								'</div>' +
-							'</div>'
-						);
-						return;
-					}
-
-					centerLat = centerLat / validCount;
-					centerLng = centerLng / validCount;
-
-					// Create map
-					featuredMap = new google.maps.Map(mapElement, {
-						center: { lat: centerLat, lng: centerLng },
-						zoom: validCount === 1 ? 12 : 8,
-						mapTypeControl: true,
-						streetViewControl: false,
-						fullscreenControl: true,
-						zoomControl: true,
-						styles: [
-							{
-								featureType: 'poi',
-								elementType: 'labels',
-								stylers: [{ visibility: 'off' }]
-							}
-						]
-					});
-
-					// Add markers for all communities
-					addFeaturedMarkers();
-				}
-				
-				function addFeaturedMarkers() {
-					if (!featuredMap) return;
-
-					// Clear existing markers
-					clearFeaturedMarkers();
-
-					featuredCommunityData.forEach(function(community) {
-						if (!community.latitude || !community.longitude) return;
-
-						// Create marker
-						const marker = new google.maps.Marker({
-							position: { lat: parseFloat(community.latitude), lng: parseFloat(community.longitude) },
-							map: featuredMap,
-							title: community.title,
-							animation: google.maps.Animation.DROP,
-							icon: {
-								url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-									'<svg width="32" height="42" xmlns="http://www.w3.org/2000/svg">' +
-										'<path d="M16 0C7.2 0 0 7.2 0 16c0 8.8 16 26 16 26s16-17.2 16-26c0-8.8-7.2-16-16-16z" fill="#0d6efd"/>' +
-										'<circle cx="16" cy="16" r="6" fill="white"/>' +
-									'</svg>'
-								),
-								scaledSize: new google.maps.Size(32, 42),
-								anchor: new google.maps.Point(16, 42)
-							}
-						});
-
-						// Create info window content
-						const infoWindowContent = `
-								<div class="map-infowindow">
-									<div class="p-3">
-										${community.thumbnail ? '<img src="' + community.thumbnail + '" alt="' + community.title + '" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">' : ''}
-										<h6 class="mt-2 mb-1">${community.title}</h6>
-										${community.city && community.state ? '<p class="mb-1 text-muted small"><i class="bi bi-geo-alt me-1"></i>' + community.city + ', ' + community.state + '</p>' : ''}
-										${community.price_range ? '<p class="mb-1 text-primary small"><strong>' + community.price_range + '</strong></p>' : ''}
-										${community.status_label ? '<span class="badge bg-${community.status_class} small">' + community.status_label + '</span>' : ''}
-										<a href="${community.permalink}" class="btn btn-primary btn-sm mt-2">View Details</a>
-									</div>
-								</div>
-							`;
-
-						// Create info window
-						const infoWindow = new google.maps.InfoWindow({
-							content: infoWindowContent,
-							maxWidth: 300
-						});
-
-						// Add click listener to marker
-						marker.addListener('click', function() {
-							// Close all other info windows
-							closeAllFeaturedInfoWindows();
-							
-							// Open this info window
-							infoWindow.open(featuredMap, marker);
-						});
-
-						// Store marker and info window
-						featuredMarkers.push(marker);
-						featuredInfoWindows.push(infoWindow);
-					});
-
-					// Adjust map bounds to fit all markers
-					if (featuredMarkers.length > 1) {
-						const bounds = new google.maps.LatLngBounds();
-						featuredMarkers.forEach(function(marker) {
-							bounds.extend(marker.getPosition());
-						});
-						featuredMap.fitBounds(bounds);
 						
-						// Limit max zoom
-						google.maps.event.addListenerOnce(featuredMap, 'bounds_changed', function() {
-							if (featuredMap.getZoom() > 15) {
-								featuredMap.setZoom(15);
+						var mapElement = document.getElementById(mapContainerId);
+						if (!mapElement) return;
+
+						// Calculate center of all communities
+						let centerLat = 0;
+						let centerLng = 0;
+						let validCount = 0;
+
+						featuredCommunityData.forEach(function(community) {
+							if (community.latitude && community.longitude) {
+								centerLat += parseFloat(community.latitude);
+								centerLng += parseFloat(community.longitude);
+								validCount++;
 							}
 						});
+
+						if (validCount === 0) {
+							$(mapElement).html(
+								'<div class="d-flex align-items-center justify-content-center h-100 text-center p-4">' +
+									'<div>' +
+										'<i class="bi bi-map fs-1 text-muted d-block mb-3"></i>' +
+										'<p class="text-muted">No communities with location data available.</p>' +
+									'</div>' +
+								'</div>'
+							);
+							return;
+						}
+
+						centerLat = centerLat / validCount;
+						centerLng = centerLng / validCount;
+
+						// Create map
+						featuredMap = new google.maps.Map(mapElement, {
+							center: { lat: centerLat, lng: centerLng },
+							zoom: validCount === 1 ? 12 : 8,
+							mapTypeControl: true,
+							streetViewControl: false,
+							fullscreenControl: true,
+							zoomControl: true,
+							styles: [
+								{
+									featureType: 'poi',
+									elementType: 'labels',
+									stylers: [{ visibility: 'off' }]
+								}
+							]
+						});
+
+						// Add markers for all communities
+						addFeaturedMarkers();
 					}
-				}
-
-				function clearFeaturedMarkers() {
-					featuredMarkers.forEach(function(marker) {
-						marker.setMap(null);
-					});
-					featuredMarkers = [];
 					
-					closeAllFeaturedInfoWindows();
-					featuredInfoWindows = [];
-				}
+					function addFeaturedMarkers() {
+						if (!featuredMap) return;
 
-				function closeAllFeaturedInfoWindows() {
-					featuredInfoWindows.forEach(function(infoWindow) {
-						infoWindow.close();
-					});
-				}
+						// Clear existing markers
+						clearFeaturedMarkers();
 
-				// Initialize when document is ready
-				$(document).ready(function() {
+						featuredCommunityData.forEach(function(community) {
+							if (!community.latitude || !community.longitude) return;
+
+							// Create marker
+							const marker = new google.maps.Marker({
+								position: { lat: parseFloat(community.latitude), lng: parseFloat(community.longitude) },
+								map: featuredMap,
+								title: community.title,
+								animation: google.maps.Animation.DROP,
+								icon: {
+									url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+										'<svg width="32" height="42" xmlns="http://www.w3.org/2000/svg">' +
+											'<path d="M16 0C7.2 0 0 7.2 0 16c0 8.8 16 26 16 26s16-17.2 16-26c0-8.8-7.2-16-16-16z" fill="#0d6efd"/>' +
+											'<circle cx="16" cy="16" r="6" fill="white"/>' +
+										'</svg>'
+									),
+									scaledSize: new google.maps.Size(32, 42),
+									anchor: new google.maps.Point(16, 42)
+								}
+							});
+
+							// Create info window content
+							const infoWindowContent = `
+									<div class="map-infowindow">
+										<div class="p-3">
+											${community.thumbnail ? '<img src="' + community.thumbnail + '" alt="' + community.title + '" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">' : ''}
+											<h6 class="mt-2 mb-1">${community.title}</h6>
+											${community.city && community.state ? '<p class="mb-1 text-muted small"><i class="bi bi-geo-alt me-1"></i>' + community.city + ', ' + community.state + '</p>' : ''}
+											${community.price_range ? '<p class="mb-1 text-primary small"><strong>' + community.price_range + '</strong></p>' : ''}
+											${community.status_label ? '<span class="badge bg-${community.status_class} small">' + community.status_label + '</span>' : ''}
+											<a href="${community.permalink}" class="btn btn-primary btn-sm mt-2">View Details</a>
+										</div>
+									</div>
+								`;
+
+							// Create info window
+							const infoWindow = new google.maps.InfoWindow({
+								content: infoWindowContent,
+								maxWidth: 300
+							});
+
+							// Add click listener to marker
+							marker.addListener('click', function() {
+								// Close all other info windows
+								closeAllFeaturedInfoWindows();
+								
+								// Open this info window
+								infoWindow.open(featuredMap, marker);
+							});
+
+							// Store marker and info window
+							featuredMarkers.push(marker);
+							featuredInfoWindows.push(infoWindow);
+						});
+
+						// Adjust map bounds to fit all markers
+						if (featuredMarkers.length > 1) {
+							const bounds = new google.maps.LatLngBounds();
+							featuredMarkers.forEach(function(marker) {
+								bounds.extend(marker.getPosition());
+							});
+							featuredMap.fitBounds(bounds);
+							
+							// Limit max zoom
+							google.maps.event.addListenerOnce(featuredMap, 'bounds_changed', function() {
+								if (featuredMap.getZoom() > 15) {
+									featuredMap.setZoom(15);
+								}
+							});
+						}
+					}
+
+					function clearFeaturedMarkers() {
+						featuredMarkers.forEach(function(marker) {
+							marker.setMap(null);
+						});
+						featuredMarkers = [];
+						
+						closeAllFeaturedInfoWindows();
+						featuredInfoWindows = [];
+					}
+
+					function closeAllFeaturedInfoWindows() {
+						featuredInfoWindows.forEach(function(infoWindow) {
+							infoWindow.close();
+						});
+					}
+
+					// Initialize when document is ready
 					if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
 						initFeaturedMap();
 					} else {
@@ -439,7 +445,24 @@ class Burgland_Homes_Shortcodes {
 						window.burglandHomesMapsQueue.push(initFeaturedMap);
 					}
 				});
-			})(jQuery);
+			}
+			
+			// Initialize the map once jQuery is available
+			if (typeof jQuery !== 'undefined') {
+				jQuery(document).ready(function() {
+					initFeaturedMapWithJQuery();
+				});
+			} else {
+				// Wait for jQuery to load
+				var jqCheckInterval = setInterval(function() {
+					if (typeof jQuery !== 'undefined') {
+						clearInterval(jqCheckInterval);
+						jQuery(document).ready(function() {
+							initFeaturedMapWithJQuery();
+					});
+				}
+			}, 50);
+			}
 		</script>
 		<?php
 	}
