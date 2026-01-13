@@ -77,7 +77,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
         <!-- Main Content: Two Column Layout -->
         <section class="communities-content py-5">
-            <div class="container-fluid">
+            <div class="container">
                 <div class="row g-4">
 
                     <!-- Left Column: Community Cards -->
@@ -187,7 +187,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                                             <?php the_post_thumbnail('medium_large', array('class' => 'card-img-top community-card-img')); ?>
                                                         </a>
                                                         <?php if ($status_label): ?>
-                                                            <span class="badge bg-<?php echo esc_attr($status_class); ?> position-absolute top-0 end-0 m-3">
+                                                            <span class="badge bg-<?php echo esc_attr($status_class); ?> position-absolute top-0 start-0 m-3">
                                                                 <?php echo esc_html($status_label); ?>
                                                             </span>
                                                         <?php endif; ?>
@@ -209,15 +209,15 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                                     <?php endif; ?>
 
                                                     <?php if ($price_range): ?>
-                                                        <p class="card-text text-primary fw-semibold mb-2">
+                                                        <p class="card-text text-primary fw-semibold mb-0">
                                                             <?php echo esc_html($price_range); ?>
                                                         </p>
                                                     <?php endif; ?>
 
                                                     <?php if (has_excerpt()): ?>
-                                                        <p class="card-text text-muted small mb-3">
-                                                            <?php echo wp_trim_words(get_the_excerpt(), 15); ?>
-                                                        </p>
+                                                        <!-- <p class="card-text text-muted small mb-3">
+                                                            <?php //echo wp_trim_words(get_the_excerpt(), 15); ?>
+                                                        </p> -->
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -240,8 +240,8 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
                     <!-- Right Column: Map -->
                     <div class="col-lg-6">
-                        <div class="map-container sticky-top" style="top: 20px;">
-                            <div id="communities-map" style="height: calc(100vh - 100px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
+                        <div class="map-container sticky-top" style="top: 200px;">
+                            <div id="communities-map" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
                                 <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                     <div class="text-center">
                                         <i class="bi bi-map fs-1 d-block mb-3"></i>

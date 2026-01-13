@@ -195,10 +195,12 @@ class Burgland_Homes_Shortcodes {
 			<div class="row g-4">
 				<!-- Left Column: Community Cards -->
 				<div class="col-lg-6">
+					<h2 class="h3 text-uppercase">Featured Communities</h2>
+					<p class="mb-4">Browse our featured communities below:</p>
 					<div class="featured-communities-grid">
-						<div class="row g-4">
+						
 							<?php foreach ( $communities_data as $community ) : ?>
-								<div class="col-md-6 community-card-wrapper"
+								<div class="community-card-wrapper"
 									data-lat="<?php echo esc_attr( $community['latitude'] ); ?>"
 									data-lng="<?php echo esc_attr( $community['longitude'] ); ?>"
 									data-id="<?php echo esc_attr( $community['id'] ); ?>">
@@ -211,7 +213,7 @@ class Burgland_Homes_Shortcodes {
 														alt="<?php echo esc_attr( $community['title'] ); ?>">
 												</a>
 												<?php if ( $community['status_label'] ) : ?>
-													<span class="badge bg-<?php echo esc_attr( $community['status_class'] ); ?> position-absolute top-0 end-0 m-3">
+													<span class="badge bg-<?php echo esc_attr( $community['status_class'] ); ?> position-absolute top-0 start-0 m-2">
 														<?php echo esc_html( $community['status_label'] ); ?>
 													</span>
 												<?php endif; ?>
@@ -233,7 +235,7 @@ class Burgland_Homes_Shortcodes {
 											<?php endif; ?>
 
 											<?php if ( $community['price_range'] ) : ?>
-												<p class="card-text text-primary fw-semibold mb-2">
+												<p class="card-text text-primary fw-semibold mb-0">
 													<?php echo esc_html( $community['price_range'] ); ?>
 												</p>
 											<?php endif; ?>
@@ -247,14 +249,14 @@ class Burgland_Homes_Shortcodes {
 									</div>
 								</div>
 							<?php endforeach; ?>
-						</div>
+						
 					</div>
 				</div>
 
 				<!-- Right Column: Map -->
 				<div class="col-lg-6">
 					<div class="map-container sticky-top" style="top: 20px;">
-						<div id="<?php echo esc_attr( $map_id ); ?>" class="featured-communities-map-canvas" style="height: calc(100vh - 100px); min-height: 600px; background: #e9ecef; border-radius: 8px; border: 2px solid #e0e0e0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+						<div id="<?php echo esc_attr( $map_id ); ?>" class="featured-communities-map-canvas" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px; border: 2px solid #e0e0e0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
 							<div class="d-flex align-items-center justify-content-center h-100 text-muted">
 								<div class="text-center">
 									<i class="bi bi-map fs-1 d-block mb-3"></i>
@@ -487,7 +489,7 @@ class Burgland_Homes_Shortcodes {
 		// Enqueue CSS
 		wp_enqueue_style(
 			'burgland-homes-shortcode',
-			BURGLAND_HOMES_PLUGIN_URL . 'assets/css/communities-archive.css',
+			BURGLAND_HOMES_PLUGIN_URL . 'assets/css/plugin.css',
 			array(),
 			BURGLAND_HOMES_VERSION
 		);
@@ -559,7 +561,7 @@ class Burgland_Homes_Shortcodes {
 			letter-spacing: 0.5px;
 		}
 		";
-		wp_add_inline_style( 'burgland-homes-shortcode', $inline_css );
+		// wp_add_inline_style( 'burgland-homes-shortcode', $inline_css );
 		
 		// Enqueue jQuery if not already enqueued
 		wp_enqueue_script( 'jquery' );

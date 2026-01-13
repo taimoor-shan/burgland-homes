@@ -102,8 +102,8 @@ class Burgland_Homes_Templates {
         if (is_post_type_archive('bh_community')) {
             // Enqueue CSS
             wp_enqueue_style(
-                'burgland-homes-communities-archive',
-                BURGLAND_HOMES_PLUGIN_URL . 'assets/css/communities-archive.css',
+                'burgland-homes-plugin',
+                BURGLAND_HOMES_PLUGIN_URL . 'assets/css/plugin.css',
                 array(),
                 BURGLAND_HOMES_VERSION
             );
@@ -118,16 +118,16 @@ class Burgland_Homes_Templates {
             
             // Enqueue JavaScript
             wp_enqueue_script(
-                'burgland-homes-communities-archive',
-                BURGLAND_HOMES_PLUGIN_URL . 'assets/js/communities-archive.js',
+                'burgland-homes-plugin',
+                BURGLAND_HOMES_PLUGIN_URL . 'assets/js/plugin.js',
                 array('jquery'),
                 BURGLAND_HOMES_VERSION,
                 true
             );
-            
+
             // Localize script with AJAX URL and nonce
             wp_localize_script(
-                'burgland-homes-communities-archive',
+                'burgland-homes-plugin',
                 'burglandHomesArchive',
                 array(
                     'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -142,7 +142,7 @@ class Burgland_Homes_Templates {
                 wp_enqueue_script(
                     'google-maps',
                     'https://maps.googleapis.com/maps/api/js?key=' . $google_maps_api_key . '&callback=initCommunitiesMap',
-                    array('burgland-homes-communities-archive'),
+                    array('burgland-homes-plugin'),
                     null,
                     true
                 );

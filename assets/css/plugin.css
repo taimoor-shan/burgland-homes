@@ -7,6 +7,7 @@
 /* General Styles */
 .communities-archive {
   background-color: #f8f9fa;
+
 }
 
 /* Page Header */
@@ -16,11 +17,7 @@
 
 /* Filters Section */
 .filters-section {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #ffffff !important;
+  z-index: 1030;
 }
 
 .filters-section .form-label {
@@ -62,7 +59,7 @@
 /* Community Cards */
 .community-card {
   border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -76,7 +73,7 @@
 }
 
 .community-card-img {
-  height: 220px;
+  height: 180px;
   object-fit: cover;
   width: 100%;
   transition: transform 0.3s ease;
@@ -91,7 +88,7 @@
 }
 
 .community-card .card-title {
-  font-weight: 600;
+  font-weight: 500;
   margin-bottom: 0.75rem;
   color: #212529;
   line-height: 1.4;
@@ -123,9 +120,10 @@
 
 .community-card .badge {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 400;
   padding: 0.4rem 0.8rem;
   letter-spacing: 0.5px;
+      border-radius: 6px;
 }
 
 /* Map Container */
@@ -339,4 +337,37 @@
 
 .badge.bg-secondary {
   background-color: #6c757d !important;
+}
+
+
+/* Additional styles for community cards */
+.featured-communities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  place-items: center;
+  justify-items: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+
+/* Map Container */
+#communities-map .gm-style-iw-ch {
+    -webkit-box-flex: 1;
+    -webkit-flex-grow: 1;
+    flex-grow: 1;
+    -webkit-flex-shrink: 1;
+    flex-shrink: 1;
+    padding-top: 0;
+    overflow: hidden;
+}
+
+#communities-map button.gm-ui-hover-effect {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    background: #ffffff !important;
 }
