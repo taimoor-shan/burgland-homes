@@ -78,20 +78,20 @@ class Burgland_Homes_Community_Card_Component {
 		ob_start();
 		?>
 		<h3 class="card-title h5 mb-2">
-			<a href="<?php echo esc_url( $community_data['permalink'] ); ?>" class="text-decoration-none text-dark stretched-link">
+			<a href="<?php echo esc_url( $community_data['permalink'] ); ?>" class="text-decoration-none text-primary stretched-link">
 				<?php echo esc_html( $community_data['title'] ); ?>
 			</a>
 		</h3>
 
 		<?php if ( $community_data['city'] && $community_data['state'] ) : ?>
 			<p class="card-text text-muted mb-2">
-				<i class="bi bi-geo-alt-fill"></i>
+				<i class="fa-solid fa-location-dot"></i>
 				<?php echo esc_html( $community_data['city'] . ', ' . $community_data['state'] ); ?>
 			</p>
 		<?php endif; ?>
 
 		<?php if ( $community_data['price_range'] ) : ?>
-			<p class="card-text text-primary fw-semibold mb-2">
+			<p class="card-text text-secondary fw-semibold mb-2">
 				<?php echo esc_html( $community_data['price_range'] ); ?>
 			</p>
 		<?php endif; ?>
@@ -160,7 +160,7 @@ class Burgland_Homes_Community_Card_Component {
 								alt="<?php echo esc_attr( $community_data['title'] ); ?>">
 						</a>
 						<?php if ( $status_label ) : ?>
-							<span class="badge bg-<?php echo esc_attr( $status_class ); ?> position-absolute top-0 end-0 m-3">
+							<span class="badge bg-secondary text-dark position-absolute top-0 end-0 m-3">
 								<?php echo esc_html( $status_label ); ?>
 							</span>
 						<?php endif; ?>

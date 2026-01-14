@@ -43,6 +43,8 @@ class Burgland_Homes_Taxonomies {
         // Hook into community post type operations to sync terms
         add_action('save_post_bh_community', array($this, 'sync_community_term'), 10, 3);
         add_action('before_delete_post', array($this, 'maybe_delete_community_term'));
+        add_action('wp_trash_post', array($this, 'maybe_delete_community_term'));
+        add_action('trashed_post', array($this, 'maybe_delete_community_term'));
     }
     
     /**
@@ -259,7 +261,7 @@ class Burgland_Homes_Taxonomies {
     }
     
     /**
-     * Maybe delete community term when community is deleted
+     * Maybe delete community term when community is deleted or trashed
      */
     public function maybe_delete_community_term($post_id) {
         $post = get_post($post_id);
@@ -271,6 +273,11 @@ class Burgland_Homes_Taxonomies {
         // Find and delete the corresponding term
         $term_slug = sanitize_title($post->post_name);
         $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        
+        // Fallback: try to find by title if slug doesn't match
+        if (!$term) {
+            $term = get_term_by('name', $post->post_title, 'bh_floor_plan_community');
+        }
         
         if ($term) {
             // Remove term from all floor plans first

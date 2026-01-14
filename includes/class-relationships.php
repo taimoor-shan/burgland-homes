@@ -66,18 +66,33 @@ class Burgland_Homes_Relationships {
      */
     public function render_community_relationships($post) {
         $community_id = $post->ID;
+        $community_post = get_post($community_id);
         
-        // Get related floor plans
-        $floor_plans = new WP_Query(array(
+        // Get related floor plans via taxonomy
+        $term_slug = sanitize_title($community_post->post_name);
+        $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        
+        if (!$term) {
+            $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
+        }
+        
+        $floor_plan_query_args = array(
             'post_type' => 'bh_floor_plan',
             'posts_per_page' => -1,
-            'meta_query' => array(
+            'post_status' => 'publish',
+        );
+        
+        if ($term) {
+            $floor_plan_query_args['tax_query'] = array(
                 array(
-                    'key' => 'floor_plan_community',
-                    'value' => $community_id,
+                    'taxonomy' => 'bh_floor_plan_community',
+                    'field' => 'term_id',
+                    'terms' => $term->term_id,
                 ),
-            ),
-        ));
+            );
+        }
+        
+        $floor_plans = new WP_Query($floor_plan_query_args);
         
         // Get related lots
         $lots = new WP_Query(array(

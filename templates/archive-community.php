@@ -159,6 +159,15 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                             }
                                         }
 
+                                        // Get floor plan ranges using utility function
+                                        $utilities = Burgland_Homes_Utilities::get_instance();
+                                        $floor_plan_ranges = $utilities->get_floor_plan_ranges(get_the_ID());
+                                        
+                                        // Use dynamic price range if available, fallback to static field
+                                        $display_price = !empty($floor_plan_ranges['price']['formatted']) 
+                                            ? $floor_plan_ranges['price']['formatted'] 
+                                            : $price_range;
+
                                         // Filter by price range if selected
                                         if ($selected_price && $price_range) {
                                             $skip = false;
@@ -187,7 +196,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                                             <?php the_post_thumbnail('medium_large', array('class' => 'card-img-top community-card-img')); ?>
                                                         </a>
                                                         <?php if ($status_label): ?>
-                                                            <span class="badge bg-<?php echo esc_attr($status_class); ?> position-absolute top-0 start-0 m-3">
+                                                            <span class="badge bg-secondary text-dark position-absolute top-0 start-0 m-2 fw-semibold">
                                                                 <?php echo esc_html($status_label); ?>
                                                             </span>
                                                         <?php endif; ?>
@@ -208,10 +217,52 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                                         </p>
                                                     <?php endif; ?>
 
-                                                    <?php if ($price_range): ?>
+                                                    <?php if ($display_price): ?>
                                                         <p class="card-text text-primary fw-semibold mb-0">
-                                                            <?php echo esc_html($price_range); ?>
+                                                            <?php echo esc_html($display_price); ?>
                                                         </p>
+                                                    <?php endif; ?>
+
+                                                    <?php 
+                                                    // Display floor plan ranges if available
+                                                    if ($floor_plan_ranges['bedrooms']['min'] !== null || $floor_plan_ranges['bathrooms']['min'] !== null || 
+                                                        $floor_plan_ranges['garage']['min'] !== null || $floor_plan_ranges['square_feet']['min'] !== null): ?>
+                                                        <div class="floor-plan-ranges mt-2">
+                                                            <div class="d-flex flex-wrap gap-2 small">
+                                                                <?php if ($floor_plan_ranges['bedrooms']['min'] !== null): ?>
+                                                                    <span class="badge bg-light text-dark border">
+                                                                        <i class="bi bi-house-door me-1"></i>
+                                                                        <?php if ($floor_plan_ranges['bedrooms']['min'] == $floor_plan_ranges['bedrooms']['max']): ?>
+                                                                            <?php echo esc_html($floor_plan_ranges['bedrooms']['min']); ?> bed
+                                                                        <?php else: ?>
+                                                                            <?php echo esc_html($floor_plan_ranges['bedrooms']['min'] . '-' . $floor_plan_ranges['bedrooms']['max']); ?> bed
+                                                                        <?php endif; ?>
+                                                                    </span>
+                                                                <?php endif; ?>
+
+                                                                <?php if ($floor_plan_ranges['bathrooms']['min'] !== null): ?>
+                                                                    <span class="badge bg-light text-dark border">
+                                                                        <i class="bi bi-droplet me-1"></i>
+                                                                        <?php if ($floor_plan_ranges['bathrooms']['min'] == $floor_plan_ranges['bathrooms']['max']): ?>
+                                                                            <?php echo esc_html($floor_plan_ranges['bathrooms']['min']); ?> bath
+                                                                        <?php else: ?>
+                                                                            <?php echo esc_html($floor_plan_ranges['bathrooms']['min'] . '-' . $floor_plan_ranges['bathrooms']['max']); ?> bath
+                                                                        <?php endif; ?>
+                                                                    </span>
+                                                                <?php endif; ?>
+
+                                                                <?php if ($floor_plan_ranges['square_feet']['min'] !== null): ?>
+                                                                    <span class="badge bg-light text-dark border">
+                                                                        <i class="bi bi-rulers me-1"></i>
+                                                                        <?php if ($floor_plan_ranges['square_feet']['min'] == $floor_plan_ranges['square_feet']['max']): ?>
+                                                                            <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])); ?> sqft
+                                                                        <?php else: ?>
+                                                                            <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])) . '-' . number_format(esc_html($floor_plan_ranges['square_feet']['max'])); ?> sqft
+                                                                        <?php endif; ?>
+                                                                    </span>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
                                                     <?php endif; ?>
 
                                                     <?php if (has_excerpt()): ?>

@@ -98,14 +98,29 @@ class Burgland_Homes_Templates {
      * Enqueue assets for templates
      */
     public function enqueue_assets() {
-        // Enqueue assets for communities archive page
-        if (is_post_type_archive('bh_community')) {
+        // Check if we're on a community-related page
+        $is_community_page = (
+            is_post_type_archive('bh_community') ||
+            is_singular('bh_community') ||
+            is_singular('bh_floor_plan') ||
+            is_singular('bh_lot')
+        );
+        
+        if ($is_community_page) {
             // Enqueue CSS
             wp_enqueue_style(
                 'burgland-homes-plugin',
                 BURGLAND_HOMES_PLUGIN_URL . 'assets/css/plugin.css',
                 array(),
                 BURGLAND_HOMES_VERSION
+            );
+            
+            // Enqueue GLightbox CSS
+            wp_enqueue_style(
+                'glightbox',
+                'https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css',
+                array(),
+                '3.2.0'
             );
             
             // Enqueue Bootstrap Icons (if not already loaded by theme)
@@ -124,7 +139,19 @@ class Burgland_Homes_Templates {
                 BURGLAND_HOMES_VERSION,
                 true
             );
-
+            
+            // Enqueue GLightbox JS
+            wp_enqueue_script(
+                'glightbox',
+                'https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js',
+                array(),
+                '3.2.0',
+                true
+            );
+        }
+        
+        // Enqueue archive-specific assets
+        if (is_post_type_archive('bh_community')) {
             // Localize script with AJAX URL and nonce
             wp_localize_script(
                 'burgland-homes-plugin',

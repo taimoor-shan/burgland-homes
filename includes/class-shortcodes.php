@@ -61,6 +61,7 @@ class Burgland_Homes_Shortcodes {
 			'post_status'    => 'publish',
 			'orderby'        => $atts['orderby'],
 			'order'          => $atts['order'],
+			'post__not_in'   => array( get_the_ID() ), // Exclude current post
 		);
 
 		$communities = new WP_Query( $query_args );
@@ -80,6 +81,15 @@ class Burgland_Homes_Shortcodes {
 				$price_range   = get_post_meta( get_the_ID(), 'community_price_range', true );
 				$latitude      = get_post_meta( get_the_ID(), 'community_latitude', true );
 				$longitude     = get_post_meta( get_the_ID(), 'community_longitude', true );
+				
+				// Get floor plan ranges using utility function
+				$utilities = Burgland_Homes_Utilities::get_instance();
+				$floor_plan_ranges = $utilities->get_floor_plan_ranges( get_the_ID() );
+				
+				// Use dynamic price range if available, fallback to static field
+				$display_price = !empty( $floor_plan_ranges['price']['formatted'] ) 
+					? $floor_plan_ranges['price']['formatted'] 
+					: $price_range;
 
 				// Get status
 				$status_terms_post = wp_get_post_terms( get_the_ID(), 'bh_community_status' );
@@ -106,20 +116,23 @@ class Burgland_Homes_Shortcodes {
 					}
 				}
 
+				$post_id = get_the_ID();
+							
 				$communities_data[] = array(
-					'id'           => get_the_ID(),
-					'title'        => get_the_title(),
-					'excerpt'      => has_excerpt() ? wp_trim_words( get_the_excerpt(), 15 ) : '',
-					'permalink'    => get_permalink(),
-					'city'         => $city,
-					'state'        => $state,
-					'price_range'  => $price_range,
-					'latitude'     => $latitude,
-					'longitude'    => $longitude,
-					'has_thumbnail' => has_post_thumbnail(),
-					'thumbnail'    => has_post_thumbnail() ? get_the_post_thumbnail_url( get_the_ID(), 'medium_large' ) : '',
-					'status_label' => $status_label,
-					'status_class' => $status_class,
+					'id'                => $post_id,
+					'title'             => get_the_title( $post_id ),
+					'excerpt'           => has_excerpt( $post_id ) ? wp_trim_words( get_the_excerpt( $post_id ), 15 ) : '',
+					'permalink'         => get_permalink( $post_id ),
+					'city'              => $city,
+					'state'             => $state,
+					'price_range'       => $display_price,
+					'latitude'          => $latitude,
+					'longitude'         => $longitude,
+					'has_thumbnail'     => has_post_thumbnail( $post_id ),
+					'thumbnail'         => has_post_thumbnail( $post_id ) ? get_the_post_thumbnail_url( $post_id, 'medium_large' ) : '',
+					'status_label'      => $status_label,
+					'status_class'      => $status_class,
+					'floor_plan_ranges' => $floor_plan_ranges,
 				);
 			}
 			wp_reset_postdata();
@@ -195,7 +208,7 @@ class Burgland_Homes_Shortcodes {
 			<div class="row g-4">
 				<!-- Left Column: Community Cards -->
 				<div class="col-lg-6">
-					<h2 class="h3 text-uppercase">Featured Communities</h2>
+					<h2 class="h2 text-uppercase text-primary">Featured Communities</h2>
 					<p class="mb-4">Browse our featured communities below:</p>
 					<div class="featured-communities-grid">
 						
@@ -239,11 +252,48 @@ class Burgland_Homes_Shortcodes {
 													<?php echo esc_html( $community['price_range'] ); ?>
 												</p>
 											<?php endif; ?>
-
-											<?php if ( $community['excerpt'] ) : ?>
-												<p class="card-text text-muted small mb-3">
-													<?php echo esc_html( $community['excerpt'] ); ?>
-												</p>
+								
+											<?php 
+											// Display floor plan ranges if available
+											$fp_ranges = $community['floor_plan_ranges'];
+											if ( $fp_ranges['bedrooms']['min'] !== null || $fp_ranges['bathrooms']['min'] !== null || 
+												 $fp_ranges['garage']['min'] !== null || $fp_ranges['square_feet']['min'] !== null ): ?>
+												<div class="floor-plan-ranges mt-2">
+													<div class="d-flex flex-wrap gap-2 small">
+														<?php if ( $fp_ranges['bedrooms']['min'] !== null ): ?>
+															<span class="badge bg-light text-dark border">
+																<i class="bi bi-house-door me-1"></i>
+																<?php if ( $fp_ranges['bedrooms']['min'] == $fp_ranges['bedrooms']['max'] ): ?>
+																	<?php echo esc_html( $fp_ranges['bedrooms']['min'] ); ?> bed
+																<?php else: ?>
+																	<?php echo esc_html( $fp_ranges['bedrooms']['min'] . '-' . $fp_ranges['bedrooms']['max'] ); ?> bed
+																<?php endif; ?>
+															</span>
+														<?php endif; ?>
+								
+														<?php if ( $fp_ranges['bathrooms']['min'] !== null ): ?>
+															<span class="badge bg-light text-dark border">
+																<i class="bi bi-droplet me-1"></i>
+																<?php if ( $fp_ranges['bathrooms']['min'] == $fp_ranges['bathrooms']['max'] ): ?>
+																	<?php echo esc_html( $fp_ranges['bathrooms']['min'] ); ?> bath
+																<?php else: ?>
+																	<?php echo esc_html( $fp_ranges['bathrooms']['min'] . '-' . $fp_ranges['bathrooms']['max'] ); ?> bath
+																<?php endif; ?>
+															</span>
+														<?php endif; ?>
+								
+														<?php if ( $fp_ranges['square_feet']['min'] !== null ): ?>
+															<span class="badge bg-light text-dark border">
+																<i class="bi bi-rulers me-1"></i>
+																<?php if ( $fp_ranges['square_feet']['min'] == $fp_ranges['square_feet']['max'] ): ?>
+																	<?php echo number_format( esc_html( $fp_ranges['square_feet']['min'] ) ); ?> sqft
+																<?php else: ?>
+																	<?php echo number_format( esc_html( $fp_ranges['square_feet']['min'] ) ) . '-' . number_format( esc_html( $fp_ranges['square_feet']['max'] ) ); ?> sqft
+																<?php endif; ?>
+															</span>
+														<?php endif; ?>
+													</div>
+												</div>
 											<?php endif; ?>
 										</div>
 									</div>

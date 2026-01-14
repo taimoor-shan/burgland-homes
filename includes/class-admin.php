@@ -334,12 +334,26 @@ class Burgland_Homes_Admin {
     public function floor_plan_column_content($column, $post_id) {
         switch ($column) {
             case 'community':
-                $community_id = get_post_meta($post_id, 'floor_plan_community', true);
-                if ($community_id) {
-                    $community = get_post($community_id);
-                    if ($community) {
-                        echo '<a href="' . get_edit_post_link($community_id) . '">' . esc_html($community->post_title) . '</a>';
+                // Get community via taxonomy instead of meta field
+                $terms = wp_get_post_terms($post_id, 'bh_floor_plan_community');
+                if (!empty($terms) && !is_wp_error($terms)) {
+                    $community_names = array();
+                    foreach ($terms as $term) {
+                        // Find the community post by term slug
+                        $community_posts = get_posts(array(
+                            'post_type' => 'bh_community',
+                            'name' => $term->slug,
+                            'posts_per_page' => 1,
+                        ));
+                        
+                        if (!empty($community_posts)) {
+                            $community = $community_posts[0];
+                            $community_names[] = '<a href="' . get_edit_post_link($community->ID) . '">' . esc_html($community->post_title) . '</a>';
+                        } else {
+                            $community_names[] = esc_html($term->name);
+                        }
                     }
+                    echo implode(', ', $community_names);
                 } else {
                     echo '—';
                 }
@@ -434,15 +448,33 @@ class Burgland_Homes_Admin {
      * Get community floor plans count
      */
     private function get_community_floor_plans_count($community_id) {
+        $community_post = get_post($community_id);
+        if (!$community_post) {
+            return 0;
+        }
+        
+        // Get the taxonomy term
+        $term_slug = sanitize_title($community_post->post_name);
+        $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        
+        if (!$term) {
+            $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
+        }
+        
+        if (!$term) {
+            return 0;
+        }
+        
         $args = array(
             'post_type' => 'bh_floor_plan',
             'post_status' => 'publish',
             'posts_per_page' => -1,
             'fields' => 'ids',
-            'meta_query' => array(
+            'tax_query' => array(
                 array(
-                    'key' => 'floor_plan_community',
-                    'value' => $community_id,
+                    'taxonomy' => 'bh_floor_plan_community',
+                    'field' => 'term_id',
+                    'terms' => $term->term_id,
                 ),
             ),
         );
@@ -772,6 +804,15 @@ class Burgland_Homes_Admin {
      */
     private function render_community_floor_plans_tab($community_id) {
         $add_floor_plan_url = admin_url('post-new.php?post_type=bh_floor_plan&community_id=' . $community_id);
+        $community_post = get_post($community_id);
+        
+        // Get the taxonomy term
+        $term_slug = sanitize_title($community_post->post_name);
+        $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        
+        if (!$term) {
+            $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
+        }
         
         ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
@@ -783,18 +824,25 @@ class Burgland_Homes_Admin {
             </div>
             
             <?php
-            $floor_plans_query = new WP_Query(array(
+            $floor_plan_query_args = array(
                 'post_type' => 'bh_floor_plan',
                 'posts_per_page' => -1,
                 'orderby' => 'title',
                 'order' => 'ASC',
-                'meta_query' => array(
+                'post_status' => 'publish',
+            );
+            
+            if ($term) {
+                $floor_plan_query_args['tax_query'] = array(
                     array(
-                        'key' => 'floor_plan_community',
-                        'value' => $community_id,
+                        'taxonomy' => 'bh_floor_plan_community',
+                        'field' => 'term_id',
+                        'terms' => $term->term_id,
                     ),
-                ),
-            ));
+                );
+            }
+            
+            $floor_plans_query = new WP_Query($floor_plan_query_args);
             
             if ($floor_plans_query->have_posts()): 
             ?>

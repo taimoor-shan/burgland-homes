@@ -10,16 +10,6 @@
 
 get_header();
 global $post;
-
-// Get floor plan ranges using utility function
-$utilities = Burgland_Homes_Utilities::get_instance();
-$floor_plan_ranges = $utilities->get_floor_plan_ranges(get_the_ID());
-
-// Use dynamic price range if available, fallback to static field
-$display_price = !empty($floor_plan_ranges['price']['formatted']) 
-    ? $floor_plan_ranges['price']['formatted'] 
-    : $price_range;
-
 $ids = Burgland_Homes_Gallery::get_gallery_images($post->ID, 'full');
 $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), "full");
 
@@ -67,34 +57,17 @@ if (!empty($status_terms) && !is_wp_error($status_terms)) {
   }
 }
 
-// Get related floor plans via taxonomy
-$community_post = get_post(get_the_ID());
-$term_slug = sanitize_title($community_post->post_name);
-$term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
-
-if (!$term) {
-    $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
-}
-
-$floor_plan_query_args = array(
+// Get related floor plans
+$floor_plans = new WP_Query(array(
   'post_type' => 'bh_floor_plan',
   'posts_per_page' => -1,
-  'post_status' => 'publish',
-  'orderby' => 'title',
-  'order' => 'ASC',
-);
-
-if ($term) {
-  $floor_plan_query_args['tax_query'] = array(
+  'meta_query' => array(
     array(
-      'taxonomy' => 'bh_floor_plan_community',
-      'field' => 'term_id',
-      'terms' => $term->term_id,
+      'key' => 'floor_plan_community',
+      'value' => get_the_ID(),
     ),
-  );
-}
-
-$floor_plans = new WP_Query($floor_plan_query_args);
+  ),
+));
 
 // Get available lots
 $available_lots = new WP_Query(array(
@@ -230,9 +203,9 @@ $available_lots = new WP_Query(array(
                 <?php endif; ?>
 
                 <!-- Price -->
-                <?php if ($display_price) : ?>
+                <?php if ($price_range) : ?>
                   <p class="h4 text-dark fw-bold mb-0">
-                    <?php echo esc_html($display_price); ?>
+                    <?php echo esc_html($price_range); ?>
                   </p>
                 <?php endif; ?>
 
@@ -272,89 +245,6 @@ $available_lots = new WP_Query(array(
                               <i class="bi bi-check2-circle fs-1 text-info d-block mb-2"></i>
                               <p class="h3 mb-1"><?php echo esc_html($available_lots->found_posts); ?></p>
                               <p class="small text-muted mb-0">Available Now</p>
-                            </div>
-                          </div>
-                        <?php endif; ?>
-                        
-                        <?php 
-                        // Display floor plan ranges if available
-                        if ($floor_plan_ranges['bedrooms']['min'] !== null || $floor_plan_ranges['bathrooms']['min'] !== null || 
-                            $floor_plan_ranges['garage']['min'] !== null || $floor_plan_ranges['square_feet']['min'] !== null): ?>
-                          <div class="col-md-12 mt-3">
-                            <hr>
-                            <h6 class="text-uppercase text-muted small fw-bold mb-3">Floor Plan Ranges</h6>
-                            <div class="row g-3">
-                              <?php if ($floor_plan_ranges['bedrooms']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-house-door text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Bedrooms</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['bedrooms']['min'] == $floor_plan_ranges['bedrooms']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['bedrooms']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['bedrooms']['min'] . '-' . $floor_plan_ranges['bedrooms']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['bathrooms']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-droplet text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Bathrooms</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['bathrooms']['min'] == $floor_plan_ranges['bathrooms']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['bathrooms']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['bathrooms']['min'] . '-' . $floor_plan_ranges['bathrooms']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['garage']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-car-front text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Garage</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['garage']['min'] == $floor_plan_ranges['garage']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['garage']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['garage']['min'] . '-' . $floor_plan_ranges['garage']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['square_feet']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-rulers text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Sq Ft</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['square_feet']['min'] == $floor_plan_ranges['square_feet']['max']): ?>
-                                          <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])); ?>
-                                        <?php else: ?>
-                                          <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])) . '-' . number_format(esc_html($floor_plan_ranges['square_feet']['max'])); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
                             </div>
                           </div>
                         <?php endif; ?>
@@ -483,49 +373,6 @@ $available_lots = new WP_Query(array(
                   </div>
                 <?php endif; ?>
 
-                <!-- Available Lots Section -->
-                <?php
-                // Query available lots filtered by current community
-                $community_lots_args = array(
-                  'post_type' => 'bh_lot',
-                  'posts_per_page' => 6,
-                  'orderby' => 'menu_order',
-                  'order' => 'ASC',
-                  'meta_query' => array(
-                    'relation' => 'AND',
-                    array(
-                      'key' => 'lot_community',
-                      'value' => get_the_ID(),
-                      'compare' => '='
-                    ),
-                    array(
-                      'key' => 'lot_state',
-                      'value' => array('sold', 'empty_lot'),
-                      'compare' => 'NOT IN'
-                    )
-                  )
-                );
-                $community_lots_query = new WP_Query($community_lots_args);
-                
-                if ($community_lots_query->have_posts()): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-4">Available Homes</h2>
-                      <div class="row g-4">
-                        <?php while ($community_lots_query->have_posts()): $community_lots_query->the_post(); ?>
-                          <div class="col-lg-4 col-md-6">
-                            <?php 
-                              $post_id = get_the_ID();
-                              include(get_template_directory() . '/components/lot-card.php');
-                            ?>
-                          </div>
-                        <?php endwhile; ?>
-                      </div>
-                      <?php wp_reset_postdata(); ?>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
               </div>
             </div>
                <!-- Sidebar -->
@@ -562,9 +409,9 @@ $available_lots = new WP_Query(array(
                             <strong>Available Lots:</strong> <?php echo esc_html($available_lots->found_posts); ?>
                           </li>
                         <?php endif; ?>
-                        <?php if ($display_price): ?>
+                        <?php if ($price_range): ?>
                           <li class="mb-2">
-                            <strong>Price Range:</strong> <?php echo esc_html($display_price); ?>
+                            <strong>Price Range:</strong> <?php echo esc_html($price_range); ?>
                           </li>
                         <?php endif; ?>
                         <?php if ($floor_plans->found_posts): ?>

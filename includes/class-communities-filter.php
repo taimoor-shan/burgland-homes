@@ -219,7 +219,7 @@ class Burgland_Homes_Communities_Filter {
                   <?php echo $data['thumbnail']; ?>
                 </a>
                 <?php if (!empty($data['status_label'])): ?>
-                  <span class="badge bg-<?php echo esc_attr($data['status_class']); ?> position-absolute top-0 end-0 m-3">
+                  <span class="badge bg-secondary text-dark position-absolute top-0 end-0 m-3">
                     <?php echo esc_html($data['status_label']); ?>
                   </span>
                 <?php endif; ?>
@@ -243,12 +243,6 @@ class Burgland_Homes_Communities_Filter {
               <?php if (!empty($data['price_range'])): ?>
                 <p class="card-text text-primary fw-semibold mb-2">
                   <?php echo esc_html($data['price_range']); ?>
-                </p>
-              <?php endif; ?>
-              
-              <?php if (!empty($data['excerpt'])): ?>
-                <p class="card-text text-muted small mb-3">
-                  <?php echo wp_trim_words($data['excerpt'], 15); ?>
                 </p>
               <?php endif; ?>
             </div>
