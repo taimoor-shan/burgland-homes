@@ -388,8 +388,44 @@
     });
   }
 
+  /**
+   * Initialize Swiper and GLightbox for single gallery
+   */
+  function initGallery() {
+    // Initialize Swiper
+    if ($('.plugin-slider__swiper').length && typeof Swiper !== 'undefined') {
+      new Swiper('.plugin-slider__swiper', {
+        loop: true,
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+      });
+    }
+
+    // Initialize GLightbox
+    if ($('.glightbox').length && typeof GLightbox !== 'undefined') {
+      GLightbox({
+        selector: '.glightbox',
+        touchNavigation: true,
+        loop: true,
+      });
+    }
+  }
+
   // Initialize when document is ready
   $(document).ready(function() {
+    // Initialize Gallery components
+    initGallery();
+
     // Check if we're on the communities archive page
     if ($('#communities-map').length) {
       // Wait for Google Maps to load

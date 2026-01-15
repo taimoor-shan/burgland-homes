@@ -48,11 +48,12 @@ class Burgland_Homes_Utilities {
         $community_post = get_post($community_id);
         if (!$community_post) {
             return array(
-                'bedrooms' => array('min' => null, 'max' => null),
-                'bathrooms' => array('min' => null, 'max' => null),
-                'garage' => array('min' => null, 'max' => null),
-                'square_feet' => array('min' => null, 'max' => null),
-                'price' => array('min' => null, 'max' => null, 'formatted' => '')
+                'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'garage' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'square_feet' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'price' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'count' => 0
             );
         }
         
@@ -84,11 +85,12 @@ class Burgland_Homes_Utilities {
         } else {
             // If no term found, return empty ranges
             return array(
-                'bedrooms' => array('min' => null, 'max' => null),
-                'bathrooms' => array('min' => null, 'max' => null),
-                'garage' => array('min' => null, 'max' => null),
-                'square_feet' => array('min' => null, 'max' => null),
-                'price' => array('min' => null, 'max' => null, 'formatted' => '')
+                'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'garage' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'square_feet' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'price' => array('min' => null, 'max' => null, 'formatted' => ''),
+                'count' => 0
             );
         }
         
@@ -96,17 +98,20 @@ class Burgland_Homes_Utilities {
         
         // Initialize min/max values
         $ranges = array(
-            'bedrooms' => array('min' => null, 'max' => null),
-            'bathrooms' => array('min' => null, 'max' => null),
-            'garage' => array('min' => null, 'max' => null),
-            'square_feet' => array('min' => null, 'max' => null),
-            'price' => array('min' => null, 'max' => null, 'formatted' => '')
+            'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'garage' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'square_feet' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'price' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'count' => 0
         );
         
         // If no floor plans found, return null values
         if (!$floor_plans_query->have_posts()) {
             return $ranges;
         }
+        
+        $ranges['count'] = $floor_plans_query->found_posts;
         
         // Arrays to hold all values for each field
         $bedrooms_values = array();
@@ -191,21 +196,25 @@ class Burgland_Homes_Utilities {
         if (!empty($bedrooms_values)) {
             $ranges['bedrooms']['min'] = min($bedrooms_values);
             $ranges['bedrooms']['max'] = max($bedrooms_values);
+            $ranges['bedrooms']['formatted'] = $this->format_generic_range($ranges['bedrooms']['min'], $ranges['bedrooms']['max']);
         }
         
         if (!empty($bathrooms_values)) {
             $ranges['bathrooms']['min'] = min($bathrooms_values);
             $ranges['bathrooms']['max'] = max($bathrooms_values);
+            $ranges['bathrooms']['formatted'] = $this->format_generic_range($ranges['bathrooms']['min'], $ranges['bathrooms']['max']);
         }
         
         if (!empty($garage_values)) {
             $ranges['garage']['min'] = min($garage_values);
             $ranges['garage']['max'] = max($garage_values);
+            $ranges['garage']['formatted'] = $this->format_generic_range($ranges['garage']['min'], $ranges['garage']['max']);
         }
         
         if (!empty($square_feet_values)) {
             $ranges['square_feet']['min'] = min($square_feet_values);
             $ranges['square_feet']['max'] = max($square_feet_values);
+            $ranges['square_feet']['formatted'] = $this->format_generic_range($ranges['square_feet']['min'], $ranges['square_feet']['max'], true);
         }
         
         if (!empty($price_values)) {
@@ -215,6 +224,23 @@ class Burgland_Homes_Utilities {
         }
         
         return $ranges;
+    }
+
+    /**
+     * Format a generic min/max range
+     * 
+     * @param mixed $min
+     * @param mixed $max
+     * @param bool $is_numeric Whether to use number formatting (for sqft)
+     * @return string
+     */
+    private function format_generic_range($min, $max, $is_numeric = false) {
+        if ($min === null || $max === null) return '';
+        
+        $f_min = $is_numeric ? number_format($min) : $min;
+        $f_max = $is_numeric ? number_format($max) : $max;
+        
+        return ($min == $max) ? $f_min : "$f_min - $f_max";
     }
     
     /**

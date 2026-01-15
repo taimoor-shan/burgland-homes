@@ -63,9 +63,12 @@ class Burgland_Homes_Plugin {
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-templates.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-gallery.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-communities-filter.php';
-        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-shortcodes.php';
-        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-community-card-component.php';
-        require_once plugin_dir_path(__FILE__) . 'includes/class-utilities.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-utilities.php';
+        
+        // NEW: Data layer and template system
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-data-provider.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-template-loader.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/functions.php';
     }
     
     /**
@@ -99,9 +102,11 @@ class Burgland_Homes_Plugin {
         Burgland_Homes_Templates::get_instance();
         Burgland_Homes_Gallery::get_instance();
         Burgland_Homes_Communities_Filter::get_instance();
-        Burgland_Homes_Shortcodes::get_instance();
-        Burgland_Homes_Community_Card_Component::get_instance();
         Burgland_Homes_Utilities::get_instance();
+        
+        // NEW: Initialize new data and template system
+        Burgland_Homes_Data_Provider::get_instance();
+        Burgland_Homes_Template_Loader::get_instance();
     }
     
     /**

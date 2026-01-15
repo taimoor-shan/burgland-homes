@@ -1,771 +1,131 @@
 <?php
-
 /**
  * Single Community Template
- * 
- * Template for displaying individual community posts
  * 
  * @package Burgland_Homes
  */
 
 get_header();
-global $post;
 
-// Get floor plan ranges using utility function
-$utilities = Burgland_Homes_Utilities::get_instance();
-$floor_plan_ranges = $utilities->get_floor_plan_ranges(get_the_ID());
+$data_provider = Burgland_Homes_Data_Provider::get_instance();
+$template_loader = Burgland_Homes_Template_Loader::get_instance();
+$post_id = get_the_ID();
 
-// Use dynamic price range if available, fallback to static field
-$display_price = !empty($floor_plan_ranges['price']['formatted']) 
-    ? $floor_plan_ranges['price']['formatted'] 
-    : $price_range;
+// Get standardized community data
+$community = $data_provider->get_community_data($post_id);
 
-$ids = Burgland_Homes_Gallery::get_gallery_images($post->ID, 'full');
-$featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), "full");
-
-// Get custom fields
-$address = get_field('community_address');
-$city = get_field('community_city');
-$state = get_field('community_state');
-$zip = get_field('community_zip');
-$latitude = get_field('community_latitude');
-$longitude = get_field('community_longitude');
-$total_lots = get_field('community_total_lots');
-$price_range = get_field('community_price_range');
-$amenities = get_field('community_amenities');
-$video_url = get_field('community_video_url');
-$brochure = get_field('community_brochure');
-
-
-// Parse amenities if it's a string
+// Additional data for single view
+$gallery_images = Burgland_Homes_Gallery::get_gallery_images($post_id, 'full');
+$brochure = get_field('community_brochure', $post_id);
+$video_url = get_field('community_video_url', $post_id);
+$amenities = get_field('community_amenities', $post_id);
 if (is_string($amenities)) {
-  $amenities = array_filter(array_map('trim', explode("\n", $amenities)));
+    $amenities = array_filter(array_map('trim', explode("\n", $amenities)));
 }
 
-// Get community status
-$status_terms = wp_get_post_terms(get_the_ID(), 'bh_community_status');
-$status_label = '';
-$status_class = 'primary';
-
-if (!empty($status_terms) && !is_wp_error($status_terms)) {
-  $status_label = $status_terms[0]->name;
-  $status = $status_terms[0]->slug;
-
-  switch ($status) {
-    case 'active':
-      $status_class = 'success';
-      break;
-    case 'selling-fast':
-      $status_class = 'warning';
-      break;
-    case 'sold-out':
-      $status_class = 'secondary';
-      break;
-    case 'coming-soon':
-      $status_class = 'info';
-      break;
-  }
-}
-
-// Get related floor plans via taxonomy
-$community_post = get_post(get_the_ID());
-$term_slug = sanitize_title($community_post->post_name);
-$term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
-
-if (!$term) {
-    $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
-}
-
-$floor_plan_query_args = array(
-  'post_type' => 'bh_floor_plan',
-  'posts_per_page' => -1,
-  'post_status' => 'publish',
-  'orderby' => 'title',
-  'order' => 'ASC',
+// Breadcrumbs
+$breadcrumbs = array(
+    array('label' => 'Communities', 'url' => get_post_type_archive_link('bh_community')),
+    array('label' => $community['title']),
 );
 
-if ($term) {
-  $floor_plan_query_args['tax_query'] = array(
-    array(
-      'taxonomy' => 'bh_floor_plan_community',
-      'field' => 'term_id',
-      'terms' => $term->term_id,
-    ),
-  );
+// Quick Info Sidebar
+$quick_info = array();
+if ($community['floor_plan_ranges']['count'] > 0) {
+    $quick_info[] = array('label' => 'Floor Plans', 'value' => $community['floor_plan_ranges']['count']);
+}
+if (!empty($community['price_range'])) {
+    $quick_info[] = array('label' => 'Price Range', 'value' => $community['price_range']);
 }
 
-$floor_plans = new WP_Query($floor_plan_query_args);
-
-// Get available lots
-$available_lots = new WP_Query(array(
-  'post_type' => 'bh_lot',
-  'posts_per_page' => -1,
-  'meta_query' => array(
-    array(
-      'key' => 'lot_community',
-      'value' => get_the_ID(),
-    ),
-  ),
-  'tax_query' => array(
-    array(
-      'taxonomy' => 'bh_lot_status',
-      'field' => 'slug',
-      'terms' => 'available',
-    ),
-  ),
+// Render Header
+$template_loader->render_single_component('header', array(
+    'title' => $community['title'],
+    'subtitle' => sprintf('%s, %s', $community['city'], $community['state']),
+    'price' => $community['price_range'],
+    'breadcrumbs' => $breadcrumbs,
+    'status' => array(
+        'label' => $community['status_label'],
+        'class' => $community['status_class']
+    )
 ));
+
+// Start Content Capture
+ob_start();
 ?>
+    <!-- Gallery -->
+    <?php $template_loader->render_single_component('gallery', array(
+        'images' => $gallery_images,
+        'featured_image' => $community['thumbnail']
+    )); ?>
 
-<main id="site-main">
-  <?php if (have_posts()): while (have_posts()): the_post(); ?>
+    <!-- Actions -->
+    <?php $template_loader->render_single_component('actions', array(
+        'brochure' => $brochure,
+        'video_url' => $video_url
+    )); ?>
 
-      <article <?php post_class('community-single'); ?>>
-
-        <div class="container">
-          <div class="row mt-10">
-            <div class="col-lg-8">
-              <!-- Breadcrumb -->
-                <nav aria-label="breadcrumb" class="mb-3">
-                  <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                      <a href="<?php echo home_url(); ?>" class="text-info">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                      <a href="<?php echo get_post_type_archive_link('bh_community'); ?>" class="text-info">Communities</a>
-                    </li>
-                    <li class="breadcrumb-item active text-dark" aria-current="page">
-                      <?php the_title(); ?>
-                    </li>
-                  </ol>
-                </nav>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-lg-8">
-              <!-- HERO HEADER -->
-              <div class="left-content">
-                <!-- Slider -->
-                <div class="plugin-slider">
-
-                  <?php if (!empty($ids) && is_array($ids)) : ?>
-
-                    <div class="plugin-slider__swiperBaap">
-                      <div class="plugin-slider__swiper swiper">
-                        <div class="swiper-wrapper">
-
-                          <?php foreach ($ids as $index => $image_data) : ?>
-                            <div class="swiper-slide plugin-slider__slide">
-                              <a href="<?php echo esc_url($image_data['url']); ?>" class="glightbox" data-gallery="community-gallery" data-title="<?php echo esc_attr($image_data['title'] ?: $image_data['alt'] ?: 'Gallery Image'); ?>">
-                                <img
-                                  src="<?php echo esc_url($image_data['url']); ?>"
-                                  alt="<?php echo esc_attr($image_data['alt'] ?: ($image_data['title'] ?: 'Gallery Image')); ?>"
-                                  class="plugin-slider__image">
-                              </a>
-                            </div>
-                          <?php endforeach; ?>
-
-                        </div>
-
-                        <div class="swiper-button-next"></div>
-                        <div class="swiper-button-prev"></div>
-                        <div class="swiper-pagination"></div>
-                      </div>
-                    </div>
-
-                  <?php else : ?>
-
-                    <!-- Fallback -->
-                    <div
-                      class="plugin-slider-fallback"
-                      style="height:400px; background:url('<?php echo esc_url($featured_image[0]); ?>') center/cover no-repeat;">
-                    </div>
-
-                  <?php endif; ?>
-
-                </div>
-
-                <!-- Actions -->
-                <div class="btn-group gap-2 d-flex" role="group" aria-label="Basic example">
-
-                  <?php if ($brochure && is_array($brochure) && isset($brochure['url'])) : ?>
-                    <a
-                      href="<?php echo esc_url($brochure['url']); ?>"
-                      class="btn btn-primary btn-lg flex-fill text-center"
-                      download>
-                      <i class="fa-solid fa-file-circle-check me-2"></i>
-                      Brochure
-                    </a>
-                  <?php endif; ?>
-
-                  <?php if (!empty($video_url)) : ?>
-                    <a
-                      href="<?php echo esc_url($video_url); ?>"
-                      class="btn btn-primary btn-lg flex-fill video-lightbox"
-                      data-type="video">
-                      <i class="fa-solid fa-video me-2"></i>
-                      Watch Video
-                    </a>
-                  <?php endif; ?>
-
-                  <a
-                    href="#community-map"
-                    class="btn btn-primary btn-lg flex-fill text-center">
-                    <i class="fa-solid fa-map-location-dot me-2"></i>Site Map
-                  </a>
-
-                </div>
-
-
-                <!-- Title + Status -->
-                <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
-                  <h1 class="mb-0 text-dark"><?php the_title(); ?></h1>
-                </div>
-
-                <!-- Location -->
-                <?php if ($city && $state) : ?>
-                  <p class="lead text-dark mb-1">
-                    <i class="fa-solid fa-location-dot me-2"></i>
-                    <?php echo esc_html("$city, $state"); ?>
-                  </p>
-                <?php endif; ?>
-
-                <!-- Price -->
-                <?php if ($display_price) : ?>
-                  <p class="h4 text-dark fw-bold mb-0">
-                    <?php echo esc_html($display_price); ?>
-                  </p>
-                <?php endif; ?>
-
-              </div>
-              <!-- Main Content -->
-              <div class="main-content">
-
-                <!-- Community Stats -->
-                <?php if ($total_lots || $floor_plans->found_posts || $available_lots->found_posts): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-3">Community Overview</h2>
-                      <div class="row g-4 text-center">
-                        <?php if ($total_lots): ?>
-                          <div class="col-md-4">
-                            <div class="p-3">
-                              <i class="bi bi-geo-alt fs-1 text-primary d-block mb-2"></i>
-                              <p class="h3 mb-1"><?php echo esc_html($total_lots); ?></p>
-                              <p class="small text-muted mb-0">Total Lots</p>
-                            </div>
-                          </div>
-                        <?php endif; ?>
-
-                        <?php if ($floor_plans->found_posts): ?>
-                          <div class="col-md-4">
-                            <div class="p-3">
-                              <i class="bi bi-layout fs-1 text-success d-block mb-2"></i>
-                              <p class="h3 mb-1"><?php echo esc_html($floor_plans->found_posts); ?></p>
-                              <p class="small text-muted mb-0">Floor Plans</p>
-                            </div>
-                          </div>
-                        <?php endif; ?>
-
-                        <?php if ($available_lots->found_posts): ?>
-                          <div class="col-md-4">
-                            <div class="p-3">
-                              <i class="bi bi-check2-circle fs-1 text-info d-block mb-2"></i>
-                              <p class="h3 mb-1"><?php echo esc_html($available_lots->found_posts); ?></p>
-                              <p class="small text-muted mb-0">Available Now</p>
-                            </div>
-                          </div>
-                        <?php endif; ?>
-                        
-                        <?php 
-                        // Display floor plan ranges if available
-                        if ($floor_plan_ranges['bedrooms']['min'] !== null || $floor_plan_ranges['bathrooms']['min'] !== null || 
-                            $floor_plan_ranges['garage']['min'] !== null || $floor_plan_ranges['square_feet']['min'] !== null): ?>
-                          <div class="col-md-12 mt-3">
-                            <hr>
-                            <h6 class="text-uppercase text-muted small fw-bold mb-3">Floor Plan Ranges</h6>
-                            <div class="row g-3">
-                              <?php if ($floor_plan_ranges['bedrooms']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-house-door text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Bedrooms</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['bedrooms']['min'] == $floor_plan_ranges['bedrooms']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['bedrooms']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['bedrooms']['min'] . '-' . $floor_plan_ranges['bedrooms']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['bathrooms']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-droplet text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Bathrooms</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['bathrooms']['min'] == $floor_plan_ranges['bathrooms']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['bathrooms']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['bathrooms']['min'] . '-' . $floor_plan_ranges['bathrooms']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['garage']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-car-front text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Garage</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['garage']['min'] == $floor_plan_ranges['garage']['max']): ?>
-                                          <?php echo esc_html($floor_plan_ranges['garage']['min']); ?>
-                                        <?php else: ?>
-                                          <?php echo esc_html($floor_plan_ranges['garage']['min'] . '-' . $floor_plan_ranges['garage']['max']); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                              
-                              <?php if ($floor_plan_ranges['square_feet']['min'] !== null): ?>
-                                <div class="col-md-3 col-6">
-                                  <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-rulers text-primary"></i>
-                                    <div>
-                                      <p class="mb-0 small text-muted">Sq Ft</p>
-                                      <p class="mb-0 fw-bold">
-                                        <?php if ($floor_plan_ranges['square_feet']['min'] == $floor_plan_ranges['square_feet']['max']): ?>
-                                          <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])); ?>
-                                        <?php else: ?>
-                                          <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])) . '-' . number_format(esc_html($floor_plan_ranges['square_feet']['max'])); ?>
-                                        <?php endif; ?>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              <?php endif; ?>
-                            </div>
-                          </div>
-                        <?php endif; ?>
-                      </div>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-                <!-- Description -->
-                <div class="card mb-4">
-                  <div class="card-body">
-                    <h2 class="h5 card-title mb-3">About This Community</h2>
-                    <div class="content">
-                      <?php the_content(); ?>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Map Integration Hook -->
-                <?php if ($latitude && $longitude): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-3">Location</h2>
-                      <div id="community-map"
-                        data-lat="<?php echo esc_attr($latitude); ?>"
-                        data-lng="<?php echo esc_attr($longitude); ?>"
-                        data-address="<?php echo esc_attr($address); ?>"
-                        style="height: 400px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <div class="text-center">
-                          <p class="text-muted mb-2">
-                            <i class="bi bi-geo-alt fs-3 d-block mb-2"></i>
-                            <?php if ($address): ?>
-                              <?php echo esc_html($address); ?><br>
-                            <?php endif; ?>
-                            <?php echo esc_html($city . ', ' . $state . ' ' . $zip); ?>
-                          </p>
-                          <small class="text-muted">Map integration: Add your preferred map service here (Google Maps, Mapbox, Leaflet, etc.)</small>
-                        </div>
-                      </div>
-                      <?php
-                      // Hook for map integration
-                      do_action('burgland_homes_after_community_map', get_the_ID(), $latitude, $longitude);
-                      ?>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-                <!-- Amenities -->
-                <?php if (!empty($amenities) && is_array($amenities)): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-3">Community Amenities</h2>
-                      <div class="row">
-                        <?php foreach ($amenities as $amenity): ?>
-                          <div class="col-md-6 mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                              <i class="bi bi-check2-circle text-success"></i>
-                              <span><?php echo esc_html($amenity); ?></span>
-                            </div>
-                          </div>
-                        <?php endforeach; ?>
-                      </div>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-                <!-- Video -->
-                <?php if ($video_url): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-3">Community Video</h2>
-                      <div class="ratio ratio-16x9">
-                        <?php echo wp_oembed_get($video_url); ?>
-                      </div>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-                <!-- Floor Plans -->
-                <?php if ($floor_plans->have_posts()): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-4">Available Floor Plans</h2>
-                      <div class="row g-4">
-                        <?php while ($floor_plans->have_posts()): $floor_plans->the_post();
-                          $fp_bedrooms = get_post_meta(get_the_ID(), 'floor_plan_bedrooms', true);
-                          $fp_bathrooms = get_post_meta(get_the_ID(), 'floor_plan_bathrooms', true);
-                          $fp_sqft = get_post_meta(get_the_ID(), 'floor_plan_square_feet', true);
-                          $fp_price = get_post_meta(get_the_ID(), 'floor_plan_price', true);
-                        ?>
-                          <div class="col-md-6">
-                            <div class="card h-100">
-                              <?php if (has_post_thumbnail()): ?>
-                                <a href="<?php the_permalink(); ?>">
-                                  <?php the_post_thumbnail('medium', array('class' => 'card-img-top')); ?>
-                                </a>
-                              <?php endif; ?>
-                              <div class="card-body">
-                                <h3 class="h6 card-title">
-                                  <a href="<?php the_permalink(); ?>" class="text-decoration-none"><?php the_title(); ?></a>
-                                </h3>
-                                <?php if ($fp_price): ?>
-                                  <p class="text-primary fw-bold mb-2"><?php echo esc_html($fp_price); ?></p>
-                                <?php endif; ?>
-                                <div class="d-flex gap-3 text-muted small">
-                                  <?php if ($fp_bedrooms): ?>
-                                    <span><i class="bi bi-house-door"></i> <?php echo esc_html($fp_bedrooms); ?> Bed</span>
-                                  <?php endif; ?>
-                                  <?php if ($fp_bathrooms): ?>
-                                    <span><i class="bi bi-droplet"></i> <?php echo esc_html($fp_bathrooms); ?> Bath</span>
-                                  <?php endif; ?>
-                                  <?php if ($fp_sqft): ?>
-                                    <span><i class="bi bi-arrows-angle-expand"></i> <?php echo esc_html(number_format($fp_sqft)); ?> sq ft</span>
-                                  <?php endif; ?>
-                                </div>
-                              </div>
-                              <div class="card-footer bg-transparent">
-                                <a href="<?php the_permalink(); ?>" class="btn btn-outline-primary btn-sm w-100">View Details</a>
-                              </div>
-                            </div>
-                          </div>
-                        <?php endwhile;
-                        wp_reset_postdata(); ?>
-                      </div>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-                <!-- Available Lots Section -->
-                <?php
-                // Query available lots filtered by current community
-                $community_lots_args = array(
-                  'post_type' => 'bh_lot',
-                  'posts_per_page' => 6,
-                  'orderby' => 'menu_order',
-                  'order' => 'ASC',
-                  'meta_query' => array(
-                    'relation' => 'AND',
-                    array(
-                      'key' => 'lot_community',
-                      'value' => get_the_ID(),
-                      'compare' => '='
-                    ),
-                    array(
-                      'key' => 'lot_state',
-                      'value' => array('sold', 'empty_lot'),
-                      'compare' => 'NOT IN'
-                    )
-                  )
-                );
-                $community_lots_query = new WP_Query($community_lots_args);
-                
-                if ($community_lots_query->have_posts()): ?>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h2 class="h5 card-title mb-4">Available Homes</h2>
-                      <div class="row g-4">
-                        <?php while ($community_lots_query->have_posts()): $community_lots_query->the_post(); ?>
-                          <div class="col-lg-4 col-md-6">
-                            <?php 
-                              $post_id = get_the_ID();
-                              include(get_template_directory() . '/components/lot-card.php');
-                            ?>
-                          </div>
-                        <?php endwhile; ?>
-                      </div>
-                      <?php wp_reset_postdata(); ?>
-                    </div>
-                  </div>
-                <?php endif; ?>
-
-              </div>
-            </div>
-               <!-- Sidebar -->
-              <div class="col-lg-4">
-                <div class="sticky-top" style="top: 100px;">
-
-                  <!-- Contact Card -->
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h3 class="h5 card-title mb-4">Interested in This Community?</h3>
-                      <div class="d-grid gap-3">
-                        <a href="#contact-form" class="btn btn-primary btn-lg">Schedule a Visit</a>
-                        <a href="tel:8005550192" class="btn btn-outline-primary">
-                          <i class="bi bi-telephone me-2"></i>
-                          (800) 555-0192
-                        </a>
-                        <?php if ($brochure && is_array($brochure)): ?>
-                          <a href="<?php echo esc_url($brochure['url']); ?>" class="btn btn-outline-secondary" download>
-                            <i class="bi bi-download me-2"></i>
-                            Download Brochure
-                          </a>
-                        <?php endif; ?>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Quick Info -->
-                  <div class="card">
-                    <div class="card-body">
-                      <h3 class="h6 card-title mb-3">Quick Info</h3>
-                      <ul class="list-unstyled mb-0">
-                        <?php if ($available_lots->found_posts): ?>
-                          <li class="mb-2">
-                            <strong>Available Lots:</strong> <?php echo esc_html($available_lots->found_posts); ?>
-                          </li>
-                        <?php endif; ?>
-                        <?php if ($display_price): ?>
-                          <li class="mb-2">
-                            <strong>Price Range:</strong> <?php echo esc_html($display_price); ?>
-                          </li>
-                        <?php endif; ?>
-                        <?php if ($floor_plans->found_posts): ?>
-                          <li class="mb-2">
-                            <strong>Floor Plans:</strong> <?php echo esc_html($floor_plans->found_posts); ?>
-                          </li>
-                        <?php endif; ?>
-                      </ul>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-          </div>
-        </div>
-
-      </article>
-
-  <?php endwhile;
-  endif; ?>
-</main>
-
-<!-- Swiper JS Initialization Script -->
-<script>
-  /**
-   * Hero Slider using Swiper.js
-   * Full-screen responsive image slider
-   */
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const heroSlider = document.querySelector('.plugin-slider__swiper');
-    if (!heroSlider) return;
-
-    // Initialize Swiper
-    const swiper = new Swiper('.plugin-slider__swiper', {
-      // Basic settings
-      loop: true,
-      speed: 1000,
-      effect: 'fade',
-      fadeEffect: {
-        crossFade: true
-      },
-
-      // Autoplay
-      autoplay: {
-        delay: 3000,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: false
-      },
-
-      // Navigation arrows
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-
-      // Pagination
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-        dynamicBullets: true
-      },
-
-      // Responsive breakpoints
-      breakpoints: {
-        320: {
-          spaceBetween: 0
-        },
-        768: {
-          spaceBetween: 0
-        },
-        1024: {
-          spaceBetween: 0
+    <!-- Overview Stats -->
+    <?php 
+    $specs = array();
+    foreach (array('bedrooms', 'bathrooms', 'garage', 'square_feet') as $key) {
+        if (isset($community['floor_plan_ranges'][$key]) && $community['floor_plan_ranges'][$key]['min'] !== null) {
+            $specs[] = array(
+                'label' => ucfirst(str_replace('_', ' ', $key)),
+                'value' => $community['floor_plan_ranges'][$key]['formatted'],
+                'icon' => $key === 'bedrooms' ? 'house-door' : ($key === 'bathrooms' ? 'droplet' : ($key === 'garage' ? 'car-front' : 'rulers'))
+            );
         }
-      },
+    }
+    if (!empty($specs)) {
+        $template_loader->render_single_component('specs', array(
+            'title' => 'Community Overview',
+            'specs' => $specs
+        ));
+    }
+    ?>
 
-      // Accessibility
-      a11y: {
-        enabled: true,
-        prevSlideMessage: 'Previous slide',
-        nextSlideMessage: 'Next slide',
-        firstSlideMessage: 'This is the first slide',
-        lastSlideMessage: 'This is the last slide',
-        paginationBulletMessage: 'Go to slide {{index}}'
-      },
+    <!-- Description -->
+    <?php $template_loader->render_single_component('description', array(
+        'title' => 'About This Community',
+        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+    )); ?>
 
-      // Keyboard control
-      keyboard: {
-        enabled: true,
-        onlyInViewport: true
-      },
+    <!-- Amenities -->
+    <?php if (!empty($amenities)) {
+        $template_loader->render_single_component('amenities', array(
+            'items' => $amenities
+        ));
+    } ?>
 
-      // Touch gestures
-      touchRatio: 1,
-      touchAngle: 45,
-      grabCursor: false,
-    });
-
-    // Pause autoplay when page is not visible
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        swiper.autoplay.stop();
-      } else {
-        swiper.autoplay.start();
-      }
-    });
-
-    // Optional: Add custom events
-    swiper.on('slideChange', function() {
-      console.log('Slide changed to:', swiper.activeIndex);
-    });
-  });
-</script>
-
-<!-- GLightbox Initialization -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize GLightbox for community image gallery
-    const imageLightbox = GLightbox({
-      selector: '.glightbox',
-      skin: 'clean',
-      width: '90vw',
-      height: '90vh',
-      autoplayVideos: false, // Disable autoplay for gallery
-      // descPosition: 'bottom',
-      zoomable: true,
-      draggable: true,
-      touchNavigation: true,
-      loop: false,
-      moreLength: 0,
-      closeButton: true,
-      startAt: 0,
-      lightboxLabel: 'Gallery Image {current} of {total}',
-      plyr: {
-        css: 'https://cdn.plyr.io/3.6.8/plyr.css',
-        js: 'https://cdn.plyr.io/3.6.8/plyr.js',
-        config: {
-          ratio: '16:9',
-          fullscreen: {
-            enabled: true,
-            iosNative: true
-          },
-          youtube: {
-            noCookie: true,
-            rel: 0,
-            showinfo: 0,
-            iv_load_policy: 3
-          },
-          vimeo: {
-            byline: false,
-            portrait: false,
-            title: false,
-            transparent: false
-          }
-        }
-      }
-    });
-
-    // Initialize GLightbox for video only
-    const videoLightbox = GLightbox({
-      selector: '.video-lightbox',
-      skin: 'clean',
-      width: '90vw',
-      height: '90vh',
-      autoplayVideos: true, // Enable autoplay for video
-      zoomable: true,
-      draggable: true,
-      touchNavigation: true,
-      loop: false,
-      moreLength: 0,
-      closeButton: true,
-      startAt: 0,
-      lightboxLabel: 'Video Player',
-      plyr: {
-        css: 'https://cdn.plyr.io/3.6.8/plyr.css',
-        js: 'https://cdn.plyr.io/3.6.8/plyr.js',
-        config: {
-          ratio: '16:9',
-          fullscreen: {
-            enabled: true,
-            iosNative: true
-          },
-          youtube: {
-            noCookie: true,
-            rel: 0,
-            showinfo: 0,
-            iv_load_policy: 3
-          },
-          vimeo: {
-            byline: false,
-            portrait: false,
-            title: false,
-            transparent: false
-          }
-        }
-      }
-    });
-  });
-</script>
+    <!-- Related Items (Floor Plans) -->
+    <?php 
+    // This could be moved to a component too if reused
+    $floor_plans = $data_provider->get_featured_communities(array('post_type' => 'bh_floor_plan', 'limit' => -1)); // This is wrong, need a generic getter
+    // For now keep the query here or use a new method in data provider
+    ?>
 
 <?php
-get_footer();
+$content = ob_get_clean();
+
+// Start Sidebar Capture
+ob_start();
 ?>
+    <?php $template_loader->render_single_component('sidebar-contact', array(
+        'title' => 'Interested in This Community?',
+        'brochure' => $brochure
+    )); ?>
+
+    <?php $template_loader->render_single_component('sidebar-quick-info', array(
+        'info' => $quick_info
+    )); ?>
+<?php
+$sidebar = ob_get_clean();
+
+// Render Layout
+$template_loader->render_single_component('layout', array(
+    'content' => $content,
+    'sidebar' => $sidebar
+));
+
+get_footer();

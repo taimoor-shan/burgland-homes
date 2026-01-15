@@ -127,52 +127,16 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
                                 if ($communities->have_posts()):
                                     while ($communities->have_posts()): $communities->the_post();
-                                        // Get custom fields
-                                        $city = get_post_meta(get_the_ID(), 'community_city', true);
-                                        $state = get_post_meta(get_the_ID(), 'community_state', true);
-                                        $price_range = get_post_meta(get_the_ID(), 'community_price_range', true);
-                                        $latitude = get_post_meta(get_the_ID(), 'community_latitude', true);
-                                        $longitude = get_post_meta(get_the_ID(), 'community_longitude', true);
+                                        $post_id = get_the_ID();
+                                        $latitude = get_post_meta($post_id, 'community_latitude', true);
+                                        $longitude = get_post_meta($post_id, 'community_longitude', true);
+                                        $price_range = get_post_meta($post_id, 'community_price_range', true);
 
-                                        // Get status
-                                        $status_terms_post = wp_get_post_terms(get_the_ID(), 'bh_community_status');
-                                        $status_label = '';
-                                        $status_class = 'primary';
-
-                                        if (!empty($status_terms_post) && !is_wp_error($status_terms_post)) {
-                                            $status_label = $status_terms_post[0]->name;
-                                            $status = $status_terms_post[0]->slug;
-
-                                            switch ($status) {
-                                                case 'active':
-                                                    $status_class = 'success';
-                                                    break;
-                                                case 'selling-fast':
-                                                    $status_class = 'warning';
-                                                    break;
-                                                case 'sold-out':
-                                                    $status_class = 'secondary';
-                                                    break;
-                                                case 'coming-soon':
-                                                    $status_class = 'info';
-                                                    break;
-                                            }
-                                        }
-
-                                        // Get floor plan ranges using utility function
-                                        $utilities = Burgland_Homes_Utilities::get_instance();
-                                        $floor_plan_ranges = $utilities->get_floor_plan_ranges(get_the_ID());
-                                        
-                                        // Use dynamic price range if available, fallback to static field
-                                        $display_price = !empty($floor_plan_ranges['price']['formatted']) 
-                                            ? $floor_plan_ranges['price']['formatted'] 
-                                            : $price_range;
-
-                                        // Filter by price range if selected
+                                        // Filter by price range if selected (keep existing logic)
                                         if ($selected_price && $price_range) {
                                             $skip = false;
                                             $price_numeric = preg_replace('/[^0-9]/', '', $price_range);
-                                            $price_numeric = intval(substr($price_numeric, 0, 6)); // Get first price in range
+                                            $price_numeric = intval(substr($price_numeric, 0, 6)); 
 
                                             if ($selected_price === 'under-300k' && $price_numeric >= 300000) {
                                                 $skip = true;
@@ -188,90 +152,8 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                         <div class="col-md-6 community-card-wrapper"
                                             data-lat="<?php echo esc_attr($latitude); ?>"
                                             data-lng="<?php echo esc_attr($longitude); ?>"
-                                            data-id="<?php echo get_the_ID(); ?>">
-                                            <div class="card community-card h-100 shadow-sm">
-                                                <?php if (has_post_thumbnail()): ?>
-                                                    <div class="position-relative">
-                                                        <a href="<?php the_permalink(); ?>">
-                                                            <?php the_post_thumbnail('medium_large', array('class' => 'card-img-top community-card-img')); ?>
-                                                        </a>
-                                                        <?php if ($status_label): ?>
-                                                            <span class="badge bg-secondary text-dark position-absolute top-0 start-0 m-2 fw-semibold">
-                                                                <?php echo esc_html($status_label); ?>
-                                                            </span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <div class="card-body d-flex flex-column">
-                                                    <h3 class="card-title h5 mb-2">
-                                                        <a href="<?php the_permalink(); ?>" class="text-decoration-none text-dark stretched-link">
-                                                            <?php the_title(); ?>
-                                                        </a>
-                                                    </h3>
-
-                                                    <?php if ($city && $state): ?>
-                                                        <p class="card-text text-muted mb-2">
-                                                            <i class="bi bi-geo-alt-fill"></i>
-                                                            <?php echo esc_html($city . ', ' . $state); ?>
-                                                        </p>
-                                                    <?php endif; ?>
-
-                                                    <?php if ($display_price): ?>
-                                                        <p class="card-text text-primary fw-semibold mb-0">
-                                                            <?php echo esc_html($display_price); ?>
-                                                        </p>
-                                                    <?php endif; ?>
-
-                                                    <?php 
-                                                    // Display floor plan ranges if available
-                                                    if ($floor_plan_ranges['bedrooms']['min'] !== null || $floor_plan_ranges['bathrooms']['min'] !== null || 
-                                                        $floor_plan_ranges['garage']['min'] !== null || $floor_plan_ranges['square_feet']['min'] !== null): ?>
-                                                        <div class="floor-plan-ranges mt-2">
-                                                            <div class="d-flex flex-wrap gap-2 small">
-                                                                <?php if ($floor_plan_ranges['bedrooms']['min'] !== null): ?>
-                                                                    <span class="badge bg-light text-dark border">
-                                                                        <i class="bi bi-house-door me-1"></i>
-                                                                        <?php if ($floor_plan_ranges['bedrooms']['min'] == $floor_plan_ranges['bedrooms']['max']): ?>
-                                                                            <?php echo esc_html($floor_plan_ranges['bedrooms']['min']); ?> bed
-                                                                        <?php else: ?>
-                                                                            <?php echo esc_html($floor_plan_ranges['bedrooms']['min'] . '-' . $floor_plan_ranges['bedrooms']['max']); ?> bed
-                                                                        <?php endif; ?>
-                                                                    </span>
-                                                                <?php endif; ?>
-
-                                                                <?php if ($floor_plan_ranges['bathrooms']['min'] !== null): ?>
-                                                                    <span class="badge bg-light text-dark border">
-                                                                        <i class="bi bi-droplet me-1"></i>
-                                                                        <?php if ($floor_plan_ranges['bathrooms']['min'] == $floor_plan_ranges['bathrooms']['max']): ?>
-                                                                            <?php echo esc_html($floor_plan_ranges['bathrooms']['min']); ?> bath
-                                                                        <?php else: ?>
-                                                                            <?php echo esc_html($floor_plan_ranges['bathrooms']['min'] . '-' . $floor_plan_ranges['bathrooms']['max']); ?> bath
-                                                                        <?php endif; ?>
-                                                                    </span>
-                                                                <?php endif; ?>
-
-                                                                <?php if ($floor_plan_ranges['square_feet']['min'] !== null): ?>
-                                                                    <span class="badge bg-light text-dark border">
-                                                                        <i class="bi bi-rulers me-1"></i>
-                                                                        <?php if ($floor_plan_ranges['square_feet']['min'] == $floor_plan_ranges['square_feet']['max']): ?>
-                                                                            <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])); ?> sqft
-                                                                        <?php else: ?>
-                                                                            <?php echo number_format(esc_html($floor_plan_ranges['square_feet']['min'])) . '-' . number_format(esc_html($floor_plan_ranges['square_feet']['max'])); ?> sqft
-                                                                        <?php endif; ?>
-                                                                    </span>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    <?php endif; ?>
-
-                                                    <?php if (has_excerpt()): ?>
-                                                        <!-- <p class="card-text text-muted small mb-3">
-                                                            <?php //echo wp_trim_words(get_the_excerpt(), 15); ?>
-                                                        </p> -->
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
+                                            data-id="<?php echo esc_attr($post_id); ?>">
+                                            <?php Burgland_Homes_Template_Loader::get_instance()->render_card($post_id); ?>
                                         </div>
                                     <?php
                                     endwhile;
