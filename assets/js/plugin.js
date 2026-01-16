@@ -46,7 +46,7 @@
         const $cardElement = $card.find('.community-card');
         const title = $cardElement.find('.card-title a').text().trim();
         const location = $cardElement.find('.bi-geo-alt-fill').parent().text().trim();
-        const priceRange = $cardElement.find('.text-primary.fw-semibold').text().trim();
+        const priceRange = $cardElement.find('.bh-card-price-badge').text().trim();
         const imageUrl = $cardElement.find('.card-img-top').attr('src') || '';
         const permalink = $cardElement.find('.card-title a').attr('href') || '#';
         const statusBadge = $cardElement.find('.badge').text().trim();

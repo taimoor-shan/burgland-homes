@@ -1,0 +1,89 @@
+/**
+ * Card Component Styles
+ */
+.bh-card {
+    border: 1px solid #e0e0e0;
+    transition: var(--transition);
+    cursor: pointer;
+    background: #ffffff;
+    height: 100%;
+}
+
+.bh-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover) !important;
+    border-color: var(--info-color);
+}
+
+.bh-card-image {
+    overflow: hidden;
+}
+
+.bh-card-image img {
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.bh-card:hover .bh-card-image img {
+    transform: scale(1.05);
+}
+
+.bh-card .card-body {
+    padding: 1.5rem;
+}
+
+.bh-card .card-title {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.bh-card .card-title a {
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.bh-card .card-title a:hover {
+    color: var(--info-color);
+}
+
+.bh-card-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.bh-card-specs .spec-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bh-card-specs i {
+    color: var(--primary-color);
+}
+
+.bh-card-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Specific Card Type Variations */
+.bh-card-community {
+    border-left: 4px solid var(--primary-color);
+}
+
+.bh-card-lot {
+    border-left: 4px solid var(--secondary-color);
+}
+
+.bh-card-floor-plan {
+    border-left: 4px solid var(--info-color);
+}

@@ -33,7 +33,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
     </section> -->
 
         <!-- Filters Section -->
-        <section class="filters-section bg-white border-bottom py-4 mt-10">
+        <section class="bh-filters filters-section bg-white border-bottom py-4 mt-10">
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
@@ -173,7 +173,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
                     <!-- Right Column: Map -->
                     <div class="col-lg-6">
-                        <div class="map-container sticky-top" style="top: 200px;">
+                        <div class="bh-map-container map-container sticky-top" style="top: 200px;">
                             <div id="communities-map" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
                                 <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                     <div class="text-center">

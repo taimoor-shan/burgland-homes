@@ -1,0 +1,131 @@
+/**
+ * Map Component and Info Window Styles
+ */
+.bh-map-container {
+    height: 100%;
+    min-height: 400px;
+}
+
+#communities-map {
+    border: 2px solid #e0e0e0;
+    box-shadow: var(--card-shadow);
+    width: 100%;
+    height: 100%;
+}
+
+@media (min-width: 992px) {
+    .bh-map-container.sticky-top {
+        top: 20px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .bh-map-container {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 2rem;
+        height: 500px !important;
+        min-height: 500px !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .bh-map-container {
+        height: 400px !important;
+        min-height: 400px !important;
+    }
+}
+
+/* Google Maps Custom Styles */
+.gm-style .gm-style-iw-c {
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: auto !important;
+}
+
+#communities-map .gm-style-iw-ch {
+    flex-grow: 1;
+    padding-top: 0;
+    overflow: hidden;
+}
+
+#communities-map button.gm-ui-hover-effect {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    background: #ffffff !important;
+}
+
+/* Info Window Content */
+.map-infowindow {
+    max-width: 280px;
+    padding: 0;
+}
+
+.map-infowindow-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 0;
+}
+
+.map-infowindow-content {
+    padding: 1rem;
+}
+
+.map-infowindow-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.map-infowindow-location {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.map-infowindow-price {
+    font-size: 0.95rem;
+    color: var(--info-color);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.map-infowindow-link {
+    display: inline-block;
+    font-size: 0.875rem;
+    color: var(--info-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.map-infowindow-link:hover {
+    color: #0a58ca;
+    text-decoration: underline;
+}
+
+/* Custom Marker */
+.custom-map-marker {
+    background-color: var(--info-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.custom-map-marker:hover {
+    background-color: #0a58ca;
+    transform: scale(1.1);
+}

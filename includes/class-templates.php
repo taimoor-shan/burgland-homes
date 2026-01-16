@@ -144,12 +144,18 @@ class Burgland_Homes_Templates {
      * Enqueue base plugin assets
      */
     private function enqueue_base_assets($include_vendors = false) {
-        wp_enqueue_style(
-            'burgland-homes-plugin',
-            BURGLAND_HOMES_PLUGIN_URL . 'assets/css/plugin.css',
-            array(),
-            BURGLAND_HOMES_VERSION
-        );
+        $css_url = BURGLAND_HOMES_PLUGIN_URL . 'assets/css/';
+        $version = BURGLAND_HOMES_VERSION;
+
+        // 1. Global Styles (Tokens, Utilities)
+        wp_enqueue_style('burgland-homes-plugin', $css_url . 'plugin.css', array(), $version);
+
+        // 2. Component Styles
+        wp_enqueue_style('bh-badges-buttons', $css_url . 'components/badges-buttons.css', array('burgland-homes-plugin'), $version);
+        wp_enqueue_style('bh-card', $css_url . 'components/card.css', array('burgland-homes-plugin'), $version);
+        wp_enqueue_style('bh-filters', $css_url . 'components/filters.css', array('burgland-homes-plugin'), $version);
+        wp_enqueue_style('bh-map', $css_url . 'components/map.css', array('burgland-homes-plugin'), $version);
+        wp_enqueue_style('bh-slider', $css_url . 'components/slider.css', array('burgland-homes-plugin'), $version);
 
         wp_enqueue_style(
             'bootstrap-icons',

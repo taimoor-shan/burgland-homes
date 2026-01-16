@@ -279,7 +279,14 @@ class Burgland_Homes_Utilities {
             return null;
         }
         
-        // Pattern to match decimal numbers and integers
+        // Remove commas and other non-numeric characters except decimal point
+        $clean_value = preg_replace('/[^-0-9.]/', '', $value);
+        
+        if (is_numeric($clean_value)) {
+            return floatval($clean_value);
+        }
+        
+        // Fallback for cases where there might be other text (e.g., "2-Car")
         $pattern = '/[0-9]+\.?[0-9]*/';
         preg_match($pattern, $value, $matches);
         

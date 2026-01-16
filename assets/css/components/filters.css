@@ -1,0 +1,41 @@
+/**
+ * Filters Component Styles
+ */
+.bh-filters {
+    z-index: 1030;
+    padding: 1.5rem 0;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.bh-filters .form-label {
+    color: #495057;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.bh-filters .form-select {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    transition: var(--transition);
+}
+
+.bh-filters .form-select:focus {
+    border-color: var(--info-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+@media (max-width: 767.98px) {
+    .bh-filters .row {
+        row-gap: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .bh-filters {
+        padding: 1rem 0;
+    }
+}

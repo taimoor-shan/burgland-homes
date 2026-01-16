@@ -25,12 +25,12 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
         <div class="col-lg-6">
             <h2 class="h2 text-uppercase text-primary">Featured Communities</h2>
             <p class="mb-4">Browse our featured communities below:</p>
-            <div class="featured-communities-grid">
-               
+            <div class="featured-communities-grid row">
+                
                     <?php foreach ($communities as $community): ?>
-                        
+                        <div class="col-lg-6">
                             <?php $template_loader->render_card($community['id']); ?>
-                      
+                        </div>
                     <?php endforeach; ?>
              
             </div>

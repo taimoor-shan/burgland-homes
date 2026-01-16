@@ -67,7 +67,19 @@ class Burgland_Homes_Data_Provider {
                 }
                 
                 if (isset($raw['floor_plan_ranges']['bedrooms']) && !empty($raw['floor_plan_ranges']['bedrooms']['formatted'])) {
-                    $data['specs'][] = array('label' => $raw['floor_plan_ranges']['bedrooms']['formatted'], 'icon' => 'house-door');
+                    $data['specs'][] = array('label' => $raw['floor_plan_ranges']['bedrooms']['formatted'] . ' Bed', 'icon' => 'house-door');
+                }
+                
+                if (isset($raw['floor_plan_ranges']['bathrooms']) && !empty($raw['floor_plan_ranges']['bathrooms']['formatted'])) {
+                    $data['specs'][] = array('label' => $raw['floor_plan_ranges']['bathrooms']['formatted'] . ' Bath', 'icon' => 'droplet');
+                }
+                
+                if (isset($raw['floor_plan_ranges']['square_feet']) && !empty($raw['floor_plan_ranges']['square_feet']['formatted'])) {
+                    $data['specs'][] = array('label' => $raw['floor_plan_ranges']['square_feet']['formatted'] . ' sqft', 'icon' => 'arrows-angle-expand');
+                }
+                
+                if (isset($raw['floor_plan_ranges']['garage']) && !empty($raw['floor_plan_ranges']['garage']['formatted'])) {
+                    $data['specs'][] = array('label' => $raw['floor_plan_ranges']['garage']['formatted'] . ' Car', 'icon' => 'car-front');
                 }
                 break;
 
