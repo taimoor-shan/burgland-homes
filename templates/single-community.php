@@ -38,16 +38,9 @@ if (!empty($community['price_range'])) {
     $quick_info[] = array('label' => 'Price Range', 'value' => $community['price_range']);
 }
 
-// Render Header
-$template_loader->render_single_component('header', array(
-    'title' => $community['title'],
-    'subtitle' => sprintf('%s, %s', $community['city'], $community['state']),
-    'price' => $community['price_range'],
-    'breadcrumbs' => $breadcrumbs,
-    'status' => array(
-        'label' => $community['status_label'],
-        'class' => $community['status_class']
-    )
+// Render Breadcrumbs at top
+$template_loader->render_single_component('breadcrumbs', array(
+    'breadcrumbs' => $breadcrumbs
 ));
 
 // Start Content Capture
@@ -57,6 +50,20 @@ ob_start();
     <?php $template_loader->render_single_component('gallery', array(
         'images' => $gallery_images,
         'featured_image' => $community['thumbnail']
+    )); ?>
+
+    <!-- Header (after gallery) -->
+    <?php $template_loader->render_single_component('header', array(
+        'title' => $community['title'],
+        'address' => $community['address'],
+        'city' => $community['city'],
+        'state' => $community['state'],
+        'zip' => $community['zip'],
+        'price' => $community['price_range'],
+        'status' => array(
+            'label' => $community['status_label'],
+            'class' => $community['status_class']
+        )
     )); ?>
 
     <!-- Actions -->
@@ -97,6 +104,11 @@ ob_start();
             'items' => $amenities
         ));
     } ?>
+
+    <!-- Available Homes/Lots Grid -->
+    <?php $template_loader->render_single_component('lots-grid', array(
+        'community_id' => $post_id
+    )); ?>
 
     <!-- Related Items (Floor Plans) -->
     <?php 

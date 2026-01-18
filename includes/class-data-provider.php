@@ -56,7 +56,7 @@ class Burgland_Homes_Data_Provider {
                     'price' => $raw['price_range'],
                     'badges' => array(),
                     'specs' => array(),
-                    'footer_text' => sprintf('%s, %s', $raw['city'], $raw['state'])
+                    'address' => $this->format_full_address($raw)
                 );
                 
                 if ($raw['status_label']) {
@@ -94,7 +94,7 @@ class Burgland_Homes_Data_Provider {
                     'price' => $raw['price'] ? 'Priced at: ' . $raw['price'] : '',
                     'badges' => array(),
                     'specs' => array(),
-                    'footer_text' => $raw['floor_plan_name'] ? 'Floor Plan: ' . $raw['floor_plan_name'] : ''
+                    'floor_plan_info' => $raw['floor_plan_name'] ? 'Floor Plan: ' . $raw['floor_plan_name'] : ''
                 );
 
                 if ($raw['status_label']) {
@@ -114,6 +114,7 @@ class Burgland_Homes_Data_Provider {
                 if ($raw['bedrooms']) $data['specs'][] = array('label' => $raw['bedrooms'] . ' Bed', 'icon' => 'house-door');
                 if ($raw['bathrooms']) $data['specs'][] = array('label' => $raw['bathrooms'] . ' Bath', 'icon' => 'droplet');
                 if ($raw['square_feet']) $data['specs'][] = array('label' => number_format($raw['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
+                if ($raw['garage']) $data['specs'][] = array('label' => $raw['garage'] . ' Car', 'icon' => 'car-front');
                 break;
 
             case 'bh_floor_plan':
@@ -126,13 +127,13 @@ class Burgland_Homes_Data_Provider {
                     'image' => $raw['thumbnail'],
                     'price' => $raw['price'],
                     'badges' => array(),
-                    'specs' => array(),
-                    'footer_text' => ''
+                    'specs' => array()
                 );
 
                 if ($raw['bedrooms']) $data['specs'][] = array('label' => $raw['bedrooms'] . ' Bed', 'icon' => 'house-door');
                 if ($raw['bathrooms']) $data['specs'][] = array('label' => $raw['bathrooms'] . ' Bath', 'icon' => 'droplet');
                 if ($raw['square_feet']) $data['specs'][] = array('label' => number_format($raw['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
+                if ($raw['garage']) $data['specs'][] = array('label' => $raw['garage'] . ' Car', 'icon' => 'car-front');
                 break;
         }
 
@@ -247,8 +248,10 @@ class Burgland_Homes_Data_Provider {
             'title' => get_the_title($community_id),
             'excerpt' => has_excerpt($community_id) ? wp_trim_words(get_the_excerpt($community_id), 15) : '',
             'permalink' => get_permalink($community_id),
+            'address' => get_post_meta($community_id, 'community_address', true),
             'city' => get_post_meta($community_id, 'community_city', true),
             'state' => get_post_meta($community_id, 'community_state', true),
+            'zip' => get_post_meta($community_id, 'community_zip', true),
             'price_range' => $display_price,
             'latitude' => get_post_meta($community_id, 'community_latitude', true),
             'longitude' => get_post_meta($community_id, 'community_longitude', true),
@@ -322,6 +325,18 @@ class Burgland_Homes_Data_Provider {
             }
         }
         
+        // Get parent community to inherit city/state
+        $community_id = get_post_meta($lot_id, 'lot_community', true);
+        $city = '';
+        $state = '';
+        $zip = '';
+        
+        if ($community_id) {
+            $city = get_post_meta($community_id, 'community_city', true);
+            $state = get_post_meta($community_id, 'community_state', true);
+            $zip = get_post_meta($community_id, 'community_zip', true);
+        }
+        
         $lot_state = get_post_meta($lot_id, 'lot_state', true);
         $status_map = array(
             'empty_lot' => array('label' => 'Empty Lot', 'class' => 'secondary'),
@@ -344,6 +359,10 @@ class Burgland_Homes_Data_Provider {
             'floor_plan_id' => $floor_plan_id,
             'floor_plan_name' => $floor_plan_name,
             'lot_number' => get_post_meta($lot_id, 'lot_number', true),
+            'address' => get_post_meta($lot_id, 'lot_address', true),
+            'city' => $city,
+            'state' => $state,
+            'zip' => $zip,
             'lot_size' => get_post_meta($lot_id, 'lot_size', true),
             'price' => get_post_meta($lot_id, 'lot_price', true),
             'premium' => get_post_meta($lot_id, 'lot_premium', true),
@@ -377,5 +396,30 @@ class Burgland_Homes_Data_Provider {
             'stories' => get_post_meta($floor_plan_id, 'floor_plan_stories', true),
             'features' => get_post_meta($floor_plan_id, 'floor_plan_features', true),
         ), $floor_plan_id);
+    }
+
+    /**
+     * Format full address from data array
+     * 
+     * @param array $data Data array containing address components
+     * @return string Formatted address
+     */
+    private function format_full_address($data) {
+        $address = isset($data['address']) ? $data['address'] : '';
+        $city = isset($data['city']) ? $data['city'] : '';
+        $state = isset($data['state']) ? $data['state'] : '';
+        $zip = isset($data['zip']) ? $data['zip'] : '';
+
+        $full = '';
+        if ($address) {
+            $full .= $address;
+        }
+
+        if ($city || $state || $zip) {
+            if ($full) $full .= '<br>';
+            $full .= trim($city . ', ' . $state . ' ' . $zip, ', ');
+        }
+
+        return $full;
     }
 }

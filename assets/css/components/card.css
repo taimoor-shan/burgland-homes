@@ -10,8 +10,6 @@
 }
 
 .bh-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--card-shadow-hover) !important;
     border-color: var(--info-color);
 }
 
@@ -33,9 +31,9 @@
 }
 
 .bh-card .card-title {
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: 0.75rem;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .bh-card .card-title a {
@@ -48,12 +46,16 @@
     color: var(--info-color);
 }
 
+.bh-card-price {
+    font-size: 1.12rem;
+    font-weight: 500;
+    color: var(--info-color);
+}
+
 .bh-card-specs {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    color: #6c757d;
+    margin-bottom: .7rem;
     font-size: 0.875rem;
 }
 
@@ -68,22 +70,19 @@
 }
 
 .bh-card-footer {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-    color: #6c757d;
     font-size: 0.875rem;
+    line-height: 1.4;
+}
+.bh-card-footer {
 }
 
 /* Specific Card Type Variations */
-.bh-card-community {
-    border-left: 4px solid var(--primary-color);
-}
+
 
 .bh-card-lot {
-    border-left: 4px solid var(--secondary-color);
+  
 }
 
 .bh-card-floor-plan {
-    border-left: 4px solid var(--info-color);
+ 
 }

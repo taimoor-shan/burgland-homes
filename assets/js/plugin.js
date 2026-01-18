@@ -436,9 +436,124 @@
         window.initCommunitiesMap = init;
       }
     }
+    
+    // Initialize lots grid filter if it exists
+    if ($('#lots-filters').length > 0) {
+      initLotsFilter();
+    }
   });
 
   // Expose init function globally for callback
   window.initCommunitiesMap = init;
+
+  /**
+   * Initialize Lots Grid Filter (for single community page)
+   */
+  function initLotsFilter() {
+    const $form = $('#lots-filters');
+    const $grid = $('#lots-grid');
+    const $noResults = $('#no-lots-message');
+    const $count = $('#lots-count');
+    
+    // Handle filter change
+    $form.find('select').on('change', function() {
+      filterAndSortLots();
+    });
+    
+    /**
+     * Filter and sort lots based on selected criteria
+     */
+    function filterAndSortLots() {
+      const sqftRange = $('#sqft-filter').val();
+      const bedrooms = $('#bedrooms-filter').val();
+      const bathrooms = $('#bathrooms-filter').val();
+      const sortOrder = $('#sort-order').val();
+      
+      // Get all lot cards
+      let $lots = $('.lot-card-wrapper');
+      let visibleCount = 0;
+      
+      // Filter lots
+      $lots.each(function() {
+        const $lot = $(this);
+        let visible = true;
+        
+        // Filter by sqft range
+        if (sqftRange) {
+          const sqft = parseInt($lot.attr('data-sqft')) || 0;
+          
+          if (sqftRange === '0-1500' && sqft >= 1500) {
+            visible = false;
+          } else if (sqftRange === '1500-2000' && (sqft < 1500 || sqft >= 2000)) {
+            visible = false;
+          } else if (sqftRange === '2000-2500' && (sqft < 2000 || sqft >= 2500)) {
+            visible = false;
+          } else if (sqftRange === '2500-3000' && (sqft < 2500 || sqft >= 3000)) {
+            visible = false;
+          } else if (sqftRange === '3000+' && sqft < 3000) {
+            visible = false;
+          }
+        }
+        
+        // Filter by bedrooms
+        if (bedrooms && visible) {
+          const lotBedrooms = $lot.attr('data-bedrooms');
+          if (lotBedrooms !== bedrooms) {
+            visible = false;
+          }
+        }
+        
+        // Filter by bathrooms
+        if (bathrooms && visible) {
+          const lotBathrooms = $lot.attr('data-bathrooms');
+          if (lotBathrooms !== bathrooms) {
+            visible = false;
+          }
+        }
+        
+        // Show/hide lot
+        if (visible) {
+          $lot.show();
+          visibleCount++;
+        } else {
+          $lot.hide();
+        }
+      });
+      
+      // Sort visible lots
+      if (visibleCount > 0) {
+        let $visibleLots = $('.lot-card-wrapper:visible');
+        
+        $visibleLots.sort(function(a, b) {
+          const $a = $(a);
+          const $b = $(b);
+          
+          if (sortOrder === 'price-asc') {
+            return parseInt($a.attr('data-price')) - parseInt($b.attr('data-price'));
+          } else if (sortOrder === 'price-desc') {
+            return parseInt($b.attr('data-price')) - parseInt($a.attr('data-price'));
+          } else if (sortOrder === 'sqft-asc') {
+            return parseInt($a.attr('data-sqft')) - parseInt($b.attr('data-sqft'));
+          } else if (sortOrder === 'sqft-desc') {
+            return parseInt($b.attr('data-sqft')) - parseInt($a.attr('data-sqft'));
+          }
+          
+          return 0;
+        });
+        
+        // Re-append sorted lots to grid
+        $visibleLots.detach().appendTo($grid);
+      }
+      
+      // Update count and show/hide no results message
+      $count.text(visibleCount);
+      
+      if (visibleCount === 0) {
+        $noResults.show();
+      } else {
+        $noResults.hide();
+      }
+    }
+  }
 
 })(jQuery);

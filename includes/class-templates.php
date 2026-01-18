@@ -156,6 +156,7 @@ class Burgland_Homes_Templates {
         wp_enqueue_style('bh-filters', $css_url . 'components/filters.css', array('burgland-homes-plugin'), $version);
         wp_enqueue_style('bh-map', $css_url . 'components/map.css', array('burgland-homes-plugin'), $version);
         wp_enqueue_style('bh-slider', $css_url . 'components/slider.css', array('burgland-homes-plugin'), $version);
+        wp_enqueue_style('bh-header', $css_url . 'components/header.css', array('burgland-homes-plugin'), $version);
 
         wp_enqueue_style(
             'bootstrap-icons',

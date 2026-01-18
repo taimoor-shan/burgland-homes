@@ -414,6 +414,17 @@ class Burgland_Homes_ACF_Fields
                     ),
                 ),
                 array(
+                    'key' => 'field_lot_address',
+                    'label' => 'Street Address',
+                    'name' => 'lot_address',
+                    'type' => 'text',
+                    'instructions' => 'Specific street address for this lot (e.g., 123 Main Street)',
+                    'required' => 0,
+                       'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
                     'key' => 'field_lot_floor_plan',
                     'label' => 'Floor Plan',
                     'name' => 'lot_floor_plan',

@@ -24,11 +24,11 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
         <!-- Left Column: Community Cards -->
         <div class="col-lg-6">
             <h2 class="h2 text-uppercase text-primary">Featured Communities</h2>
-            <p class="mb-4">Browse our featured communities below:</p>
+            <p class="mb-0">Browse our featured communities below:</p>
             <div class="featured-communities-grid row">
                 
                     <?php foreach ($communities as $community): ?>
-                        <div class="col-lg-6">
+                        <div class="col-lg-6 mt-3">
                             <?php $template_loader->render_card($community['id']); ?>
                         </div>
                     <?php endforeach; ?>
@@ -38,7 +38,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
 
         <!-- Right Column: Map -->
         <div class="col-lg-6">
-            <div class="map-container sticky-top" style="top: 20px;">
+            <div class="map-container sticky-top" style="top: 140px;">
                 <div id="<?php echo esc_attr($map_id); ?>" class="featured-communities-map-canvas" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px; border: 2px solid #e0e0e0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
                     <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                         <div class="text-center">

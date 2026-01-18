@@ -22,7 +22,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 ?>
 
 <main id="site-main">
-    <div class="communities-archive">
+    <div class="communities-archive container-fluid px-5">
 
         <!-- Page Header -->
         <!-- <section class="page-header bg-light py-4">

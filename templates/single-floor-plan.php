@@ -38,11 +38,8 @@ if ($floor_plan['bedrooms']) $quick_info[] = array('label' => 'Bedrooms', 'value
 if ($floor_plan['bathrooms']) $quick_info[] = array('label' => 'Bathrooms', 'value' => $floor_plan['bathrooms']);
 if ($floor_plan['square_feet']) $quick_info[] = array('label' => 'Square Feet', 'value' => number_format($floor_plan['square_feet']));
 
-// Render Header
-$template_loader->render_single_component('header', array(
-    'title' => $floor_plan['title'],
-    'subtitle' => $community ? 'Community: ' . $community->post_title : '',
-    'price' => $floor_plan['price'],
+// Render Breadcrumbs at top
+$template_loader->render_single_component('breadcrumbs', array(
     'breadcrumbs' => $breadcrumbs
 ));
 
@@ -53,6 +50,12 @@ ob_start();
     <?php $template_loader->render_single_component('gallery', array(
         'images' => $gallery_images,
         'featured_image' => $floor_plan['thumbnail']
+    )); ?>
+
+    <!-- Header (after gallery) -->
+    <?php $template_loader->render_single_component('header', array(
+        'title' => $floor_plan['title'],
+        'price' => $floor_plan['price']
     )); ?>
 
     <!-- Specs -->

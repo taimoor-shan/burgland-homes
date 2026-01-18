@@ -38,16 +38,9 @@ $quick_info[] = array('label' => 'Status', 'value' => $lot['status_label']);
 if ($lot['lot_size']) $quick_info[] = array('label' => 'Lot Size', 'value' => $lot['lot_size']);
 if ($lot['price']) $quick_info[] = array('label' => 'Price', 'value' => $lot['price']);
 
-// Render Header
-$template_loader->render_single_component('header', array(
-    'title' => $lot['lot_number'] ?: $lot['title'],
-    'subtitle' => $community ? 'Community: ' . $community->post_title : '',
-    'price' => $lot['price'],
-    'breadcrumbs' => $breadcrumbs,
-    'status' => array(
-        'label' => $lot['status_label'],
-        'class' => $lot['status_class']
-    )
+// Render Breadcrumbs at top
+$template_loader->render_single_component('breadcrumbs', array(
+    'breadcrumbs' => $breadcrumbs
 ));
 
 // Start Content Capture
@@ -57,6 +50,22 @@ ob_start();
     <?php $template_loader->render_single_component('gallery', array(
         'images' => $gallery_images,
         'featured_image' => $lot['thumbnail']
+    )); ?>
+
+    <!-- Header (after gallery) -->
+    <?php $template_loader->render_single_component('header', array(
+        'title' => $lot['lot_number'] ?: $lot['title'],
+        'title_suffix' => $community ? $community->post_title : '',
+        'title_suffix_url' => $community ? get_permalink($community->ID) : '',
+        'address' => $lot['address'],
+        'city' => $lot['city'],
+        'state' => $lot['state'],
+        'zip' => $lot['zip'],
+        'price' => $lot['price'],
+        'status' => array(
+            'label' => $lot['status_label'],
+            'class' => $lot['status_class']
+        )
     )); ?>
 
     <!-- Information -->

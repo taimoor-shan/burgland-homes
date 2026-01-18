@@ -12,7 +12,8 @@
  *     @type string $url
  *     @type string $image
  *     @type string $price
- *     @type string $footer_text
+ *     @type string $address (Optional - for communities)
+ *     @type string $floor_plan_info (Optional - for lots)
  *     @type array $badges [
  *         @type string $label
  *         @type string $class
@@ -38,7 +39,7 @@ $default_image = 'https://via.placeholder.com/800x600?text=' . urlencode($data['
 $thumbnail = !empty($data['image']) ? $data['image'] : $default_image;
 ?>
 
-<a href="<?php echo esc_url($data['url']); ?>" class="bh-card card h-100 shadow-sm overflow-hidden rounded-3 bh-card-<?php echo esc_attr($data['type']); ?> community-card">
+<a href="<?php echo esc_url($data['url']); ?>" class="bh-card card h-100 shadow-sm overflow-hidden  bh-card-<?php echo esc_attr($data['type']); ?> community-card">
 
     <div class="bh-card-image position-relative">
         <img src="<?php echo esc_url($thumbnail); ?>"
@@ -58,36 +59,43 @@ $thumbnail = !empty($data['image']) ? $data['image'] : $default_image;
     </div>
 
 
-    <div class="card-body d-flex flex-column p-4">
-        <h3 class="card-title h4 mb-3">
+    <div class="card-body d-flex flex-column p-4 pt-3">
+        <h3 class="card-title h4 mb-1">
             <?php echo esc_html($data['title']); ?>
 
         </h3>
-        <?php if (!empty($data['footer_text'])): ?>
-            <?php echo esc_html($data['footer_text']); ?>
+        <?php if (!empty($data['price'])): ?>
+            <h5 class="bh-card-price text-info mb-2">
+                <span class="me-1 small"> From<sup>*</sup></span> <span class="fw"><?php echo esc_html($data['price']); ?></span>
+            </h5>
         <?php endif; ?>
 
+
         <?php if (!empty($data['specs'])): ?>
-            <div class="bh-card-specs d-flex flex-wrap gap-3 mb-3 text-muted small">
-                <?php foreach ($data['specs'] as $spec): ?>
-                    <div class="spec-item d-flex align-items-center gap-2">
-                        <?php if (!empty($spec['icon'])): ?>
-                            <i class="bi bi-<?php echo esc_attr($spec['icon']); ?>"></i>
-                        <?php endif; ?>
-                        <span><?php echo esc_html($spec['label']); ?></span>
-                    </div>
-                <?php endforeach; ?>
+            <div class="bh-card-specs mb-3 text-muted small">
+                <?php
+                $spec_labels = array();
+                foreach ($data['specs'] as $spec) {
+                    $spec_labels[] = esc_html($spec['label']);
+                }
+                echo implode(' &nbsp; | &nbsp; ', $spec_labels);
+                ?>
             </div>
         <?php endif; ?>
 
 
-        <div class="bh-card-footer mt-auto pt-3 border-top d-flex align-items-center justify-content-between w-100 gap-3">
-            <?php if (!empty($data['price'])): ?>
-                <h6 class="bh-card-price text-primary fw-semibold mb-0">
-                   From <?php echo esc_html($data['price']); ?>
-                </h6>
+        <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
+
+            <?php if (!empty($data['address'])): ?>
+                <div>
+                    <p class="text-dark mb-1">Address:</p>
+                    <p class="text-info mb-0"><?php echo wp_kses($data['address'], array('br' => array())); ?></p>
+                </div>
+            <?php elseif (!empty($data['floor_plan_info'])): ?>
+                <div>
+                    <p class="text-info mb-0"><?php echo esc_html($data['floor_plan_info']); ?></p>
+                </div>
             <?php endif; ?>
-         
 
         </div>
 
