@@ -51,6 +51,13 @@ class Burgland_Homes_Admin {
         
         // Add row actions for communities
         add_filter('post_row_actions', array($this, 'community_row_actions'), 10, 2);
+        
+        // Handle cleanup action
+        add_action('admin_post_bh_cleanup_orphaned_terms', array($this, 'handle_cleanup_orphaned_terms'));
+        
+        // Add orphaned lot warnings
+        add_action('admin_notices', array($this, 'show_orphaned_lot_notice'));
+        add_action('edit_form_after_title', array($this, 'show_lot_community_warning'));
     }
     
     /**
@@ -115,9 +122,24 @@ class Burgland_Homes_Admin {
             'fields' => 'ids',
         ));
         
-        ?>
+        ?>        
         <div class="wrap">
             <h1><?php echo esc_html__('Burgland Homes Dashboard', 'burgland-homes'); ?></h1>
+            
+            <?php
+            // Display cleanup success/error messages
+            if (isset($_GET['cleanup'])) {
+                $message_type = sanitize_text_field($_GET['cleanup']);
+                $deleted_count = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
+                
+                $class = $message_type === 'success' ? 'notice-success' : 'notice-warning';
+                $message = $deleted_count > 0 
+                    ? sprintf(__('%d orphaned taxonomy term(s) have been successfully deleted.', 'burgland-homes'), $deleted_count)
+                    : __('No orphaned taxonomy terms found. Your data is clean!', 'burgland-homes');
+                
+                echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($message) . '</p></div>';
+            }
+            ?>
             
             <div class="burgland-homes-dashboard" style="margin-top: 30px;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
@@ -181,6 +203,20 @@ class Burgland_Homes_Admin {
                             Add New Lot/Home
                         </a>
                     </p>
+                </div>
+                
+                <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <h2>Data Cleanup Tools</h2>
+                    <p>If you're experiencing issues with deleted communities still appearing, use this tool to clean up orphaned taxonomy terms.</p>
+                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onsubmit="return confirm('Are you sure you want to clean up orphaned taxonomy terms? This will remove any community terms that no longer have a corresponding published community post.');">
+                        <?php wp_nonce_field('bh_cleanup_orphaned_terms', 'bh_cleanup_nonce'); ?>
+                        <input type="hidden" name="action" value="bh_cleanup_orphaned_terms" />
+                        <button type="submit" class="button button-secondary">
+                            <span class="dashicons dashicons-update" style="vertical-align: middle;"></span>
+                            Clean Up Orphaned Community Terms
+                        </button>
+                    </form>
+                    <p class="description">This tool will delete any taxonomy terms that don't have a matching published community post and remove them from all floor plans.</p>
                 </div>
             </div>
         </div>
@@ -936,5 +972,115 @@ class Burgland_Homes_Admin {
             <?php endif; ?>
         </div>
         <?php
+    }
+    
+    /**
+     * Handle cleanup orphaned terms action
+     */
+    public function handle_cleanup_orphaned_terms() {
+        // Check user permissions
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have permission to perform this action.', 'burgland-homes'));
+        }
+        
+        // Verify nonce
+        if (!isset($_POST['bh_cleanup_nonce']) || !wp_verify_nonce($_POST['bh_cleanup_nonce'], 'bh_cleanup_orphaned_terms')) {
+            wp_die(__('Security check failed.', 'burgland-homes'));
+        }
+        
+        // Run cleanup
+        $utilities = Burgland_Homes_Utilities::get_instance();
+        $result = $utilities->cleanup_orphaned_taxonomy_terms();
+        
+        // Prepare message
+        $message_type = 'success';
+        if ($result['deleted'] > 0) {
+            $message = sprintf(
+                __('%d orphaned taxonomy term(s) have been successfully deleted.', 'burgland-homes'),
+                $result['deleted']
+            );
+        } else {
+            $message = __('No orphaned taxonomy terms found. Your data is clean!', 'burgland-homes');
+        }
+        
+        if (!empty($result['errors'])) {
+            $message_type = 'warning';
+            $message .= ' ' . __('However, some errors occurred:', 'burgland-homes') . ' ' . implode(', ', $result['errors']);
+        }
+        
+        // Redirect back with message
+        wp_redirect(add_query_arg(
+            array(
+                'page' => 'burgland-homes',
+                'cleanup' => $message_type,
+                'deleted' => $result['deleted']
+            ),
+            admin_url('admin.php')
+        ));
+        exit;
+    }
+    
+    /**
+     * Show notice for orphaned lots in admin
+     */
+    public function show_orphaned_lot_notice() {
+        $screen = get_current_screen();
+        
+        if ($screen && $screen->post_type === 'bh_lot' && $screen->base === 'edit') {
+            // Check if there are any orphaned lots
+            $orphaned_lots = get_posts(array(
+                'post_type' => 'bh_lot',
+                'post_status' => 'draft',
+                'meta_query' => array(
+                    array(
+                        'key' => '_bh_orphaned_lot',
+                        'value' => '1',
+                        'compare' => '='
+                    )
+                ),
+                'fields' => 'ids',
+                'posts_per_page' => -1
+            ));
+            
+            if (!empty($orphaned_lots)) {
+                ?>
+                <div class="notice notice-warning">
+                    <p>
+                        <strong><?php _e('Warning:', 'burgland-homes'); ?></strong>
+                        <?php printf(
+                            __('%d lot(s) have been set to draft because their associated community was deleted. Please reassign them to a valid community.', 'burgland-homes'),
+                            count($orphaned_lots)
+                        ); ?>
+                    </p>
+                </div>
+                <?php
+            }
+        }
+    }
+    
+    /**
+     * Show warning on individual lot edit screen if orphaned
+     */
+    public function show_lot_community_warning($post) {
+        if ($post->post_type !== 'bh_lot') {
+            return;
+        }
+        
+        $is_orphaned = get_post_meta($post->ID, '_bh_orphaned_lot', true);
+        
+        if ($is_orphaned) {
+            $deleted_community_id = get_post_meta($post->ID, '_bh_deleted_community_id', true);
+            ?>
+            <div class="notice notice-error inline" style="margin: 10px 0;">
+                <p>
+                    <strong><?php _e('⚠️ Orphaned Lot:', 'burgland-homes'); ?></strong>
+                    <?php _e('This lot\'s associated community has been deleted. Please select a new community below to restore this lot.', 'burgland-homes'); ?>
+                    <?php if ($deleted_community_id): ?>
+                        <br><small><?php printf(__('Previous community ID: %d', 'burgland-homes'), $deleted_community_id); ?></small>
+                    <?php endif; ?>
+                </p>
+            </div>
+            <?php
+        }
     }
 }

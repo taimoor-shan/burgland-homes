@@ -12,11 +12,11 @@ $title = isset($args['title']) ? $args['title'] : 'Specifications';
 $specs = isset($args['specs']) ? $args['specs'] : array();
 ?>
 <div class="card mb-4">
-    <div class="card-body">
-        <h2 class="h5 card-title mb-4"><?php echo esc_html($title); ?></h2>
+    <div class="card-body pb-4">
+        <h3 class="card-title mb-4"><?php echo esc_html($title); ?></h3>
         <div class="row g-4">
             <?php foreach ($specs as $spec) : ?>
-                <div class="col-md-4 col-6">
+                <div class="col-lg-3 col-md-4 col-6">
                     <div class="d-flex align-items-center gap-3">
                         <?php if (!empty($spec['icon'])): ?>
                             <i class="bi bi-<?php echo esc_attr($spec['icon']); ?> fs-3 text-primary"></i>

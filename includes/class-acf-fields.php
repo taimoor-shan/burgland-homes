@@ -45,6 +45,9 @@ class Burgland_Homes_ACF_Fields
         add_filter('acf/load_value/name=lot_community', array($this, 'prepopulate_lot_community'), 10, 3);
         add_filter('acf/load_value/name=floor_plan_community', array($this, 'prepopulate_floor_plan_community'), 10, 3);
 
+        // Filter floor plan options based on selected community
+        add_filter('acf/fields/post_object/query/name=lot_floor_plan', array($this, 'filter_floor_plans_by_community'), 10, 3);
+
         // Add inheritance mechanism for lot fields
         add_filter('acf/load_value/name=lot_bedrooms', array($this, 'load_inherited_values'), 10, 3);
         add_filter('acf/load_value/name=lot_bathrooms', array($this, 'load_inherited_values'), 10, 3);
@@ -55,6 +58,9 @@ class Burgland_Homes_ACF_Fields
 
         // Add field instruction updates to show inherited values
         add_filter('acf/prepare_field', array($this, 'display_inherited_values'), 10, 2);
+        
+        // Handle orphaned lot reassignment
+        add_action('acf/save_post', array($this, 'handle_lot_community_reassignment'), 20);
     }
 
     /**
@@ -429,7 +435,7 @@ class Burgland_Homes_ACF_Fields
                     'label' => 'Floor Plan',
                     'name' => 'lot_floor_plan',
                     'type' => 'post_object',
-                    'instructions' => 'Select floor plan for this home (optional for empty lots, required otherwise)',
+                    'instructions' => 'Select floor plan for this home (shows only floor plans from the selected community)',
                     'required' => 0,
                     'post_type' => array('bh_floor_plan'),
                     'return_format' => 'id',
@@ -565,6 +571,54 @@ class Burgland_Homes_ACF_Fields
     }
 
     /**
+     * Filter floor plan options by community
+     * Only show floor plans that belong to the same community as the lot
+     */
+    public function filter_floor_plans_by_community($args, $field, $post_id)
+    {
+        // Get the community ID for this lot
+        $community_id = null;
+        
+        // For new posts, check URL parameter
+        if ($post_id === 'new_post' && isset($_GET['community_id']) && !empty($_GET['community_id'])) {
+            $community_id = intval($_GET['community_id']);
+        } 
+        // For existing posts, get from ACF field
+        elseif ($post_id && $post_id !== 'new_post') {
+            $community_id = get_field('lot_community', $post_id);
+        }
+        
+        // If we have a community, filter floor plans by taxonomy
+        if ($community_id) {
+            $community_post = get_post($community_id);
+            
+            if ($community_post) {
+                // Get the taxonomy term for this community
+                $term_slug = sanitize_title($community_post->post_name);
+                $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+                
+                // Fallback to title-based lookup
+                if (!$term) {
+                    $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
+                }
+                
+                // Add tax_query to filter by community
+                if ($term) {
+                    $args['tax_query'] = array(
+                        array(
+                            'taxonomy' => 'bh_floor_plan_community',
+                            'field' => 'term_id',
+                            'terms' => $term->term_id,
+                        ),
+                    );
+                }
+            }
+        }
+        
+        return $args;
+    }
+
+    /**
      * Get value from associated floor plan if not set on lot
      */
     public function get_inherited_value($lot_post_id, $field_name, $floor_plan_field_name = null)
@@ -682,5 +736,38 @@ class Burgland_Homes_ACF_Fields
         $floor_plan_field_name = isset($inherited_fields[$field_name]) ? $inherited_fields[$field_name] : 'floor_plan_' . $field_name;
 
         return $this->get_inherited_value($post_id, $lot_field_name, $floor_plan_field_name);
+    }
+    
+    /**
+     * Handle lot community reassignment - clear orphaned flags
+     */
+    public function handle_lot_community_reassignment($post_id) {
+        // Only for lot post type
+        if (get_post_type($post_id) !== 'bh_lot') {
+            return;
+        }
+        
+        // Check if this lot was orphaned
+        $is_orphaned = get_post_meta($post_id, '_bh_orphaned_lot', true);
+        
+        if (!$is_orphaned) {
+            return;
+        }
+        
+        // Check if a community has been assigned
+        $community_id = get_post_meta($post_id, 'lot_community', true);
+        
+        if ($community_id && get_post_status($community_id) === 'publish') {
+            // Clear orphaned flags
+            delete_post_meta($post_id, '_bh_orphaned_lot');
+            delete_post_meta($post_id, '_bh_deleted_community_id');
+            
+            // Log the recovery
+            error_log(sprintf(
+                'Burgland Homes: Lot #%d orphaned flags cleared after reassignment to community #%d',
+                $post_id,
+                $community_id
+            ));
+        }
     }
 }

@@ -314,11 +314,11 @@ class Burgland_Homes_Utilities {
      * Sync existing communities to the floor plan communities taxonomy
      */
     public function sync_existing_communities() {
-        // Get all existing communities
+        // Get all existing published communities
         $communities = get_posts(array(
             'post_type' => 'bh_community',
             'posts_per_page' => -1,
-            'post_status' => 'any'
+            'post_status' => 'publish'
         ));
         
         foreach ($communities as $community) {
@@ -346,5 +346,113 @@ class Burgland_Homes_Utilities {
                 }
             }
         }
+        
+        // After syncing, clean up orphaned terms
+        $this->cleanup_orphaned_taxonomy_terms();
+    }
+    
+    /**
+     * Clean up orphaned taxonomy terms that don't have corresponding community posts
+     * 
+     * @return array Array with 'deleted' count and 'errors' array
+     */
+    public function cleanup_orphaned_taxonomy_terms() {
+        $result = array(
+            'deleted' => 0,
+            'errors' => array()
+        );
+        
+        // Get all floor plan community terms
+        $terms = get_terms(array(
+            'taxonomy' => 'bh_floor_plan_community',
+            'hide_empty' => false,
+        ));
+        
+        if (is_wp_error($terms) || empty($terms)) {
+            return $result;
+        }
+        
+        // Get all published community post slugs and names for comparison
+        $communities = get_posts(array(
+            'post_type' => 'bh_community',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'fields' => 'ids'
+        ));
+        
+        $valid_slugs = array();
+        $valid_names = array();
+        
+        foreach ($communities as $community_id) {
+            $community = get_post($community_id);
+            $valid_slugs[] = sanitize_title($community->post_name);
+            $valid_names[] = $community->post_title;
+        }
+        
+        // Check each term to see if it has a corresponding community
+        foreach ($terms as $term) {
+            $has_matching_community = in_array($term->slug, $valid_slugs) || in_array($term->name, $valid_names);
+            
+            if (!$has_matching_community) {
+                // This is an orphaned term - delete it
+                // First, remove it from all floor plans
+                $floor_plans = get_posts(array(
+                    'post_type' => 'bh_floor_plan',
+                    'numberposts' => -1,
+                    'post_status' => 'any',
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'bh_floor_plan_community',
+                            'field' => 'term_id',
+                            'terms' => $term->term_id
+                        )
+                    ),
+                    'fields' => 'ids'
+                ));
+                
+                foreach ($floor_plans as $floor_plan_id) {
+                    wp_remove_object_terms($floor_plan_id, $term->term_id, 'bh_floor_plan_community');
+                }
+                
+                // Now delete the term
+                $delete_result = wp_delete_term($term->term_id, 'bh_floor_plan_community');
+                
+                if (!is_wp_error($delete_result)) {
+                    $result['deleted']++;
+                } else {
+                    $result['errors'][] = sprintf(
+                        'Failed to delete term "%s" (ID: %d): %s',
+                        $term->name,
+                        $term->term_id,
+                        $delete_result->get_error_message()
+                    );
+                }
+            }
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Force cleanup of orphaned terms (can be called manually)
+     * Useful for fixing data issues
+     */
+    public function force_cleanup_orphaned_terms() {
+        $result = $this->cleanup_orphaned_taxonomy_terms();
+        
+        if ($result['deleted'] > 0) {
+            $message = sprintf(
+                'Successfully deleted %d orphaned taxonomy term(s).',
+                $result['deleted']
+            );
+        } else {
+            $message = 'No orphaned taxonomy terms found.';
+        }
+        
+        if (!empty($result['errors'])) {
+            $message .= '\n\nErrors: ' . implode(', ', $result['errors']);
+        }
+        
+        return $message;
     }
 }

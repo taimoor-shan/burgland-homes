@@ -18,10 +18,8 @@
 if (!defined('ABSPATH')) exit;
 $data = $args;
 ?>
-<section class="plugin-page-header py-3 mb-5">
-    <div class="d-flex gap-3 mb-2 flex-wrap justify-content-between">
-        <div class="">
-            <h1 class="text-uppercase fw-semibold mb-0 text-primary">
+<section class="plugin-page-header py-3 mb-3">
+      <h1 class="text-uppercase fw-semibold mb-0 text-primary">
                 <?php echo esc_html($data['title']); ?>
                 <?php if (!empty($data['title_suffix'])): ?>
                     <span class="text-lowercase fw-normal"> at </span>
@@ -32,7 +30,8 @@ $data = $args;
                     <?php endif; ?>
                 <?php endif; ?>
             </h1>
-
+    <div class="d-flex gap-3 mb-2 flex-wrap justify-content-between">
+        <div class="">
             <?php if (!empty($data['address']) || (!empty($data['city']) || !empty($data['state']) || !empty($data['zip']))): ?>
                 <div class="mb-2">
                     <p class="text-dark mb-1"><strong>Address:</strong></p>
@@ -51,9 +50,9 @@ $data = $args;
 
         <div>
             <?php if (!empty($data['price'])): ?>
-                <p class="h4 fw-semibold mb-0 text-primary"><span class="text-info small me-2 fw-normal">From</span><?php echo esc_html($data['price']); ?></p>
+                <h3 class="fw-semibold mb-2 text-primary"><span class="text-info small me-2 fw-normal">From</span><?php echo esc_html($data['price']); ?></h3>
                 <?php if (!empty($data['status']) && (!empty($data['city']) || !empty($data['state']))): ?>
-                    <h4>
+                    <h4 class="h4 mb-0 text-primary">
                         <?php echo esc_html($data['status']['label']); ?> in <?php echo esc_html($data['city']); ?><?php if (!empty($data['city']) && !empty($data['state'])): ?>, <?php endif; ?><?php echo esc_html($data['state']); ?>
                     </h4>
                 <?php endif; ?>
