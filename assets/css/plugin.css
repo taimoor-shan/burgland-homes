@@ -78,3 +78,120 @@
     opacity: 0.5;
     pointer-events: none;
 }
+
+/* ===============================================
+   Read More Component
+   =============================================== */
+
+/* Read More Wrapper */
+.bh-read-more-wrapper {
+    position: relative;
+}
+
+/* Content Container */
+.bh-read-more-content {
+    position: relative;
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Remove overflow when content is short enough */
+.bh-read-more-content.bh-no-overflow {
+    overflow: visible;
+}
+
+/* Fade gradient overlay when collapsed */
+.bh-read-more-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.85) 70%,
+        rgba(255, 255, 255, 1) 100%
+    );
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* Remove gradient when expanded or when content is short */
+.bh-read-more-content.bh-no-overflow::after,
+.bh-read-more-btn.expanded ~ .bh-read-more-content::after {
+    opacity: 0;
+}
+
+/* Read More Button */
+.bh-read-more-btn {
+    display: inline-block;
+    margin-top: 0;
+    padding: 0.5rem 1.25rem;
+    background-color: transparent;
+    border: 2px solid currentColor;
+    border-radius: 4px;
+    color: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.bh-read-more-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bh-read-more-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bh-read-more-btn:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+/* Button icon/arrow styles */
+.bh-read-more-btn::after {
+    content: '↓';
+    display: inline-block;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.bh-read-more-btn.expanded::after {
+    transform: rotate(180deg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .bh-read-more-content {
+        max-height: 180px;
+    }
+    
+    .bh-read-more-btn {
+        width: 100%;
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .bh-read-more-content {
+        max-height: 150px;
+    }
+    
+    .bh-read-more-content::after {
+        height: 60px;
+    }
+}
+
+

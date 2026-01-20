@@ -425,6 +425,9 @@
   $(document).ready(function() {
     // Initialize Gallery components
     initGallery();
+    
+    // Initialize Read More functionality
+    initReadMore();
 
     // Check if we're on the communities archive page
     if ($('#communities-map').length) {
@@ -445,6 +448,89 @@
 
   // Expose init function globally for callback
   window.initCommunitiesMap = init;
+
+  /**
+   * Initialize Read More Toggle Functionality
+   * Handles expandable/collapsible content sections
+   */
+  function initReadMore() {
+    $('.bh-read-more-wrapper').each(function() {
+      var $wrapper = $(this);
+      var $content = $wrapper.find('.bh-read-more-content');
+      var $button = $wrapper.find('.bh-read-more-btn');
+      var isExpanded = false;
+
+      // Skip if no content or button
+      if (!$content.length || !$button.length) {
+        return;
+      }
+
+      // Get the full height of the content
+      var fullHeight = $content[0].scrollHeight;
+      var collapsedHeight = parseInt($content.css('max-height'));
+
+      // If content is shorter than collapsed height, hide the button
+      if (fullHeight <= collapsedHeight) {
+        $button.hide();
+        $content.addClass('bh-no-overflow');
+        return;
+      }
+
+      // Button click handler
+      $button.on('click', function(e) {
+        e.preventDefault();
+        
+        if (isExpanded) {
+          // Collapse
+          $content.css('max-height', collapsedHeight + 'px');
+          $button.text($button.attr('data-text-more'));
+          $button.removeClass('expanded');
+          isExpanded = false;
+          
+          // Scroll back to the card if it's out of view
+          setTimeout(function() {
+            var cardTop = $wrapper.closest('.card').offset().top - 20;
+            var scrollTop = $(window).scrollTop();
+            
+            if (cardTop < scrollTop) {
+              $('html, body').animate({
+                scrollTop: cardTop
+              }, 300);
+            }
+          }, 350);
+        } else {
+          // Expand
+          $content.css('max-height', fullHeight + 'px');
+          $button.text($button.attr('data-text-less'));
+          $button.addClass('expanded');
+          isExpanded = true;
+        }
+      });
+    });
+  }
+
+  // Reinitialize read-more on window resize (to recalculate heights)
+  var resizeTimer;
+  $(window).on('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      // Reset all read-more sections
+      $('.bh-read-more-wrapper').each(function() {
+        var $wrapper = $(this);
+        var $content = $wrapper.find('.bh-read-more-content');
+        var $button = $wrapper.find('.bh-read-more-btn');
+        
+        if (!$content.length || !$button.length) {
+          return;
+        }
+        
+        // If expanded, update to new full height
+        if ($button.hasClass('expanded')) {
+          $content.css('max-height', $content[0].scrollHeight + 'px');
+        }
+      });
+    }, 250);
+  });
 
   /**
    * Initialize Lots Grid Filter (for single community page)
