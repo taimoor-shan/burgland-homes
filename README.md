@@ -10,7 +10,6 @@ A comprehensive WordPress plugin for managing new development communities, floor
 - **Lots & Homes**: Individual properties linked to communities and floor plans
 
 ### Custom Taxonomies
-- **Floor Plan Communities**: System-controlled shadow taxonomy that syncs automatically with Community posts.
 - **Community Status**: Managed via `bh_community_status` taxonomy (Coming Soon, Active, Selling Fast, Sold Out).
 
 ## Developer Architecture
@@ -26,20 +25,17 @@ The plugin follows a modern, class-based singleton architecture to ensure separa
 
 The plugin manages complex relationships between neighborhoods, designs, and individual property units:
 
-- **Community ↔ Floor Plan (Many-to-Many)**: Linked via the `bh_floor_plan_community` shadow taxonomy. When a Community is published, a corresponding term is created or updated. Floor Plans are then assigned these terms.
-- **Lot ↔ Community (One-to-Many)**: Every Lot is assigned to a specific Community via the `lot_community` post metadata.
-- **Lot ↔ Floor Plan (One-to-Many)**: Lots can be optionally assigned a Floor Plan template via the `lot_floor_plan` metadata.
+- **Community ↔ Floor Plan (Many-to-Many)**: Linked via ACF Relationship field (`floor_plans_communities`) on Floor Plans. Floor Plans store the post IDs of their associated Communities. This replaces the previous shadow taxonomy approach.
+- **Lot ↔ Community (One-to-Many)**: Every Lot is assigned to a specific Community via the `lot_community` ACF field.
+- **Lot ↔ Floor Plan (One-to-Many)**: Lots can be optionally assigned a Floor Plan template via the `lot_floor_plan` ACF field.
 
 ## Deletion & Cleanup Lifecycle
 
-To maintain database integrity and prevent orphaned data, the plugin implements a strict cleanup lifecycle:
+With ACF Relationship fields, the deletion lifecycle is simplified:
 
-1. **Community Deletion**: When a community is trashed or deleted, the plugin:
-   - Identifies and removes the linked taxonomy term from all Floor Plans.
-   - Clears post and relationship caches for all affected objects.
-   - Removes orphaned records from the term relationship database tables.
-   - Sets any associated Lots to `draft` status and flags them as orphaned to prevent broken frontend links.
-2. **Permanent Cleanup**: The `cleanup_post_data_permanent` hook ensures that when a post is permanently deleted, all its metadata is purged and its URL slug is fully released for reuse.
+1. **Community Deletion**: When a community is deleted, it no longer affects Floor Plans or Lots. These posts remain independent, with only their relationship field references becoming invalid. This is preferable to the previous complex taxonomy cleanup.
+2. **Floor Plan Deletion**: Deleting a Floor Plan does not delete associated Lots; they retain their assignment but lose template inheritance until reassigned.
+3. **Lot Deletion**: Simply removes the lot from the community and floor plan assignments.
 
 ### ACF Fields Integration
 The plugin uses Advanced Custom Fields (ACF) to manage detailed property information:
@@ -54,7 +50,7 @@ The plugin uses Advanced Custom Fields (ACF) to manage detailed property informa
 - Brochure/PDF
 
 #### Floor Plan Fields
-- Community (relationship)
+- **Communities** (relationship field): Select which communities this floor plan is available in (many-to-many)
 - Price, Bedrooms, Bathrooms
 - Square Feet, Garage, Stories
 - Features
@@ -106,10 +102,11 @@ Included single post templates for:
 
 ### Adding Floor Plans
 1. Go to Burgland Homes > Floor Plans > Add New
-2. Select the community this floor plan belongs to
-3. Enter specifications (bedrooms, bathrooms, sq ft, etc.)
-4. Add features and images
-5. Set the starting price
+2. Enter floor plan name and description
+3. In the "Communities" field, select which communities this floor plan is available in (you can select multiple)
+4. Enter specifications (bedrooms, bathrooms, sq ft, etc.)
+5. Add features and images
+6. Set the starting price
 
 ### Managing Lots
 1. Go to Burgland Homes > Lots & Homes > Add New
@@ -139,6 +136,48 @@ Add your preferred map service (Google Maps, Mapbox, Leaflet, etc.) using these 
 - `includes/`: Core business logic and class definitions.
 - `templates/`: Default frontend templates (Community, Floor Plan, Lot).
 - `languages/`: Translation files.
+
+## Migration Guide (Floor Plan Communities Taxonomy to ACF Relationship)
+
+**v2.0.0 Breaking Change**: The plugin now uses ACF Relationship fields instead of WordPress taxonomies for Community-Floor Plan relationships.
+
+### Steps to Update:
+
+1. **Backup your database** before updating.
+2. **Update the plugin** to the latest version.
+3. **Configure ACF Field**: Navigate to any Floor Plan in the admin. Look for the new "Communities" field (ACF Relationship field). This field allows you to select multiple communities for each floor plan.
+4. **Reassign Floor Plans to Communities**: Use the new "Communities" field in each Floor Plan's editor to select their associated communities.
+5. **Verify your data**: Navigate to a Community in the admin and confirm floor plans display correctly in the "Floor Plans" tab.
+6. **Test frontend**: Verify that lot filtering and community pages work as expected.
+
+### Why This Change?
+
+The previous taxonomy-based approach required complex synchronization hooks and cleanup logic. The new ACF Relationship field approach is simpler, more explicit, eliminates ~250 lines of sync/cleanup code, and aligns with WordPress best practices for direct post-to-post relationships.
+
+### Troubleshooting: ACF Fields Not Displaying
+
+If ACF fields disappear from the admin interface after establishing relationships:
+
+1. **Clear all caches**: Disable any caching plugins temporarily and clear browser cache.
+2. **Check for PHP errors**: Enable WordPress debug mode (`WP_DEBUG`) and check `wp-content/debug.log`.
+3. **Verify taxonomy cleanup**: The old `bh_floor_plan_community` taxonomy should no longer exist. To remove it completely:
+   - Go to WordPress Admin > Settings > Permalinks
+   - Click "Save Changes" (this flushes rewrite rules)
+   - Check if the issue persists
+4. **Deactivate conflicting plugins**: Temporarily deactivate other plugins to identify conflicts.
+5. **Re-save ACF field groups**: Navigate to Custom Fields in WordPress admin and re-save each field group.
+6. **Database cleanup** (advanced): If issues persist, the old taxonomy data may need manual removal:
+   ```sql
+   -- Remove orphaned term relationships
+   DELETE FROM wp_term_relationships WHERE term_taxonomy_id IN (
+     SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE taxonomy = 'bh_floor_plan_community'
+   );
+   -- Remove taxonomy terms
+   DELETE FROM wp_term_taxonomy WHERE taxonomy = 'bh_floor_plan_community';
+   -- Remove term entries
+   DELETE FROM wp_terms WHERE term_id NOT IN (SELECT term_id FROM wp_term_taxonomy);
+   ```
+   **⚠️ Always backup before running SQL queries!**
 
 ## Changelog
 

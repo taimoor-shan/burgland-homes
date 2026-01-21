@@ -16,7 +16,9 @@ $floor_plan = $data_provider->get_floor_plan_data($post_id);
 
 // Additional data
 $gallery_images = Burgland_Homes_Gallery::get_gallery_images($post_id, 'full');
-$community_id = get_post_meta($post_id, 'floor_plan_community', true);
+// Get the first community from the ACF relationship field
+$community_ids = get_field('floor_plans_communities', $post_id);
+$community_id = is_array($community_ids) && !empty($community_ids) ? $community_ids[0] : null;
 $community = $community_id ? get_post($community_id) : null;
 $features = get_post_meta($post_id, 'floor_plan_features', true);
 if (is_string($features)) {

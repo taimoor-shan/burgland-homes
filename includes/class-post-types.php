@@ -37,61 +37,12 @@ class Burgland_Homes_Post_Types {
         // The parent plugin calls this at the right time
         $this->register_post_types();
         
-        // Hook into later init action to register taxonomies
-        add_action('init', array($this, 'register_post_type_taxonomies'), 11);
-        
         // Add cleanup hooks for post deletion
         add_action('before_delete_post', array($this, 'cleanup_post_data'), 10);
         add_action('delete_post', array($this, 'cleanup_post_data_permanent'), 10);
         add_action('wp_trash_post', array($this, 'log_post_trash'), 10);
     }
-    
-    /**
-     * Register taxonomies specific to post types
-     */
-    public function register_post_type_taxonomies() {
-        // Add the floor plan communities taxonomy to the floor plan post type
-        register_taxonomy_for_object_type('bh_floor_plan_community', 'bh_floor_plan');
-        
-        // Hook into floor plan saving to handle taxonomy terms
-        add_action('save_post_bh_floor_plan', array($this, 'save_floor_plan_communities'), 10, 3);
-    }
-    
-    /**
-     * Save floor plan communities taxonomy terms
-     */
-    public function save_floor_plan_communities($post_id, $post, $update) {
-        // Check if not an autosave
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        
-        // Check user permissions
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-        
-        // Only process if our nonce exists (this is from our custom meta box)
-        // If nonce doesn't exist, it means this save is from another source (like ACF)
-        // and we should not interfere
-        if (!isset($_POST['bh_floor_plan_community_nonce'])) {
-            return;
-        }
-        
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['bh_floor_plan_community_nonce'], 'bh_floor_plan_community_nonce')) {
-            return;
-        }
-        
-        // Handle the taxonomy terms
-        if (isset($_POST['bh_floor_plan_community'])) {
-            $selected_terms = array_map('intval', $_POST['bh_floor_plan_community']);
-            wp_set_object_terms($post_id, $selected_terms, 'bh_floor_plan_community');
-        } else {
-            // If no terms selected, clear all terms
-            wp_set_object_terms($post_id, array(), 'bh_floor_plan_community');
-        }
-    }
+
     
     /**
      * Log post trash action
@@ -320,7 +271,7 @@ class Burgland_Homes_Post_Types {
             'description'           => __('Floor plans for properties', 'burgland-homes'),
             'labels'                => $labels,
             'supports'              => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'page-attributes', 'revisions'),
-            'taxonomies'            => array('bh_floor_plan_community'), // Add the new taxonomy
+            'taxonomies'            => array(),
             'hierarchical'          => false,
             'public'                => true,
             'show_ui'               => true,

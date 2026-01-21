@@ -44,7 +44,7 @@ class Burgland_Homes_Utilities {
      * @return array Array containing min/max values for bedrooms, bathrooms, garage, square feet, and price
      */
     public function get_floor_plan_ranges($community_id) {
-        // Get the community post to find its taxonomy term
+        // Get the community post
         $community_post = get_post($community_id);
         if (!$community_post) {
             return array(
@@ -57,42 +57,19 @@ class Burgland_Homes_Utilities {
             );
         }
         
-        // Get the taxonomy term slug from community post
-        $term_slug = sanitize_title($community_post->post_name);
-        $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
-        
-        if (!$term) {
-            // Fallback: try to find by community title
-            $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
-        }
-        
-        // Query for floor plans associated with this community via taxonomy
+        // Query for floor plans associated with this community via ACF relationship field
         $query_args = array(
             'post_type' => 'bh_floor_plan',
             'posts_per_page' => -1,
             'post_status' => 'publish',
-        );
-        
-        // Add tax_query if term exists
-        if ($term) {
-            $query_args['tax_query'] = array(
+            'meta_query' => array(
                 array(
-                    'taxonomy' => 'bh_floor_plan_community',
-                    'field' => 'term_id',
-                    'terms' => $term->term_id,
-                )
-            );
-        } else {
-            // If no term found, return empty ranges
-            return array(
-                'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
-                'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
-                'garage' => array('min' => null, 'max' => null, 'formatted' => ''),
-                'square_feet' => array('min' => null, 'max' => null, 'formatted' => ''),
-                'price' => array('min' => null, 'max' => null, 'formatted' => ''),
-                'count' => 0
-            );
-        }
+                    'key' => 'floor_plans_communities',
+                    'value' => '"' . $community_id . '"',
+                    'compare' => 'LIKE',
+                ),
+            ),
+        );
         
         
         // Use optimized query fetching only IDs to prevent memory exhaustion
@@ -250,161 +227,50 @@ class Burgland_Homes_Utilities {
     }
     
     /**
-     * Sync existing communities to the floor plan communities taxonomy
+     * Legacy method - No longer needed after v2.0.0 refactor
+     * The taxonomy system has been replaced with ACF Relationship fields
+     * 
+     * @deprecated 2.0.0 Use ACF Relationship fields instead
      */
     public function maybe_sync_communities_to_taxonomy() {
-        // Run this only once after plugin update/install
-        $synced = get_option('bh_floor_plan_comms_synced', false);
-        
-        if (!$synced) {
-            $this->sync_existing_communities();
-            update_option('bh_floor_plan_comms_synced', true);
-        }
+        // This method is deprecated and no longer needed
+        // The bh_floor_plan_community taxonomy has been removed in v2.0.0
+        error_log('Burgland Homes: maybe_sync_communities_to_taxonomy() is deprecated and should not be called');
     }
     
     /**
-     * Sync existing communities to the floor plan communities taxonomy
+     * Legacy method - No longer needed after v2.0.0 refactor
+     * 
+     * @deprecated 2.0.0 Use ACF Relationship fields instead
      */
     public function sync_existing_communities() {
-        // Get all existing published communities
-        $communities = get_posts(array(
-            'post_type' => 'bh_community',
-            'posts_per_page' => -1,
-            'post_status' => 'publish'
-        ));
-        
-        foreach ($communities as $community) {
-            $term_name = $community->post_title;
-            $term_slug = sanitize_title($community->post_name);
-            $term_description = $community->post_content;
-            
-            // Check if a term with this slug already exists
-            $term_exists = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
-            
-            if (!$term_exists) {
-                // Check if term exists by name only (in case of slug conflict)
-                $term_exists_by_name = get_term_by('name', $term_name, 'bh_floor_plan_community');
-                
-                if (!$term_exists_by_name) {
-                    // Create the term if it doesn't exist
-                    wp_insert_term(
-                        $term_name,
-                        'bh_floor_plan_community',
-                        array(
-                            'description' => $term_description,
-                            'slug' => $term_slug,
-                        )
-                    );
-                }
-            }
-        }
-        
-        // After syncing, clean up orphaned terms
-        $this->cleanup_orphaned_taxonomy_terms();
+        // This method is deprecated and no longer needed
+        error_log('Burgland Homes: sync_existing_communities() is deprecated and should not be called');
     }
     
     /**
-     * Clean up orphaned taxonomy terms that don't have corresponding community posts
+     * Legacy method - No longer needed after v2.0.0 refactor
      * 
-     * @return array Array with 'deleted' count and 'errors' array
+     * @deprecated 2.0.0 Use ACF Relationship fields instead
+     * @return array Empty result array
      */
     public function cleanup_orphaned_taxonomy_terms() {
-        $result = array(
+        // This method is deprecated and no longer needed
+        error_log('Burgland Homes: cleanup_orphaned_taxonomy_terms() is deprecated and should not be called');
+        return array(
             'deleted' => 0,
             'errors' => array()
         );
-        
-        // Get all floor plan community terms
-        $terms = get_terms(array(
-            'taxonomy' => 'bh_floor_plan_community',
-            'hide_empty' => false,
-        ));
-        
-        if (is_wp_error($terms) || empty($terms)) {
-            return $result;
-        }
-        
-        // Get all published community post slugs and names for comparison
-        $communities = get_posts(array(
-            'post_type' => 'bh_community',
-            'posts_per_page' => -1,
-            'post_status' => 'publish',
-            'fields' => 'ids'
-        ));
-        
-        $valid_slugs = array();
-        $valid_names = array();
-        
-        foreach ($communities as $community_id) {
-            $community = get_post($community_id);
-            $valid_slugs[] = sanitize_title($community->post_name);
-            $valid_names[] = $community->post_title;
-        }
-        
-        // Check each term to see if it has a corresponding community
-        foreach ($terms as $term) {
-            $has_matching_community = in_array($term->slug, $valid_slugs) || in_array($term->name, $valid_names);
-            
-            if (!$has_matching_community) {
-                // This is an orphaned term - delete it
-                // First, remove it from all floor plans
-                $floor_plans = get_posts(array(
-                    'post_type' => 'bh_floor_plan',
-                    'numberposts' => -1,
-                    'post_status' => 'any',
-                    'tax_query' => array(
-                        array(
-                            'taxonomy' => 'bh_floor_plan_community',
-                            'field' => 'term_id',
-                            'terms' => $term->term_id
-                        )
-                    ),
-                    'fields' => 'ids'
-                ));
-                
-                foreach ($floor_plans as $floor_plan_id) {
-                    wp_remove_object_terms($floor_plan_id, $term->term_id, 'bh_floor_plan_community');
-                }
-                
-                // Now delete the term
-                $delete_result = wp_delete_term($term->term_id, 'bh_floor_plan_community');
-                
-                if (!is_wp_error($delete_result)) {
-                    $result['deleted']++;
-                } else {
-                    $result['errors'][] = sprintf(
-                        'Failed to delete term "%s" (ID: %d): %s',
-                        $term->name,
-                        $term->term_id,
-                        $delete_result->get_error_message()
-                    );
-                }
-            }
-        }
-        
-        return $result;
     }
     
     /**
-     * Force cleanup of orphaned terms (can be called manually)
-     * Useful for fixing data issues
+     * Legacy method - No longer needed after v2.0.0 refactor
+     * 
+     * @deprecated 2.0.0 Use ACF Relationship fields instead
      */
     public function force_cleanup_orphaned_terms() {
-        $result = $this->cleanup_orphaned_taxonomy_terms();
-        
-        if ($result['deleted'] > 0) {
-            $message = sprintf(
-                'Successfully deleted %d orphaned taxonomy term(s).',
-                $result['deleted']
-            );
-        } else {
-            $message = 'No orphaned taxonomy terms found.';
-        }
-        
-        if (!empty($result['errors'])) {
-            $message .= '\n\nErrors: ' . implode(', ', $result['errors']);
-        }
-        
-        return $message;
+        // This method is deprecated and no longer needed
+        error_log('Burgland Homes: force_cleanup_orphaned_terms() is deprecated and should not be called');
+        return 'This method is deprecated. The taxonomy system has been replaced with ACF Relationship fields in v2.0.0.';
     }
 }

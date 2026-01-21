@@ -43,7 +43,6 @@ class Burgland_Homes_ACF_Fields
 
         // Pre-populate community field when adding from community context
         add_filter('acf/load_value/name=lot_community', array($this, 'prepopulate_lot_community'), 10, 3);
-        add_filter('acf/load_value/name=floor_plan_community', array($this, 'prepopulate_floor_plan_community'), 10, 3);
 
         // Filter floor plan options based on selected community
         add_filter('acf/fields/post_object/query/name=lot_floor_plan', array($this, 'filter_floor_plans_by_community'), 10, 3);
@@ -229,17 +228,21 @@ class Burgland_Homes_ACF_Fields
             'key' => 'group_floor_plan_details',
             'title' => 'Floor Plan Details',
             'fields' => array(
-                // array(
-                //     'key' => 'field_fp_community',
-                //     'label' => 'Community',
-                //     'name' => 'floor_plan_community',
-                //     'type' => 'post_object',
-                //     'instructions' => 'Select the community this floor plan belongs to',
-                //     'required' => 1,
-                //     'post_type' => array('bh_community'),
-                //     'return_format' => 'id',
-                //     'ui' => 1,
-                // ),
+                array(
+                    'key' => 'field_fp_communities',
+                    'label' => 'Communities',
+                    'name' => 'floor_plans_communities',
+                    'type' => 'post_object',
+                    'instructions' => 'Select the communities this floor plan is available in (one-to-many)',
+                    'required' => 0,
+                    'post_type' => array('bh_community'),
+                    'multiple' => 1,
+                    'return_format' => 'id',
+                    'ui' => 1,
+                    'wrapper' => array(
+                        'width' => '100',
+                    ),
+                ),
                 array(
                     'key' => 'field_fp_price',
                     'label' => 'Starting Price',
@@ -557,24 +560,6 @@ class Burgland_Homes_ACF_Fields
     }
 
     /**
-     * Pre-populate floor plan community field from URL parameter
-     */
-    public function prepopulate_floor_plan_community($value, $post_id, $field)
-    {
-        // Only for new posts
-        if ($post_id !== 'new_post') {
-            return $value;
-        }
-
-        // Check if community_id is in URL
-        if (isset($_GET['community_id']) && !empty($_GET['community_id'])) {
-            return intval($_GET['community_id']);
-        }
-
-        return $value;
-    }
-
-    /**
      * Filter floor plan options by community
      * Only show floor plans that belong to the same community as the lot
      */
@@ -592,31 +577,16 @@ class Burgland_Homes_ACF_Fields
             $community_id = get_field('lot_community', $post_id);
         }
         
-        // If we have a community, filter floor plans by taxonomy
+        // If we have a community, filter floor plans by their ACF relationship field
         if ($community_id) {
-            $community_post = get_post($community_id);
-            
-            if ($community_post) {
-                // Get the taxonomy term for this community
-                $term_slug = sanitize_title($community_post->post_name);
-                $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
-                
-                // Fallback to title-based lookup
-                if (!$term) {
-                    $term = get_term_by('name', $community_post->post_title, 'bh_floor_plan_community');
-                }
-                
-                // Add tax_query to filter by community
-                if ($term) {
-                    $args['tax_query'] = array(
-                        array(
-                            'taxonomy' => 'bh_floor_plan_community',
-                            'field' => 'term_id',
-                            'terms' => $term->term_id,
-                        ),
-                    );
-                }
-            }
+            // Query floor plans that have this community in their floor_plans_communities field
+            $args['meta_query'] = array(
+                array(
+                    'key' => 'floor_plans_communities',
+                    'value' => '"' . $community_id . '"',
+                    'compare' => 'LIKE',
+                ),
+            );
         }
         
         return $args;
