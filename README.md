@@ -10,8 +10,36 @@ A comprehensive WordPress plugin for managing new development communities, floor
 - **Lots & Homes**: Individual properties linked to communities and floor plans
 
 ### Custom Taxonomies
-- **Lot Status**: Available, Reserved, Sold, Pending
-- **Community Status**: Coming Soon, Active, Selling Fast, Sold Out
+- **Floor Plan Communities**: System-controlled shadow taxonomy that syncs automatically with Community posts.
+- **Community Status**: Managed via `bh_community_status` taxonomy (Coming Soon, Active, Selling Fast, Sold Out).
+
+## Developer Architecture
+
+The plugin follows a modern, class-based singleton architecture to ensure separation of concerns and maintainability.
+
+- **Singleton Pattern**: Core classes like `Burgland_Homes_Post_Types` and `Burgland_Homes_Taxonomies` use the `get_instance()` pattern to prevent multiple instantiations.
+- **Data Provider Layer**: `Burgland_Homes_Data_Provider` centralizes complex database queries, abstraction the data layer from the presentation layer.
+- **Template System**: `Burgland_Homes_Template_Loader` handles frontend rendering with support for theme-level overrides. Templates can be found in `templates/` and overridden by placing them in a `burgland-homes/` directory in the active theme.
+- **Admin Interface**: A specialized admin dashboard is implemented in `class-admin.php` for at-a-glance statistics and inventory management.
+
+## Data Relationships
+
+The plugin manages complex relationships between neighborhoods, designs, and individual property units:
+
+- **Community ↔ Floor Plan (Many-to-Many)**: Linked via the `bh_floor_plan_community` shadow taxonomy. When a Community is published, a corresponding term is created or updated. Floor Plans are then assigned these terms.
+- **Lot ↔ Community (One-to-Many)**: Every Lot is assigned to a specific Community via the `lot_community` post metadata.
+- **Lot ↔ Floor Plan (One-to-Many)**: Lots can be optionally assigned a Floor Plan template via the `lot_floor_plan` metadata.
+
+## Deletion & Cleanup Lifecycle
+
+To maintain database integrity and prevent orphaned data, the plugin implements a strict cleanup lifecycle:
+
+1. **Community Deletion**: When a community is trashed or deleted, the plugin:
+   - Identifies and removes the linked taxonomy term from all Floor Plans.
+   - Clears post and relationship caches for all affected objects.
+   - Removes orphaned records from the term relationship database tables.
+   - Sets any associated Lots to `draft` status and flags them as orphaned to prevent broken frontend links.
+2. **Permanent Cleanup**: The `cleanup_post_data_permanent` hook ensures that when a post is permanently deleted, all its metadata is purged and its URL slug is fully released for reuse.
 
 ### ACF Fields Integration
 The plugin uses Advanced Custom Fields (ACF) to manage detailed property information:
@@ -102,7 +130,15 @@ Add your preferred map service (Google Maps, Mapbox, Leaflet, etc.) using these 
 ## Requirements
 - WordPress 5.0 or higher
 - PHP 7.4 or higher
-- Advanced Custom Fields (ACF) plugin
+- Advanced Custom Fields (ACF) plugin (Professional version recommended)
+
+## Directory Structure
+
+- `assets/`: CSS and JS files for admin and frontend.
+- `components/`: Modular PHP components for reusable UI elements.
+- `includes/`: Core business logic and class definitions.
+- `templates/`: Default frontend templates (Community, Floor Plan, Lot).
+- `languages/`: Translation files.
 
 ## Changelog
 
