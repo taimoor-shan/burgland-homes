@@ -85,7 +85,7 @@ class Burgland_Homes_Admin {
         
         // Add Community Management page (hidden from menu, accessed via row action)
         add_submenu_page(
-            null, // Hidden from menu
+            'burgland-homes', // Parent slug (same as main menu, but not displayed due to duplicate slug)
             __('Manage Community', 'burgland-homes'),
             __('Manage Community', 'burgland-homes'),
             'edit_posts',
