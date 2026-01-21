@@ -182,6 +182,12 @@ class Burgland_Homes_Gallery {
      * Save gallery meta
      */
     public function save_gallery_meta($post_id) {
+        // CRITICAL: Check post type FIRST to prevent data leakage
+        $post_type = get_post_type($post_id);
+        if (!in_array($post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
+            return;
+        }
+        
         // Verify nonce
         if (!isset($_POST['bh_gallery_meta_nonce']) || !wp_verify_nonce($_POST['bh_gallery_meta_nonce'], basename(__FILE__))) {
             return;
@@ -197,12 +203,42 @@ class Burgland_Homes_Gallery {
             return;
         }
         
+        // Check revision
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+        
+        error_log(sprintf(
+            'Burgland Homes Gallery: Saving gallery for %s #%d',
+            $post_type,
+            $post_id
+        ));
+        
         // Save or delete gallery IDs
         if (isset($_POST['bh_gallery_ids']) && is_array($_POST['bh_gallery_ids'])) {
             $gallery_ids = array_map('intval', $_POST['bh_gallery_ids']);
+            // Filter out any zero/invalid IDs
+            $gallery_ids = array_filter($gallery_ids, function($id) {
+                return $id > 0;
+            });
+            // Re-index the array
+            $gallery_ids = array_values($gallery_ids);
+            
             update_post_meta($post_id, 'bh_gallery_ids', $gallery_ids);
+            
+            error_log(sprintf(
+                'Burgland Homes Gallery: Saved %d images for post #%d',
+                count($gallery_ids),
+                $post_id
+            ));
         } else {
+            // Only delete if the nonce was valid (meaning we're actually saving this post)
             delete_post_meta($post_id, 'bh_gallery_ids');
+            
+            error_log(sprintf(
+                'Burgland Homes Gallery: Cleared gallery for post #%d (no images submitted)',
+                $post_id
+            ));
         }
     }
     

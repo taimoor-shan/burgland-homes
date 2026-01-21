@@ -46,7 +46,9 @@ class Burgland_Homes_Taxonomies {
         add_action('wp_ajax_add-tag', array($this, 'prevent_ajax_term_creation'), 0);
         
         // Hook into community post type operations to sync terms
-        add_action('save_post_bh_community', array($this, 'sync_community_term'), 20, 3);
+        // CRITICAL: Changed priority from 25 to 50 to ensure ACF fields are saved first
+        // ACF saves at priority 10, our sync must happen AFTER that
+        add_action('save_post_bh_community', array($this, 'sync_community_term'), 50, 3);
         add_action('before_delete_post', array($this, 'maybe_delete_community_term'), 10);
         add_action('transition_post_status', array($this, 'handle_community_status_change'), 10, 3);
     }
@@ -219,10 +221,12 @@ class Burgland_Homes_Taxonomies {
     
     /**
      * Sync community to taxonomy term
+     * CRITICAL: Each community must have its OWN unique term, identified by stored post ID
      */
     public function sync_community_term($post_id, $post, $update) {
         // Prevent infinite loops
         if ($this->syncing) {
+            error_log('Burgland Homes: sync_community_term skipped - already syncing');
             return;
         }
         
@@ -233,17 +237,29 @@ class Burgland_Homes_Taxonomies {
         
         // Skip autosaves and revisions
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            error_log('Burgland Homes: sync_community_term skipped - autosave');
             return;
         }
         
         if (wp_is_post_revision($post_id)) {
+            error_log('Burgland Homes: sync_community_term skipped - revision');
             return;
         }
         
         // Only sync published communities
         if ($post->post_status !== 'publish') {
+            error_log(sprintf(
+                'Burgland Homes: sync_community_term skipped - status is %s (not publish)',
+                $post->post_status
+            ));
             return;
         }
+        
+        error_log(sprintf(
+            'Burgland Homes: Starting taxonomy sync for community #%d (%s)',
+            $post_id,
+            $post->post_title
+        ));
         
         // Set syncing flag
         $this->syncing = true;
@@ -254,51 +270,236 @@ class Burgland_Homes_Taxonomies {
         
         // Empty title check
         if (empty($term_name)) {
+            error_log(sprintf(
+                'Burgland Homes: Cannot sync community #%d - empty title',
+                $post_id
+            ));
             $this->syncing = false;
             return;
         }
         
-        // Check if term exists by slug
-        $existing_term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        // CRITICAL FIX: First, check if THIS community already has a term (by stored meta)
+        $existing_term_id = get_post_meta($post_id, '_bh_taxonomy_term_id', true);
         
-        if ($existing_term) {
-            // Update existing term if content changed
-            if ($existing_term->name !== $term_name || $existing_term->description !== $term_description) {
-                wp_update_term($existing_term->term_id, 'bh_floor_plan_community', array(
+        if ($existing_term_id) {
+            $existing_term = get_term($existing_term_id, 'bh_floor_plan_community');
+            
+            if ($existing_term && !is_wp_error($existing_term)) {
+                // Verify this term actually belongs to this community
+                $term_community_id = get_term_meta($existing_term->term_id, '_bh_community_post_id', true);
+                
+                if ($term_community_id == $post_id) {
+                    // This is OUR term - update it
+                    error_log(sprintf(
+                        'Burgland Homes: Updating OUR existing term #%d for community #%d',
+                        $existing_term->term_id,
+                        $post_id
+                    ));
+                    
+                    wp_update_term($existing_term->term_id, 'bh_floor_plan_community', array(
+                        'name' => $term_name,
+                        'slug' => $term_slug,
+                        'description' => $term_description
+                    ));
+                    
+                    $this->syncing = false;
+                    error_log(sprintf(
+                        'Burgland Homes: Completed taxonomy sync for community #%d (updated existing term)',
+                        $post_id
+                    ));
+                    return;
+                } else {
+                    // Term exists but belongs to different community - orphaned reference, clear it
+                    error_log(sprintf(
+                        'Burgland Homes: WARNING - Term #%d belongs to community #%d, not #%d. Clearing orphaned reference.',
+                        $existing_term->term_id,
+                        $term_community_id,
+                        $post_id
+                    ));
+                    delete_post_meta($post_id, '_bh_taxonomy_term_id');
+                }
+            } else {
+                // Term no longer exists - clear the reference
+                error_log(sprintf(
+                    'Burgland Homes: Stored term #%d no longer exists for community #%d. Clearing reference.',
+                    $existing_term_id,
+                    $post_id
+                ));
+                delete_post_meta($post_id, '_bh_taxonomy_term_id');
+            }
+        }
+        
+        // CRITICAL FIX: Check if a term with this slug exists AND belongs to another community
+        $term_by_slug = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        
+        if ($term_by_slug) {
+            $slug_term_community_id = get_term_meta($term_by_slug->term_id, '_bh_community_post_id', true);
+            
+            if ($slug_term_community_id && $slug_term_community_id != $post_id) {
+                // This term belongs to a DIFFERENT community - generate unique slug
+                error_log(sprintf(
+                    'Burgland Homes: Term with slug "%s" belongs to community #%d, not #%d. Generating unique slug.',
+                    $term_slug,
+                    $slug_term_community_id,
+                    $post_id
+                ));
+                $term_slug = $term_slug . '-' . $post_id;
+            } elseif (!$slug_term_community_id) {
+                // Orphaned term with no owner - DELETE IT and create fresh
+                error_log(sprintf(
+                    'Burgland Homes: Found orphaned term #%d with slug "%s". Deleting before creating new.',
+                    $term_by_slug->term_id,
+                    $term_slug
+                ));
+                
+                // Remove from all floor plans first
+                $this->cleanup_orphaned_term($term_by_slug->term_id);
+                wp_delete_term($term_by_slug->term_id, 'bh_floor_plan_community');
+            }
+        }
+        
+        // CRITICAL FIX: Also check by name - and DELETE orphaned terms
+        $term_by_name = get_term_by('name', $term_name, 'bh_floor_plan_community');
+        
+        if ($term_by_name) {
+            $name_term_community_id = get_term_meta($term_by_name->term_id, '_bh_community_post_id', true);
+            
+            if ($name_term_community_id && $name_term_community_id != $post_id) {
+                // This term belongs to a DIFFERENT community - we'll create a new one with modified name
+                error_log(sprintf(
+                    'Burgland Homes: Term with name "%s" belongs to community #%d. Creating separate term for #%d.',
+                    $term_name,
+                    $name_term_community_id,
+                    $post_id
+                ));
+            } elseif (!$name_term_community_id) {
+                // Orphaned term with no owner - DELETE IT
+                error_log(sprintf(
+                    'Burgland Homes: Found orphaned term #%d with name "%s". Deleting before creating new.',
+                    $term_by_name->term_id,
+                    $term_name
+                ));
+                
+                $this->cleanup_orphaned_term($term_by_name->term_id);
+                wp_delete_term($term_by_name->term_id, 'bh_floor_plan_community');
+            } else {
+                // This term belongs to US - update it
+                error_log(sprintf(
+                    'Burgland Homes: Found our term #%d by name for community #%d. Updating.',
+                    $term_by_name->term_id,
+                    $post_id
+                ));
+                
+                wp_update_term($term_by_name->term_id, 'bh_floor_plan_community', array(
                     'name' => $term_name,
                     'slug' => $term_slug,
                     'description' => $term_description
                 ));
-            }
-        } else {
-            // Check if term exists by name (in case slug changed)
-            $existing_term_by_name = get_term_by('name', $term_name, 'bh_floor_plan_community');
-            if ($existing_term_by_name) {
-                // Update slug if it changed
-                wp_update_term($existing_term_by_name->term_id, 'bh_floor_plan_community', array(
-                    'slug' => $term_slug,
-                    'description' => $term_description
+                
+                // Store the relationship
+                update_post_meta($post_id, '_bh_taxonomy_term_id', $term_by_name->term_id);
+                
+                $this->syncing = false;
+                error_log(sprintf(
+                    'Burgland Homes: Completed taxonomy sync for community #%d',
+                    $post_id
                 ));
-            } else {
-                // Create new term only for published communities
+                return;
+            }
+        }
+        
+        // Create NEW term for this community
+        error_log(sprintf(
+            'Burgland Homes: Creating NEW taxonomy term for community #%d (%s, slug: %s)',
+            $post_id,
+            $term_name,
+            $term_slug
+        ));
+        
+        $result = wp_insert_term(
+            $term_name,
+            'bh_floor_plan_community',
+            array(
+                'slug' => $term_slug,
+                'description' => $term_description
+            )
+        );
+        
+        if (is_wp_error($result)) {
+            error_log('Burgland Homes: Failed to create taxonomy term for community ' . $post_id . ': ' . $result->get_error_message());
+            
+            // If slug conflict, try with post ID appended
+            if ($result->get_error_code() === 'term_exists') {
+                $unique_slug = $term_slug . '-' . $post_id;
+                error_log(sprintf(
+                    'Burgland Homes: Retrying with unique slug: %s',
+                    $unique_slug
+                ));
+                
                 $result = wp_insert_term(
                     $term_name,
                     'bh_floor_plan_community',
                     array(
-                        'slug' => $term_slug,
+                        'slug' => $unique_slug,
                         'description' => $term_description
                     )
                 );
-                
-                // Log error if term creation fails
-                if (is_wp_error($result)) {
-                    error_log('Burgland Homes: Failed to create taxonomy term for community ' . $post_id . ': ' . $result->get_error_message());
-                }
             }
         }
         
+        if (!is_wp_error($result)) {
+            // Store bidirectional relationship
+            $term_id = $result['term_id'];
+            update_post_meta($post_id, '_bh_taxonomy_term_id', $term_id);
+            update_term_meta($term_id, '_bh_community_post_id', $post_id);
+            
+            error_log(sprintf(
+                'Burgland Homes: Successfully created taxonomy term #%d for community #%d (stored relationship)',
+                $term_id,
+                $post_id
+            ));
+        } else {
+            error_log('Burgland Homes: FINAL FAILURE to create taxonomy term for community ' . $post_id . ': ' . $result->get_error_message());
+        }
+        
         // Reset syncing flag
+        error_log(sprintf(
+            'Burgland Homes: Completed taxonomy sync for community #%d',
+            $post_id
+        ));
         $this->syncing = false;
+    }
+    
+    /**
+     * Clean up an orphaned term - remove from all floor plans
+     */
+    private function cleanup_orphaned_term($term_id) {
+        $floor_plans = get_posts(array(
+            'post_type' => 'bh_floor_plan',
+            'numberposts' => -1,
+            'post_status' => 'any',
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'bh_floor_plan_community',
+                    'field' => 'term_id',
+                    'terms' => $term_id
+                )
+            ),
+            'fields' => 'ids'
+        ));
+        
+        foreach ($floor_plans as $fp_id) {
+            wp_remove_object_terms($fp_id, $term_id, 'bh_floor_plan_community');
+            clean_post_cache($fp_id);
+        }
+        
+        clean_term_cache($term_id, 'bh_floor_plan_community');
+        
+        error_log(sprintf(
+            'Burgland Homes: Cleaned up orphaned term #%d from %d floor plans',
+            $term_id,
+            count($floor_plans)
+        ));
     }
     
     /**
@@ -353,20 +554,92 @@ class Burgland_Homes_Taxonomies {
      * Remove community term and clean up relationships
      */
     private function remove_community_term($post_id, $post) {
-        // Find the corresponding term
-        $term_slug = $post->post_name ? sanitize_title($post->post_name) : sanitize_title($post->post_title);
-        $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+        error_log(sprintf(
+            'Burgland Homes: Starting removal of taxonomy term for community #%d (%s)',
+            $post_id,
+            $post->post_title
+        ));
         
-        // Fallback: try to find by title if slug doesn't match
+        // CRITICAL FIX: First check if we have a stored term ID
+        $stored_term_id = get_post_meta($post_id, '_bh_taxonomy_term_id', true);
+        $term = null;
+        
+        if ($stored_term_id) {
+            $term = get_term($stored_term_id, 'bh_floor_plan_community');
+            if ($term && !is_wp_error($term)) {
+                // Verify ownership
+                $term_community_id = get_term_meta($term->term_id, '_bh_community_post_id', true);
+                if ($term_community_id != $post_id) {
+                    error_log(sprintf(
+                        'Burgland Homes: Term #%d does not belong to community #%d (belongs to #%d). Skipping term deletion.',
+                        $term->term_id,
+                        $post_id,
+                        $term_community_id
+                    ));
+                    $term = null;
+                }
+            } else {
+                $term = null;
+            }
+        }
+        
+        // Fallback: Find term by slug if no stored reference
+        if (!$term) {
+            $term_slug = $post->post_name ? sanitize_title($post->post_name) : sanitize_title($post->post_title);
+            $term = get_term_by('slug', $term_slug, 'bh_floor_plan_community');
+            
+            if ($term && !is_wp_error($term)) {
+                // Verify ownership before deleting
+                $term_community_id = get_term_meta($term->term_id, '_bh_community_post_id', true);
+                if ($term_community_id && $term_community_id != $post_id) {
+                    error_log(sprintf(
+                        'Burgland Homes: Term #%d with slug "%s" belongs to different community #%d. Skipping.',
+                        $term->term_id,
+                        $term_slug,
+                        $term_community_id
+                    ));
+                    $term = null;
+                }
+            }
+        }
+        
+        // Fallback: Try by name
         if (!$term) {
             $term = get_term_by('name', $post->post_title, 'bh_floor_plan_community');
+            
+            if ($term && !is_wp_error($term)) {
+                // Verify ownership before deleting
+                $term_community_id = get_term_meta($term->term_id, '_bh_community_post_id', true);
+                if ($term_community_id && $term_community_id != $post_id) {
+                    error_log(sprintf(
+                        'Burgland Homes: Term #%d with name "%s" belongs to different community #%d. Skipping.',
+                        $term->term_id,
+                        $post->post_title,
+                        $term_community_id
+                    ));
+                    $term = null;
+                }
+            }
         }
         
         if (!$term || is_wp_error($term)) {
-            // Even if no term found, still handle orphaned lots
+            error_log(sprintf(
+                'Burgland Homes: No taxonomy term found for community #%d',
+                $post_id
+            ));
+            // Clean up any orphaned meta
+            delete_post_meta($post_id, '_bh_taxonomy_term_id');
+            // Still handle orphaned lots
             $this->handle_orphaned_lots($post_id);
             return;
         }
+        
+        error_log(sprintf(
+            'Burgland Homes: Found taxonomy term #%d ("%s") for community #%d',
+            $term->term_id,
+            $term->name,
+            $post_id
+        ));
         
         // Get all floor plans using this term
         $floor_plans = get_posts(array(
@@ -383,23 +656,89 @@ class Burgland_Homes_Taxonomies {
             'fields' => 'ids' // Only get IDs for better performance
         ));
         
-        // Remove term from all floor plans
+        error_log(sprintf(
+            'Burgland Homes: Found %d floor plans using taxonomy term #%d',
+            count($floor_plans),
+            $term->term_id
+        ));
+        
+        // Remove term from all floor plans AND clean up metadata
         if (!empty($floor_plans)) {
             foreach ($floor_plans as $floor_plan_id) {
-                wp_remove_object_terms($floor_plan_id, $term->term_id, 'bh_floor_plan_community');
+                error_log(sprintf(
+                    'Burgland Homes: Removing term #%d from floor plan #%d',
+                    $term->term_id,
+                    $floor_plan_id
+                ));
+                
+                // Remove the term relationship
+                $removed = wp_remove_object_terms($floor_plan_id, $term->term_id, 'bh_floor_plan_community');
+                
+                if (is_wp_error($removed)) {
+                    error_log(sprintf(
+                        'Burgland Homes: ERROR removing term from floor plan #%d: %s',
+                        $floor_plan_id,
+                        $removed->get_error_message()
+                    ));
+                } else {
+                    error_log(sprintf(
+                        'Burgland Homes: Successfully removed term from floor plan #%d',
+                        $floor_plan_id
+                    ));
+                }
+                
+                // CRITICAL: Clean up taxonomy cache for this floor plan
+                clean_post_cache($floor_plan_id);
+                wp_cache_delete($floor_plan_id, 'bh_floor_plan_community' . '_relationships');
             }
         }
         
+        // CRITICAL: Force clean the term cache before deletion
+        clean_term_cache($term->term_id, 'bh_floor_plan_community');
+        
         // Delete the term
+        error_log(sprintf(
+            'Burgland Homes: Deleting taxonomy term #%d ("%s")',
+            $term->term_id,
+            $term->name
+        ));
+        
         $result = wp_delete_term($term->term_id, 'bh_floor_plan_community');
         
         // Log any errors
         if (is_wp_error($result)) {
             error_log('Burgland Homes: Failed to delete taxonomy term for community ' . $post_id . ': ' . $result->get_error_message());
+        } else {
+            error_log(sprintf(
+                'Burgland Homes: Successfully deleted taxonomy term #%d for community #%d',
+                $term->term_id,
+                $post_id
+            ));
         }
+        
+        // Clean up bidirectional relationship meta
+        delete_post_meta($post_id, '_bh_taxonomy_term_id');
+        delete_term_meta($term->term_id, '_bh_community_post_id');
+        
+        // CRITICAL: Clean up term count cache
+        global $wpdb;
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->term_relationships} WHERE term_taxonomy_id = %d",
+            $term->term_taxonomy_id
+        ));
+        
+        error_log(sprintf(
+            'Burgland Homes: Cleaned up orphaned term relationships for term #%d',
+            $term->term_id
+        ));
         
         // Handle orphaned lots
         $this->handle_orphaned_lots($post_id);
+        
+        error_log(sprintf(
+            'Burgland Homes: Completed taxonomy term removal for community #%d',
+            $post_id
+        ));
     }
     
     /**

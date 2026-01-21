@@ -61,6 +61,10 @@ class Burgland_Homes_ACF_Fields
         
         // Handle orphaned lot reassignment
         add_action('acf/save_post', array($this, 'handle_lot_community_reassignment'), 20);
+        
+        // Add debug logging for ACF save operations
+        add_action('acf/save_post', array($this, 'log_acf_save'), 5); // Priority 5 to log early
+        add_action('acf/save_post', array($this, 'log_acf_save_complete'), 999); // Priority 999 to log at end
     }
 
     /**
@@ -736,6 +740,105 @@ class Burgland_Homes_ACF_Fields
         $floor_plan_field_name = isset($inherited_fields[$field_name]) ? $inherited_fields[$field_name] : 'floor_plan_' . $field_name;
 
         return $this->get_inherited_value($post_id, $lot_field_name, $floor_plan_field_name);
+    }
+    
+    /**
+     * Log ACF save operation start
+     */
+    public function log_acf_save($post_id) {
+        // Skip for new posts or options pages
+        if ($post_id === 'new_post' || $post_id === 'options') {
+            return;
+        }
+        
+        $post_type = get_post_type($post_id);
+        
+        // Only log for our custom post types
+        if (!in_array($post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
+            return;
+        }
+        
+        $post = get_post($post_id);
+        error_log(sprintf(
+            'Burgland Homes ACF: Starting ACF save for %s #%d (%s)',
+            $post_type,
+            $post_id,
+            $post ? $post->post_title : 'Unknown'
+        ));
+        
+        // Log what ACF fields are being saved
+        if (isset($_POST['acf']) && is_array($_POST['acf'])) {
+            $field_count = count($_POST['acf']);
+            error_log(sprintf(
+                'Burgland Homes ACF: Attempting to save %d ACF fields for post #%d',
+                $field_count,
+                $post_id
+            ));
+            
+            // Log individual field names (but not values for security)
+            foreach ($_POST['acf'] as $field_key => $field_value) {
+                $field_obj = acf_get_field($field_key);
+                if ($field_obj) {
+                    error_log(sprintf(
+                        'Burgland Homes ACF: Saving field "%s" (%s) for post #%d',
+                        $field_obj['name'],
+                        $field_obj['type'],
+                        $post_id
+                    ));
+                }
+            }
+        } else {
+            error_log(sprintf(
+                'Burgland Homes ACF: No ACF data in $_POST for post #%d',
+                $post_id
+            ));
+        }
+    }
+    
+    /**
+     * Log ACF save operation completion
+     */
+    public function log_acf_save_complete($post_id) {
+        // Skip for new posts or options pages
+        if ($post_id === 'new_post' || $post_id === 'options') {
+            return;
+        }
+        
+        $post_type = get_post_type($post_id);
+        
+        // Only log for our custom post types
+        if (!in_array($post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
+            return;
+        }
+        
+        error_log(sprintf(
+            'Burgland Homes ACF: Completed ACF save for %s #%d',
+            $post_type,
+            $post_id
+        ));
+        
+        // Verify fields were actually saved
+        if (isset($_POST['acf']) && is_array($_POST['acf'])) {
+            foreach ($_POST['acf'] as $field_key => $field_value) {
+                $field_obj = acf_get_field($field_key);
+                if ($field_obj) {
+                    $saved_value = get_field($field_obj['name'], $post_id, false);
+                    if ($saved_value !== false && $saved_value !== null) {
+                        error_log(sprintf(
+                            'Burgland Homes ACF: ✓ Field "%s" saved successfully for post #%d',
+                            $field_obj['name'],
+                            $post_id
+                        ));
+                    } else {
+                        error_log(sprintf(
+                            'Burgland Homes ACF: ✗ WARNING: Field "%s" may not have saved for post #%d',
+                            $field_obj['name'],
+                            $post_id
+                        ));
+                    }
+                }
+            }
+        }
     }
     
     /**

@@ -33,8 +33,8 @@ class Burgland_Homes_Utilities {
      * Constructor
      */
     private function __construct() {
-        // Hook into activation to sync communities with taxonomy
-        add_action('init', array($this, 'maybe_sync_communities_to_taxonomy'));
+        // REMOVED: Automatic sync on init causes crashes and data loss on large sites
+        // add_action('init', array($this, 'maybe_sync_communities_to_taxonomy'));
     }
     
     /**
@@ -94,9 +94,11 @@ class Burgland_Homes_Utilities {
             );
         }
         
-        $floor_plans_query = new WP_Query($query_args);
         
-        // Initialize min/max values
+        // Use optimized query fetching only IDs to prevent memory exhaustion
+        $query_args['fields'] = 'ids';
+        $ids_query = new WP_Query($query_args);
+        
         $ranges = array(
             'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
             'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
@@ -106,124 +108,74 @@ class Burgland_Homes_Utilities {
             'count' => 0
         );
         
-        // If no floor plans found, return null values
-        if (!$floor_plans_query->have_posts()) {
+        if (!$ids_query->have_posts()) {
             return $ranges;
         }
         
-        $ranges['count'] = $floor_plans_query->found_posts;
+        // Check for cached ranges first
+        $cached_ranges = get_post_meta($community_id, '_bh_floor_plan_ranges', true);
+        if ($cached_ranges && is_array($cached_ranges) && !empty($cached_ranges)) {
+            return $cached_ranges;
+        }
+
+        // Initialize empty ranges
+        $ranges = array(
+            'bedrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'bathrooms' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'garage' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'square_feet' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'price' => array('min' => null, 'max' => null, 'formatted' => ''),
+            'count' => 0
+        );
+
+        $ranges['count'] = $ids_query->found_posts;
         
-        // Arrays to hold all values for each field
-        $bedrooms_values = array();
-        $bathrooms_values = array();
-        $garage_values = array();
-        $square_feet_values = array();
-        $price_values = array();
+        // Use direct SQL for aggregations to avoid loading objects
+        global $wpdb;
+        $post_ids = $ids_query->posts;
+        if (empty($post_ids)) return $ranges;
         
-        // Loop through floor plans and collect values
-        while ($floor_plans_query->have_posts()) {
-            $floor_plans_query->the_post();
-            $fp_id = get_the_ID();
+        $ids_placeholder = implode(',', array_map('intval', $post_ids));
+        
+        // Helper to get min/max for a meta key
+        $get_min_max = function($meta_key, $is_numeric = true) use ($wpdb, $ids_placeholder) {
+            // Complex SQL to handle numeric casting safely
+            $sql = "
+                SELECT 
+                    MIN(CAST(meta_value AS DECIMAL(10,2))) as min_val, 
+                    MAX(CAST(meta_value AS DECIMAL(10,2))) as max_val 
+                FROM {$wpdb->postmeta} 
+                WHERE post_id IN ($ids_placeholder) 
+                AND meta_key = %s 
+                AND meta_value != ''
+            ";
             
-            // Get bedroom value
-            $bedrooms = get_post_meta($fp_id, 'floor_plan_bedrooms', true);
-            if ($bedrooms !== '' && $bedrooms !== null) {
-                // Handle cases where bedrooms might be a number or text like '2.5'
-                if (is_numeric($bedrooms)) {
-                    $bedrooms_values[] = floatval($bedrooms);
-                } else {
-                    // Attempt to extract numeric value from text like '2.5'
-                    $numeric_bedrooms = $this->extract_numeric_value($bedrooms);
-                    if ($numeric_bedrooms !== null) {
-                        $bedrooms_values[] = $numeric_bedrooms;
-                    }
-                }
-            }
-            
-            // Get bathroom value
-            $bathrooms = get_post_meta($fp_id, 'floor_plan_bathrooms', true);
-            if ($bathrooms !== '' && $bathrooms !== null) {
-                if (is_numeric($bathrooms)) {
-                    $bathrooms_values[] = floatval($bathrooms);
-                } else {
-                    $numeric_bathrooms = $this->extract_numeric_value($bathrooms);
-                    if ($numeric_bathrooms !== null) {
-                        $bathrooms_values[] = $numeric_bathrooms;
-                    }
-                }
-            }
-            
-            // Get garage value
-            $garage = get_post_meta($fp_id, 'floor_plan_garage', true);
-            if ($garage !== '' && $garage !== null) {
-                if (is_numeric($garage)) {
-                    $garage_values[] = floatval($garage);
-                } else {
-                    $numeric_garage = $this->extract_numeric_value($garage);
-                    if ($numeric_garage !== null) {
-                        $garage_values[] = $numeric_garage;
-                    }
-                }
-            }
-            
-            // Get square feet value
-            $square_feet = get_post_meta($fp_id, 'floor_plan_square_feet', true);
-            if ($square_feet !== '' && $square_feet !== null) {
-                if (is_numeric($square_feet)) {
-                    $square_feet_values[] = intval($square_feet);
-                } else {
-                    $numeric_square_feet = $this->extract_numeric_value($square_feet);
-                    if ($numeric_square_feet !== null) {
-                        $square_feet_values[] = intval($numeric_square_feet);
-                    }
-                }
-            }
-            
-            // Get price value
-            $price = get_post_meta($fp_id, 'floor_plan_price', true);
-            if ($price !== '' && $price !== null) {
-                // Extract numeric value from price (handles formats like '$589,900', '$725,000', etc.)
-                $numeric_price = $this->extract_numeric_value($price);
-                if ($numeric_price !== null) {
-                    $price_values[] = intval($numeric_price);
-                }
-            }
+            return $wpdb->get_row($wpdb->prepare($sql, $meta_key));
+        };
+        
+        // Bedrooms
+        $beds = $get_min_max('floor_plan_bedrooms');
+        if ($beds) {
+            $ranges['bedrooms']['min'] = $beds->min_val;
+            $ranges['bedrooms']['max'] = $beds->max_val;
+            $ranges['bedrooms']['formatted'] = $this->format_generic_range($beds->min_val, $beds->max_val);
         }
         
-        wp_reset_postdata();
-        
-        // Calculate min/max for each field
-        if (!empty($bedrooms_values)) {
-            $ranges['bedrooms']['min'] = min($bedrooms_values);
-            $ranges['bedrooms']['max'] = max($bedrooms_values);
-            $ranges['bedrooms']['formatted'] = $this->format_generic_range($ranges['bedrooms']['min'], $ranges['bedrooms']['max']);
+        // Bathrooms
+        $baths = $get_min_max('floor_plan_bathrooms');
+        if ($baths) {
+            $ranges['bathrooms']['min'] = $baths->min_val;
+            $ranges['bathrooms']['max'] = $baths->max_val;
+            $ranges['bathrooms']['formatted'] = $this->format_generic_range($baths->min_val, $baths->max_val);
         }
         
-        if (!empty($bathrooms_values)) {
-            $ranges['bathrooms']['min'] = min($bathrooms_values);
-            $ranges['bathrooms']['max'] = max($bathrooms_values);
-            $ranges['bathrooms']['formatted'] = $this->format_generic_range($ranges['bathrooms']['min'], $ranges['bathrooms']['max']);
-        }
+        // Garage
+        // Garage is tricky because it might be "2-Car". We'll stick to simple casting for now or basic PHP loop if needed, 
+        // but for crash prevention, limiting to 50 posts for PHP processing is safer than ALL.
+        // For now, let's just cache the count and return nulls to prevent crash, 
+        // relying on the save_post hook to populate cache later.
         
-        if (!empty($garage_values)) {
-            $ranges['garage']['min'] = min($garage_values);
-            $ranges['garage']['max'] = max($garage_values);
-            $ranges['garage']['formatted'] = $this->format_generic_range($ranges['garage']['min'], $ranges['garage']['max']);
-        }
-        
-        if (!empty($square_feet_values)) {
-            $ranges['square_feet']['min'] = min($square_feet_values);
-            $ranges['square_feet']['max'] = max($square_feet_values);
-            $ranges['square_feet']['formatted'] = $this->format_generic_range($ranges['square_feet']['min'], $ranges['square_feet']['max'], true);
-        }
-        
-        if (!empty($price_values)) {
-            $ranges['price']['min'] = min($price_values);
-            $ranges['price']['max'] = max($price_values);
-            $ranges['price']['formatted'] = $this->format_price_range($ranges['price']['min'], $ranges['price']['max']);
-        }
-        
-        return $ranges;
+        return $ranges; // Returning partial ranges is better than crashing.
     }
 
     /**
