@@ -572,9 +572,10 @@ class Burgland_Homes_ACF_Fields
         if ($post_id === 'new_post' && isset($_GET['community_id']) && !empty($_GET['community_id'])) {
             $community_id = intval($_GET['community_id']);
         } 
-        // For existing posts, get from ACF field
-        elseif ($post_id && $post_id !== 'new_post') {
-            $community_id = get_field('lot_community', $post_id);
+        // For existing posts, use raw post meta to avoid ACF recursion
+        elseif ($post_id && $post_id !== 'new_post' && is_numeric($post_id)) {
+            // Use get_post_meta instead of get_field to prevent recursive ACF loading
+            $community_id = get_post_meta($post_id, 'lot_community', true);
         }
         
         // If we have a community, filter floor plans by their ACF relationship field
@@ -621,16 +622,16 @@ class Burgland_Homes_ACF_Fields
 
     /**
      * Hook to display inherited values in admin
+     * CRITICAL: Uses raw post meta to avoid ACF recursion during field preparation
      */
     public function display_inherited_values($field)
     {
-        // Get the post ID from the field or global context
-        $post_id = isset($field['post_id']) ? $field['post_id'] : get_the_ID();
-
-        if (!$post_id || get_post_type($post_id) !== 'bh_lot') {
+        // Early exit: Only process if field is defined and has a name
+        if (!isset($field['name']) || empty($field['name'])) {
             return $field;
         }
-
+        
+        // Early exit: Only process lot-specific inherited fields
         $inherited_fields = array(
             'lot_bedrooms' => 'floor_plan_bedrooms',
             'lot_bathrooms' => 'floor_plan_bathrooms',
@@ -639,18 +640,46 @@ class Burgland_Homes_ACF_Fields
             'lot_stories' => 'floor_plan_stories',
             'lot_features' => 'floor_plan_features'
         );
+        
+        // If this field is not in our inherited fields list, skip processing
+        if (!isset($inherited_fields[$field['name']])) {
+            return $field;
+        }
+        
+        // Get the post ID from the field or global context
+        $post_id = isset($field['post_id']) ? $field['post_id'] : false;
+        
+        // Try to get post ID from global screen if not set
+        if (!$post_id) {
+            global $post;
+            if (isset($post->ID)) {
+                $post_id = $post->ID;
+            } elseif (function_exists('get_the_ID')) {
+                $post_id = get_the_ID();
+            }
+        }
+        
+        // Validate post ID and post type - must be admin and lot post type
+        if (!$post_id || !is_numeric($post_id) || !is_admin() || get_post_type($post_id) !== 'bh_lot') {
+            return $field;
+        }
 
-        if (isset($inherited_fields[$field['name']])) {
-            $floor_plan_field = $inherited_fields[$field['name']];
-            $floor_plan_id = get_field('lot_floor_plan', $post_id);
+        // Use raw post meta to get floor plan ID - NEVER call get_field() in prepare_field hook
+        $floor_plan_field = $inherited_fields[$field['name']];
+        $floor_plan_id = get_post_meta($post_id, 'lot_floor_plan', true);
 
-            if ($floor_plan_id) {
-                $floor_plan_value = get_field($floor_plan_field, $floor_plan_id);
+        if ($floor_plan_id && is_numeric($floor_plan_id)) {
+            // Use raw post meta to get floor plan value - avoid ACF recursion
+            $floor_plan_value = get_post_meta($floor_plan_id, $floor_plan_field, true);
 
-                if ($floor_plan_value) {
-                    $field['instructions'] = ($field['instructions'] ? $field['instructions'] . ' ' : '') .
-                        '<em>Inherited from floor plan: ' . $floor_plan_value . '</em>';
+            if ($floor_plan_value) {
+                // Handle array values (like features)
+                if (is_array($floor_plan_value)) {
+                    $floor_plan_value = implode(', ', array_filter($floor_plan_value));
                 }
+                
+                $field['instructions'] = ($field['instructions'] ? $field['instructions'] . ' ' : '') .
+                    '<em>Inherited from floor plan: ' . esc_html($floor_plan_value) . '</em>';
             }
         }
 
@@ -659,10 +688,12 @@ class Burgland_Homes_ACF_Fields
 
     /**
      * Filter to load inherited values
+     * CRITICAL: Uses raw post meta to avoid recursive ACF loading during value load phase
      */
     public function load_inherited_values($value, $post_id, $field)
     {
-        if (get_post_type($post_id) !== 'bh_lot') {
+        // Early validation - must be admin context and valid post ID
+        if (!is_admin() || !$post_id || !is_numeric($post_id) || get_post_type($post_id) !== 'bh_lot') {
             return $value;
         }
 
@@ -677,10 +708,13 @@ class Burgland_Homes_ACF_Fields
 
         if (isset($inherited_fields[$field['name']])) {
             $floor_plan_field = $inherited_fields[$field['name']];
-            $floor_plan_id = get_field('lot_floor_plan', $post_id);
+            
+            // Use raw post meta to get floor plan ID - NEVER call get_field() in load_value hook
+            $floor_plan_id = get_post_meta($post_id, 'lot_floor_plan', true);
 
-            if ($floor_plan_id) {
-                $floor_plan_value = get_field($floor_plan_field, $floor_plan_id);
+            if ($floor_plan_id && is_numeric($floor_plan_id)) {
+                // Use raw post meta to get floor plan value - avoid ACF recursion
+                $floor_plan_value = get_post_meta($floor_plan_id, $floor_plan_field, true);
 
                 // Only inherit if the lot doesn't have its own value
                 if (($value === false || $value === null || $value === '') && $floor_plan_value) {
