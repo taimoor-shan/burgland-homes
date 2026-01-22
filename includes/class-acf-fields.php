@@ -46,24 +46,9 @@ class Burgland_Homes_ACF_Fields
 
         // Filter floor plan options based on selected community
         add_filter('acf/fields/post_object/query/name=lot_floor_plan', array($this, 'filter_floor_plans_by_community'), 10, 3);
-
-        // Add inheritance mechanism for lot fields
-        add_filter('acf/load_value/name=lot_bedrooms', array($this, 'load_inherited_values'), 10, 3);
-        add_filter('acf/load_value/name=lot_bathrooms', array($this, 'load_inherited_values'), 10, 3);
-        add_filter('acf/load_value/name=lot_square_feet', array($this, 'load_inherited_values'), 10, 3);
-        add_filter('acf/load_value/name=lot_garage', array($this, 'load_inherited_values'), 10, 3);
-        add_filter('acf/load_value/name=lot_stories', array($this, 'load_inherited_values'), 10, 3);
-        add_filter('acf/load_value/name=lot_features', array($this, 'load_inherited_values'), 10, 3);
-
-        // Add field instruction updates to show inherited values
-        add_filter('acf/prepare_field', array($this, 'display_inherited_values'), 10, 2);
         
         // Handle orphaned lot reassignment
         add_action('acf/save_post', array($this, 'handle_lot_community_reassignment'), 20);
-        
-        // Add debug logging for ACF save operations
-        add_action('acf/save_post', array($this, 'log_acf_save'), 5); // Priority 5 to log early
-        add_action('acf/save_post', array($this, 'log_acf_save_complete'), 999); // Priority 999 to log at end
     }
 
     /**
@@ -594,140 +579,8 @@ class Burgland_Homes_ACF_Fields
     }
 
     /**
-     * Get value from associated floor plan if not set on lot
-     */
-    public function get_inherited_value($lot_post_id, $field_name, $floor_plan_field_name = null)
-    {
-        if (!$floor_plan_field_name) {
-            $floor_plan_field_name = $field_name;
-        }
-
-        // Get the lot's floor plan assignment
-        $floor_plan_id = get_field('lot_floor_plan', $lot_post_id);
-
-        if ($floor_plan_id) {
-            // Get the value from the floor plan
-            $floor_plan_value = get_field($floor_plan_field_name, $floor_plan_id);
-
-            // If floor plan has a value and lot doesn't have its own value, use the floor plan's value
-            $lot_value = get_field($field_name, $lot_post_id);
-
-            if ($lot_value === false || $lot_value === null || $lot_value === '') {
-                return $floor_plan_value;
-            }
-        }
-
-        return get_field($field_name, $lot_post_id);
-    }
-
-    /**
-     * Hook to display inherited values in admin
-     * CRITICAL: Uses raw post meta to avoid ACF recursion during field preparation
-     */
-    public function display_inherited_values($field)
-    {
-        // Early exit: Only process if field is defined and has a name
-        if (!isset($field['name']) || empty($field['name'])) {
-            return $field;
-        }
-        
-        // Early exit: Only process lot-specific inherited fields
-        $inherited_fields = array(
-            'lot_bedrooms' => 'floor_plan_bedrooms',
-            'lot_bathrooms' => 'floor_plan_bathrooms',
-            'lot_square_feet' => 'floor_plan_square_feet',
-            'lot_garage' => 'floor_plan_garage',
-            'lot_stories' => 'floor_plan_stories',
-            'lot_features' => 'floor_plan_features'
-        );
-        
-        // If this field is not in our inherited fields list, skip processing
-        if (!isset($inherited_fields[$field['name']])) {
-            return $field;
-        }
-        
-        // Get the post ID from the field or global context
-        $post_id = isset($field['post_id']) ? $field['post_id'] : false;
-        
-        // Try to get post ID from global screen if not set
-        if (!$post_id) {
-            global $post;
-            if (isset($post->ID)) {
-                $post_id = $post->ID;
-            } elseif (function_exists('get_the_ID')) {
-                $post_id = get_the_ID();
-            }
-        }
-        
-        // Validate post ID and post type - must be admin and lot post type
-        if (!$post_id || !is_numeric($post_id) || !is_admin() || get_post_type($post_id) !== 'bh_lot') {
-            return $field;
-        }
-
-        // Use raw post meta to get floor plan ID - NEVER call get_field() in prepare_field hook
-        $floor_plan_field = $inherited_fields[$field['name']];
-        $floor_plan_id = get_post_meta($post_id, 'lot_floor_plan', true);
-
-        if ($floor_plan_id && is_numeric($floor_plan_id)) {
-            // Use raw post meta to get floor plan value - avoid ACF recursion
-            $floor_plan_value = get_post_meta($floor_plan_id, $floor_plan_field, true);
-
-            if ($floor_plan_value) {
-                // Handle array values (like features)
-                if (is_array($floor_plan_value)) {
-                    $floor_plan_value = implode(', ', array_filter($floor_plan_value));
-                }
-                
-                $field['instructions'] = ($field['instructions'] ? $field['instructions'] . ' ' : '') .
-                    '<em>Inherited from floor plan: ' . esc_html($floor_plan_value) . '</em>';
-            }
-        }
-
-        return $field;
-    }
-
-    /**
-     * Filter to load inherited values
-     * CRITICAL: Uses raw post meta to avoid recursive ACF loading during value load phase
-     */
-    public function load_inherited_values($value, $post_id, $field)
-    {
-        // Early validation - must be admin context and valid post ID
-        if (!is_admin() || !$post_id || !is_numeric($post_id) || get_post_type($post_id) !== 'bh_lot') {
-            return $value;
-        }
-
-        $inherited_fields = array(
-            'lot_bedrooms' => 'floor_plan_bedrooms',
-            'lot_bathrooms' => 'floor_plan_bathrooms',
-            'lot_square_feet' => 'floor_plan_square_feet',
-            'lot_garage' => 'floor_plan_garage',
-            'lot_stories' => 'floor_plan_stories',
-            'lot_features' => 'floor_plan_features'
-        );
-
-        if (isset($inherited_fields[$field['name']])) {
-            $floor_plan_field = $inherited_fields[$field['name']];
-            
-            // Use raw post meta to get floor plan ID - NEVER call get_field() in load_value hook
-            $floor_plan_id = get_post_meta($post_id, 'lot_floor_plan', true);
-
-            if ($floor_plan_id && is_numeric($floor_plan_id)) {
-                // Use raw post meta to get floor plan value - avoid ACF recursion
-                $floor_plan_value = get_post_meta($floor_plan_id, $floor_plan_field, true);
-
-                // Only inherit if the lot doesn't have its own value
-                if (($value === false || $value === null || $value === '') && $floor_plan_value) {
-                    return $floor_plan_value;
-                }
-            }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Public method to get inherited value for use in templates
+     * Public method to get inherited value for use in frontend templates
+     * Safe to use outside of ACF hooks
      */
     public function get_lot_inherited_value($post_id, $field_name)
     {
@@ -743,106 +596,24 @@ class Burgland_Homes_ACF_Fields
         $lot_field_name = 'lot_' . $field_name;
         $floor_plan_field_name = isset($inherited_fields[$field_name]) ? $inherited_fields[$field_name] : 'floor_plan_' . $field_name;
 
-        return $this->get_inherited_value($post_id, $lot_field_name, $floor_plan_field_name);
-    }
-    
-    /**
-     * Log ACF save operation start
-     */
-    public function log_acf_save($post_id) {
-        // Skip for new posts or options pages
-        if ($post_id === 'new_post' || $post_id === 'options') {
-            return;
+        // Get lot value first
+        $lot_value = get_field($lot_field_name, $post_id);
+        
+        // If lot has its own value, return it
+        if ($lot_value !== false && $lot_value !== null && $lot_value !== '') {
+            return $lot_value;
         }
         
-        $post_type = get_post_type($post_id);
-        
-        // Only log for our custom post types
-        if (!in_array($post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
-            return;
-        }
-        
-        $post = get_post($post_id);
-        error_log(sprintf(
-            'Burgland Homes ACF: Starting ACF save for %s #%d (%s)',
-            $post_type,
-            $post_id,
-            $post ? $post->post_title : 'Unknown'
-        ));
-        
-        // Log what ACF fields are being saved
-        if (isset($_POST['acf']) && is_array($_POST['acf'])) {
-            $field_count = count($_POST['acf']);
-            error_log(sprintf(
-                'Burgland Homes ACF: Attempting to save %d ACF fields for post #%d',
-                $field_count,
-                $post_id
-            ));
-            
-            // Log individual field names (but not values for security)
-            foreach ($_POST['acf'] as $field_key => $field_value) {
-                $field_obj = acf_get_field($field_key);
-                if ($field_obj) {
-                    error_log(sprintf(
-                        'Burgland Homes ACF: Saving field "%s" (%s) for post #%d',
-                        $field_obj['name'],
-                        $field_obj['type'],
-                        $post_id
-                    ));
-                }
-            }
-        } else {
-            error_log(sprintf(
-                'Burgland Homes ACF: No ACF data in $_POST for post #%d',
-                $post_id
-            ));
-        }
-    }
-    
-    /**
-     * Log ACF save operation completion
-     */
-    public function log_acf_save_complete($post_id) {
-        // Skip for new posts or options pages
-        if ($post_id === 'new_post' || $post_id === 'options') {
-            return;
-        }
-        
-        $post_type = get_post_type($post_id);
-        
-        // Only log for our custom post types
-        if (!in_array($post_type, array('bh_community', 'bh_floor_plan', 'bh_lot'))) {
-            return;
-        }
-        
-        error_log(sprintf(
-            'Burgland Homes ACF: Completed ACF save for %s #%d',
-            $post_type,
-            $post_id
-        ));
-        
-        // Verify fields were actually saved
-        if (isset($_POST['acf']) && is_array($_POST['acf'])) {
-            foreach ($_POST['acf'] as $field_key => $field_value) {
-                $field_obj = acf_get_field($field_key);
-                if ($field_obj) {
-                    $saved_value = get_field($field_obj['name'], $post_id, false);
-                    if ($saved_value !== false && $saved_value !== null) {
-                        error_log(sprintf(
-                            'Burgland Homes ACF: ✓ Field "%s" saved successfully for post #%d',
-                            $field_obj['name'],
-                            $post_id
-                        ));
-                    } else {
-                        error_log(sprintf(
-                            'Burgland Homes ACF: ✗ WARNING: Field "%s" may not have saved for post #%d',
-                            $field_obj['name'],
-                            $post_id
-                        ));
-                    }
-                }
+        // Otherwise, try to inherit from floor plan
+        $floor_plan_id = get_field('lot_floor_plan', $post_id);
+        if ($floor_plan_id) {
+            $floor_plan_value = get_field($floor_plan_field_name, $floor_plan_id);
+            if ($floor_plan_value !== false && $floor_plan_value !== null && $floor_plan_value !== '') {
+                return $floor_plan_value;
             }
         }
+        
+        return $lot_value;
     }
     
     /**
@@ -868,13 +639,6 @@ class Burgland_Homes_ACF_Fields
             // Clear orphaned flags
             delete_post_meta($post_id, '_bh_orphaned_lot');
             delete_post_meta($post_id, '_bh_deleted_community_id');
-            
-            // Log the recovery
-            error_log(sprintf(
-                'Burgland Homes: Lot #%d orphaned flags cleared after reassignment to community #%d',
-                $post_id,
-                $community_id
-            ));
         }
     }
 }
