@@ -52,8 +52,22 @@ ob_start();
         'featured_image' => $lot['thumbnail']
     )); ?>
 
+    <!-- Actions -->
+    <?php $template_loader->render_single_component('actions', array(
+        'map_url' => $lot['map_url'],
+        'brochure' => !empty($lot['brochure']) ? $lot['brochure'] : null,
+        'floor_plan_pdf' => !empty($lot['floor_plan_pdf']) ? $lot['floor_plan_pdf'] : null
+    )); ?>
+
     <!-- Header (after gallery) -->
-    <?php $template_loader->render_single_component('header', array(
+    <?php 
+    $header_specs = array();
+    if ($lot['bedrooms']) $header_specs[] = array('label' => $lot['bedrooms'] . ' Bed', 'icon' => 'house-door');
+    if ($lot['bathrooms']) $header_specs[] = array('label' => $lot['bathrooms'] . ' Bath', 'icon' => 'droplet');
+    if ($lot['square_feet']) $header_specs[] = array('label' => number_format($lot['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
+    if ($lot['garage']) $header_specs[] = array('label' => $lot['garage'] . ' Car', 'icon' => 'car-front');
+    
+    $template_loader->render_single_component('header', array(
         'title' => $lot['lot_number'] ?: $lot['title'],
         'title_suffix' => $community ? $community->post_title : '',
         'title_suffix_url' => $community ? get_permalink($community->ID) : '',
@@ -61,26 +75,16 @@ ob_start();
         'city' => $lot['city'],
         'state' => $lot['state'],
         'zip' => $lot['zip'],
+        'map_url' => $lot['map_url'],
         'price' => $lot['price'],
+        'specs' => $header_specs,
         'status' => array(
             'label' => $lot['status_label'],
             'class' => $lot['status_class']
-        )
+        ),
+        'post_type' => 'bh_lot'
     )); ?>
 
-    <!-- Information -->
-    <?php 
-    $specs = array();
-    $specs[] = array('label' => 'Lot Number', 'value' => $lot['lot_number'] ?: $lot['title'], 'icon' => 'geo-alt');
-    if ($lot['lot_size']) $specs[] = array('label' => 'Lot Size', 'value' => $lot['lot_size'], 'icon' => 'arrows-angle-expand');
-    if ($lot['price']) $specs[] = array('label' => 'Price', 'value' => $lot['price'], 'icon' => 'currency-dollar');
-    $specs[] = array('label' => 'Status', 'value' => $lot['status_label'], 'icon' => 'tag');
-    
-    $template_loader->render_single_component('specs', array(
-        'title' => 'Lot Information',
-        'specs' => $specs
-    ));
-    ?>
 
     <!-- Description -->
     <?php $template_loader->render_single_component('description', array(

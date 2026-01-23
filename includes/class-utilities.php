@@ -147,12 +147,33 @@ class Burgland_Homes_Utilities {
         }
         
         // Garage
-        // Garage is tricky because it might be "2-Car". We'll stick to simple casting for now or basic PHP loop if needed, 
-        // but for crash prevention, limiting to 50 posts for PHP processing is safer than ALL.
-        // For now, let's just cache the count and return nulls to prevent crash, 
-        // relying on the save_post hook to populate cache later.
+        $garage_data = $get_min_max('floor_plan_garage');
+        if ($garage_data) {
+            $ranges['garage']['min'] = $garage_data->min_val;
+            $ranges['garage']['max'] = $garage_data->max_val;
+            $ranges['garage']['formatted'] = $this->format_generic_range($garage_data->min_val, $garage_data->max_val);
+        }
         
-        return $ranges; // Returning partial ranges is better than crashing.
+        // Square Feet
+        $sqft = $get_min_max('floor_plan_square_feet');
+        if ($sqft) {
+            $ranges['square_feet']['min'] = $sqft->min_val;
+            $ranges['square_feet']['max'] = $sqft->max_val;
+            $ranges['square_feet']['formatted'] = $this->format_generic_range($sqft->min_val, $sqft->max_val, true);
+        }
+        
+        // Price
+        $price_data = $get_min_max('floor_plan_price');
+        if ($price_data) {
+            $ranges['price']['min'] = $price_data->min_val;
+            $ranges['price']['max'] = $price_data->max_val;
+            $ranges['price']['formatted'] = $this->format_price_range($price_data->min_val, $price_data->max_val);
+        }
+        
+        // Cache the ranges for future requests
+        update_post_meta($community_id, '_bh_floor_plan_ranges', $ranges);
+        
+        return $ranges;
     }
 
     /**

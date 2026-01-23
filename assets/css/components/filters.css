@@ -2,10 +2,7 @@
  * Filters Component Styles
  */
 .bh-filters {
-    z-index: 1030;
-    padding: 1.5rem 0;
-    background-color: #fff;
-    border-bottom: 1px solid #eee;
+
 }
 
 .bh-filters .form-label {

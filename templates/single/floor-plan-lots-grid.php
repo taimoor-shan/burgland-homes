@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Lots Grid Component with Improved Dynamic Filters
+ * Floor Plan Lots Grid Component with Improved Dynamic Filters
  * 
- * Displays a filterable grid of available lots for a specific community
+ * Displays a filterable grid of available lots that use this floor plan
  * 
  * @param array $args {
- *     @type int $community_id - The community ID to filter lots
+ *     @type int $floor_plan_id - The floor plan ID to filter lots
  * }
  * 
  * @package Burgland_Homes
@@ -14,24 +14,24 @@
 
 if (!defined('ABSPATH')) exit;
 
-$community_id = isset($args['community_id']) ? intval($args['community_id']) : 0;
+$floor_plan_id = isset($args['floor_plan_id']) ? intval($args['floor_plan_id']) : 0;
 
-if (!$community_id) {
+if (!$floor_plan_id) {
     return;
 }
 
 $data_provider = Burgland_Homes_Data_Provider::get_instance();
 $template_loader = Burgland_Homes_Template_Loader::get_instance();
 
-// Get all lots for this community
+// Get all lots that reference this floor plan
 $lots_query = new WP_Query(array(
     'post_type' => 'bh_lot',
     'posts_per_page' => -1,
     'post_status' => 'publish',
     'meta_query' => array(
         array(
-            'key' => 'lot_community',
-            'value' => $community_id,
+            'key' => 'lot_floor_plan',
+            'value' => $floor_plan_id,
             'compare' => '='
         )
     ),
@@ -103,7 +103,7 @@ sort($bathrooms_options, SORT_NUMERIC);
  * 3. Create ranges that actually contain data
  * 4. Round to human-friendly numbers
  */
-function generate_sqft_ranges($sqft_values, $total_homes) {
+function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes) {
     if (empty($sqft_values)) {
         return array();
     }
@@ -184,7 +184,7 @@ function generate_sqft_ranges($sqft_values, $total_homes) {
     return $ranges;
 }
 
-$sqft_ranges = generate_sqft_ranges($sqft_values, count($lot_cards_data));
+$sqft_ranges = burgland_generate_sqft_ranges_for_floor_plan($sqft_values, count($lot_cards_data));
 ?>
 
 <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
@@ -192,19 +192,20 @@ $sqft_ranges = generate_sqft_ranges($sqft_values, count($lot_cards_data));
         <!-- Section Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <h2 class="text-primary">Available Homes</h2>
+                <h2 class="text-primary">Available Homes with this Floor Plan</h2>
                 <!-- Results Count -->
                 <h6 class="text-dark">
-                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) for this community  <button type="button" id="reset-filters" class="text-info fw-semibold">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Filters
-                    </button>
+                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) available
                 </h6>
             </div>
         </div>
 
+        <!-- Only show filters if there are lots -->
+        <?php if (!empty($lot_cards_data)) : ?>
+
         <!-- Filters Section -->
         <section class="bh-filters mb-4">
-            <form id="lots-filters" class="row g-3 align-items-end" data-community-id="<?php echo esc_attr($community_id); ?>">
+            <form id="lots-filters" class="row g-3 align-items-end" data-floor-plan-id="<?php echo esc_attr($floor_plan_id); ?>">
 
                 <!-- Square Footage Range -->
                 <?php if (!empty($sqft_ranges)): ?>
@@ -262,11 +263,15 @@ $sqft_ranges = generate_sqft_ranges($sqft_values, count($lot_cards_data));
 
                 <!-- Reset Filters Button -->
                 <div class="col-md-3">
-                   
+                    <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Filters
+                    </button>
                 </div>
 
             </form>
         </section>
+
+        <?php endif; ?>
 
         <!-- Lots Grid -->
         <div id="lots-grid-container">
@@ -300,7 +305,7 @@ $sqft_ranges = generate_sqft_ranges($sqft_values, count($lot_cards_data));
                     <div class="col-12">
                         <div class="alert alert-info text-center" role="alert">
                             <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
-                            <p class="mb-0">No homes available in this community at the moment. Please check back later.</p>
+                            <p class="mb-0">No homes available with this floor plan at the moment. Please check back later.</p>
                         </div>
                     </div>
                 <?php endif; ?>

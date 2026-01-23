@@ -54,27 +54,26 @@ ob_start();
         'featured_image' => $floor_plan['thumbnail']
     )); ?>
 
-    <!-- Header (after gallery) -->
-    <?php $template_loader->render_single_component('header', array(
-        'title' => $floor_plan['title'],
-        'price' => $floor_plan['price']
+    <!-- Actions -->
+    <?php $template_loader->render_single_component('actions', array(
+        'floor_plan_pdf' => !empty($floor_plan['pdf']) ? $floor_plan['pdf'] : null
     )); ?>
 
-    <!-- Specs -->
+    <!-- Header (after gallery) -->
     <?php 
-    $specs = array();
-    if ($floor_plan['bedrooms']) $specs[] = array('label' => 'Bedrooms', 'value' => $floor_plan['bedrooms'], 'icon' => 'house-door');
-    if ($floor_plan['bathrooms']) $specs[] = array('label' => 'Bathrooms', 'value' => $floor_plan['bathrooms'], 'icon' => 'droplet');
-    if ($floor_plan['square_feet']) $specs[] = array('label' => 'Square Feet', 'value' => number_format($floor_plan['square_feet']), 'icon' => 'arrows-angle-expand');
-    if ($floor_plan['garage']) $specs[] = array('label' => 'Garage', 'value' => $floor_plan['garage'], 'icon' => 'car-front');
+    $header_specs = array();
+    if ($floor_plan['bedrooms']) $header_specs[] = array('label' => $floor_plan['bedrooms'] . ' Bed', 'icon' => 'house-door');
+    if ($floor_plan['bathrooms']) $header_specs[] = array('label' => $floor_plan['bathrooms'] . ' Bath', 'icon' => 'droplet');
+    if ($floor_plan['square_feet']) $header_specs[] = array('label' => number_format($floor_plan['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
+    if ($floor_plan['garage']) $header_specs[] = array('label' => $floor_plan['garage'] . ' Car', 'icon' => 'car-front');
     
-    if (!empty($specs)) {
-        $template_loader->render_single_component('specs', array(
-            'title' => 'Specifications',
-            'specs' => $specs
-        ));
-    }
-    ?>
+    $template_loader->render_single_component('header', array(
+        'title' => $floor_plan['title'],
+        'price' => $floor_plan['price'],
+        'specs' => $header_specs,
+        'post_type' => 'bh_floor_plan'
+    )); ?>
+
 
     <!-- Description -->
     <?php $template_loader->render_single_component('description', array(
@@ -89,6 +88,11 @@ ob_start();
             'items' => $features
         ));
     } ?>
+
+    <!-- Related Lots grid -->
+    <?php $template_loader->render_single_component('floor-plan-lots-grid', array(
+        'floor_plan_id' => $post_id
+    )); ?>
 
 <?php
 $content = ob_get_clean();

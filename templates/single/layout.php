@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) exit;
 ?>
 <main id="site-main" class="bg-white">
     <div class="container-fluid px-5">
-        <div class="row g-5">
+        <div class="row g-4">
             <div class="col-lg-8 col-xl-9">
                 <div class="main-content-area">
                     <?php echo $args['content']; ?>

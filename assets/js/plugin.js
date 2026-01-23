@@ -457,7 +457,7 @@
     $('.bh-read-more-wrapper').each(function() {
       var $wrapper = $(this);
       var $content = $wrapper.find('.bh-read-more-content');
-      var $button = $wrapper.find('.bh-read-more-btn');
+      var $button = $wrapper.find('#bh-read-more-btn');
       var isExpanded = false;
 
       // Skip if no content or button
@@ -533,18 +533,29 @@
   });
 
   /**
-   * Initialize Lots Grid Filter (for single community page)
+   * Initialize Lots Grid Filter (for single community page and floor plan page)
    */
   function initLotsFilter() {
     const $form = $('#lots-filters');
     const $grid = $('#lots-grid');
     const $noResults = $('#no-lots-message');
     const $count = $('#lots-count');
+    const $communityFilter = $('#community-filter');
+    const $resetButton = $('#reset-filters');
     
     // Handle filter change
     $form.find('select').on('change', function() {
       filterAndSortLots();
     });
+    
+    // Handle reset button click
+    if ($resetButton.length) {
+      $resetButton.on('click', function(e) {
+        e.preventDefault();
+        // Reset all select elements in the form to empty value
+        $form.find('select').val('').trigger('change');
+      });
+    }
     
     /**
      * Filter and sort lots based on selected criteria
@@ -554,9 +565,10 @@
       const bedrooms = $('#bedrooms-filter').val();
       const bathrooms = $('#bathrooms-filter').val();
       const sortOrder = $('#sort-order').val();
+      const communityId = $communityFilter.length ? $communityFilter.val() : '';
       
       // Get all lot cards
-      let $lots = $('.lot-card-wrapper');
+      let $lots = $grid.find('.lot-card-wrapper');
       let visibleCount = 0;
       
       // Filter lots
@@ -567,16 +579,11 @@
         // Filter by sqft range
         if (sqftRange) {
           const sqft = parseInt($lot.attr('data-sqft')) || 0;
+          const rangeParts = sqftRange.split('-');
+          const min = parseInt(rangeParts[0]);
+          const max = rangeParts[1] === '+' ? Infinity : parseInt(rangeParts[1]);
           
-          if (sqftRange === '0-1500' && sqft >= 1500) {
-            visible = false;
-          } else if (sqftRange === '1500-2000' && (sqft < 1500 || sqft >= 2000)) {
-            visible = false;
-          } else if (sqftRange === '2000-2500' && (sqft < 2000 || sqft >= 2500)) {
-            visible = false;
-          } else if (sqftRange === '2500-3000' && (sqft < 2500 || sqft >= 3000)) {
-            visible = false;
-          } else if (sqftRange === '3000+' && sqft < 3000) {
+          if (sqft < min || sqft >= max) {
             visible = false;
           }
         }
@@ -584,7 +591,7 @@
         // Filter by bedrooms
         if (bedrooms && visible) {
           const lotBedrooms = $lot.attr('data-bedrooms');
-          if (lotBedrooms !== bedrooms) {
+          if (lotBedrooms != bedrooms) {
             visible = false;
           }
         }
@@ -592,8 +599,21 @@
         // Filter by bathrooms
         if (bathrooms && visible) {
           const lotBathrooms = $lot.attr('data-bathrooms');
-          if (lotBathrooms !== bathrooms) {
+          if (lotBathrooms != bathrooms) {
             visible = false;
+          }
+        }
+        
+        // Filter by community (optional, only when filter exists and has a value)
+        if (communityId && visible) {
+          const communitiesAttr = $lot.attr('data-communities') || '';
+          if (!communitiesAttr) {
+            visible = false;
+          } else {
+            const communities = communitiesAttr.split(',').map(function(id) { return id.trim(); }).filter(function(id) { return id !== ''; });
+            if (communities.length === 0 || communities.indexOf(communityId) === -1) {
+              visible = false;
+            }
           }
         }
         
@@ -608,7 +628,7 @@
       
       // Sort visible lots
       if (visibleCount > 0) {
-        let $visibleLots = $('.lot-card-wrapper:visible');
+        let $visibleLots = $lots.filter(':visible');
         
         $visibleLots.sort(function(a, b) {
           const $a = $(a);
@@ -641,5 +661,36 @@
       }
     }
   }
+
+  // Handle community card clicks
+
+document.addEventListener('click', function (e) {
+  const card = e.target.closest('.bh-card');
+
+  // Click happened outside a card
+  if (!card) return;
+
+  // Click was on a real link — let it work
+  if (e.target.closest('a')) return;
+
+  const url = card.dataset.href;
+  if (url) {
+    window.location.href = url;
+  }
+});
+
+// Keyboard accessibility
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter') return;
+
+  const card = document.activeElement;
+  if (!card || !card.classList.contains('bh-card')) return;
+
+  const url = card.dataset.href;
+  if (url) {
+    window.location.href = url;
+  }
+});
+
 
 })(jQuery);

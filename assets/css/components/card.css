@@ -73,7 +73,8 @@
     font-size: 0.875rem;
     line-height: 1.4;
 }
-.bh-card-footer {
+a.bh-card-footer-link {
+    text-decoration: underline;
 }
 
 /* Specific Card Type Variations */

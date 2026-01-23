@@ -156,6 +156,23 @@ class Burgland_Homes_ACF_Fields
                     'instructions' => 'One amenity per line',
                     'required' => 0,
                     'rows' => 5,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_community_site_map',
+                    'label' => 'Site Map',
+                    'name' => 'community_site_map',
+                    'type' => 'image',
+                    'instructions' => 'Upload community site map',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'library' => 'all',
+                    'mime_types' => 'jpg,jpeg,png',
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
                 ),
                 array(
                     'key' => 'field_community_video_url',
@@ -494,7 +511,11 @@ class Burgland_Homes_ACF_Fields
                     'instructions' => 'One feature per line (e.g., Corner lot, Cul-de-sac)',
                     'required' => 0,
                     'rows' => 4,
+                        'wrapper' => array(
+                        'width' => '50',
+                    ),
                 ),
+                
                 array(
                     'key' => 'field_lot_availability_date',
                     'label' => 'Availability Date',
@@ -505,6 +526,20 @@ class Burgland_Homes_ACF_Fields
                     'display_format' => 'm/d/Y',
                     'return_format' => 'Y-m-d',
                        'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_lot_brochure',
+                    'label' => 'Brochure/PDF',
+                    'name' => 'lot_brochure',
+                    'type' => 'file',
+                    'instructions' => 'Upload lot brochure (PDF)',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'library' => 'all',
+                    'mime_types' => 'pdf',
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),

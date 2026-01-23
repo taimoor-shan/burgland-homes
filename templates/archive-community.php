@@ -23,53 +23,44 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
 <main id="site-main">
     <div class="communities-archive container-fluid px-5">
-
-        <!-- Page Header -->
-        <!-- <section class="page-header bg-light py-4">
-      <div class="container">
-        <h1 class="display-5 fw-light mb-2">Our Communities</h1>
-        <p class="lead text-muted mb-0">Discover your perfect home in one of our beautiful communities</p>
-      </div>
-    </section> -->
-
         <!-- Filters Section -->
         <section class="bh-filters filters-section bg-white border-bottom py-4 mt-10">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
-                        <h1 class="display-5 fw-light mb-2">Our Communities</h1>
-                        <p class="lead text-muted mb-0">Discover your perfect home in one of our beautiful communities</p>
+                        <h1 class="mb-2 text-primary">Our Communities</h1>
+                        <p class="text-dark mb-0">Discover your perfect home in one of our beautiful communities</p>
                     </div>
-                </div>
-                <div class="row">
-                    <form id="community-filters" class="row g-3 align-items-end">
-                        <!-- Status Filter -->
-                        <div class="col-md-6">
-                            <label for="status-filter" class="form-label fw-semibold">Community Status</label>
-                            <select name="status" id="status-filter" class="form-select">
-                                <option value="">All Communities</option>
-                                <?php if (!empty($status_terms) && !is_wp_error($status_terms)): ?>
-                                    <?php foreach ($status_terms as $term): ?>
-                                        <option value="<?php echo esc_attr($term->slug); ?>" <?php selected($selected_status, $term->slug); ?>>
-                                            <?php echo esc_html($term->name); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </select>
-                        </div>
+                      <div class="col-md-6">
+                        <form id="community-filters" class="row g-3 align-items-end">
+                            <!-- Status Filter -->
+                            <div class="col-md-6">
+                                <label for="status-filter" class="form-label text-info">Community Status</label>
+                                <select name="status" id="status-filter" class="form-select">
+                                    <option value="">All Communities</option>
+                                    <?php if (!empty($status_terms) && !is_wp_error($status_terms)): ?>
+                                        <?php foreach ($status_terms as $term): ?>
+                                            <option value="<?php echo esc_attr($term->slug); ?>" <?php selected($selected_status, $term->slug); ?>>
+                                                <?php echo esc_html($term->name); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
 
-                        <!-- Price Range Filter -->
-                        <div class="col-md-6">
-                            <label for="price-filter" class="form-label fw-semibold">Price Range</label>
-                            <select name="price_range" id="price-filter" class="form-select">
-                                <option value="">All Price Ranges</option>
-                                <option value="under-300k" <?php selected($selected_price, 'under-300k'); ?>>Under $300,000</option>
-                                <option value="300k-500k" <?php selected($selected_price, '300k-500k'); ?>>$300,000 - $500,000</option>
-                                <option value="over-500k" <?php selected($selected_price, 'over-500k'); ?>>Over $500,000</option>
-                            </select>
-                        </div>
+                            <!-- Price Range Filter -->
+                            <div class="col-md-6">
+                                <label for="price-filter" class="form-label text-info">Price Range</label>
+                                <select name="price_range" id="price-filter" class="form-select">
+                                    <option value="">All Price Ranges</option>
+                                    <option value="under-300k" <?php selected($selected_price, 'under-300k'); ?>>Under $300,000</option>
+                                    <option value="300k-500k" <?php selected($selected_price, '300k-500k'); ?>>$300,000 - $500,000</option>
+                                    <option value="over-500k" <?php selected($selected_price, 'over-500k'); ?>>Over $500,000</option>
+                                </select>
+                            </div>
 
-                    </form>
+                        </form>
+                    </div>
                 </div>
 
             </div>
@@ -77,9 +68,8 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 
         <!-- Main Content: Two Column Layout -->
         <section class="communities-content py-5">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row g-4">
-
                     <!-- Left Column: Community Cards -->
                     <div class="col-lg-6">
                         <div id="communities-grid" class="communities-grid">
@@ -136,7 +126,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
                                         if ($selected_price && $price_range) {
                                             $skip = false;
                                             $price_numeric = preg_replace('/[^0-9]/', '', $price_range);
-                                            $price_numeric = intval(substr($price_numeric, 0, 6)); 
+                                            $price_numeric = intval(substr($price_numeric, 0, 6));
 
                                             if ($selected_price === 'under-300k' && $price_numeric >= 300000) {
                                                 $skip = true;

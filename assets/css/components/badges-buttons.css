@@ -3,13 +3,12 @@
  */
 
 /* Badges */
-.badge {
+.bh-card-badges .badge {
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 400 !important;
     padding: 0.4rem 0.8rem;
     letter-spacing: 0.5px;
-    border-radius: 6px;
-    text-transform: uppercase;
+    border-radius: 4px;
 }
 
 .bh-card-badges .badge {

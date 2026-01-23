@@ -18,6 +18,7 @@ $community = $data_provider->get_community_data($post_id);
 $gallery_images = Burgland_Homes_Gallery::get_gallery_images($post_id, 'full');
 $brochure = get_field('community_brochure', $post_id);
 $video_url = get_field('community_video_url', $post_id);
+$site_map = get_field('community_site_map', $post_id);
 $amenities = get_field('community_amenities', $post_id);
 if (is_string($amenities)) {
     $amenities = array_filter(array_map('trim', explode("\n", $amenities)));
@@ -52,45 +53,57 @@ ob_start();
         'featured_image' => $community['thumbnail']
     )); ?>
 
+     <!-- Actions -->
+    <?php $template_loader->render_single_component('actions', array(
+        'brochure' => $brochure,
+        'video_url' => $video_url,
+        'map_anchor' => '#community-map',
+        'map_url' => $community['map_url']
+    )); ?>
+
     <!-- Header (after gallery) -->
-    <?php $template_loader->render_single_component('header', array(
+    <?php 
+    $header_specs = array();
+    $spec_labels = array(
+        'bedrooms' => 'Bed',
+        'bathrooms' => 'Bath',
+        'square_feet' => 'sqft',
+        'garage' => 'Car'
+    );
+    $spec_icons = array(
+        'bedrooms' => 'house-door',
+        'bathrooms' => 'droplet',
+        'square_feet' => 'arrows-angle-expand',
+        'garage' => 'car-front'
+    );
+    
+    foreach (array('bedrooms', 'bathrooms', 'garage', 'square_feet') as $key) {
+        if (isset($community['floor_plan_ranges'][$key]) && $community['floor_plan_ranges'][$key]['min'] !== null) {
+            $header_specs[] = array(
+                'label' => $community['floor_plan_ranges'][$key]['formatted'] . ' ' . $spec_labels[$key],
+                'icon' => $spec_icons[$key]
+            );
+        }
+    }
+    
+    $template_loader->render_single_component('header', array(
         'title' => $community['title'],
         'address' => $community['address'],
         'city' => $community['city'],
         'state' => $community['state'],
         'zip' => $community['zip'],
+        'map_url' => $community['map_url'],
         'price' => $community['price_range'],
+        'specs' => $header_specs,
         'status' => array(
             'label' => $community['status_label'],
             'class' => $community['status_class']
-        )
+        ),
+        'post_type' => 'bh_community'
     )); ?>
 
-    <!-- Actions -->
-    <?php $template_loader->render_single_component('actions', array(
-        'brochure' => $brochure,
-        'video_url' => $video_url
-    )); ?>
 
     <!-- Overview Stats -->
-    <?php 
-    $specs = array();
-    foreach (array('bedrooms', 'bathrooms', 'garage', 'square_feet') as $key) {
-        if (isset($community['floor_plan_ranges'][$key]) && $community['floor_plan_ranges'][$key]['min'] !== null) {
-            $specs[] = array(
-                'label' => ucfirst(str_replace('_', ' ', $key)),
-                'value' => $community['floor_plan_ranges'][$key]['formatted'],
-                'icon' => $key === 'bedrooms' ? 'house-door' : ($key === 'bathrooms' ? 'droplet' : ($key === 'garage' ? 'car-front' : 'rulers'))
-            );
-        }
-    }
-    if (!empty($specs)) {
-        $template_loader->render_single_component('specs', array(
-            'title' => 'Community Overview',
-            'specs' => $specs
-        ));
-    }
-    ?>
 
     <!-- Description -->
     <?php $template_loader->render_single_component('description', array(
@@ -105,6 +118,7 @@ ob_start();
         ));
     } ?>
 
+
     <!-- Available Homes/Lots Grid -->
     <?php $template_loader->render_single_component('lots-grid', array(
         'community_id' => $post_id
@@ -116,6 +130,12 @@ ob_start();
     $floor_plans = $data_provider->get_featured_communities(array('post_type' => 'bh_floor_plan', 'limit' => -1)); // This is wrong, need a generic getter
     // For now keep the query here or use a new method in data provider
     ?>
+        <!-- Site Map -->
+    <?php if (!empty($site_map)) {
+        $template_loader->render_single_component('site-map', array(
+            'site_map' => $site_map
+        ));
+    } ?>
 
 <?php
 $content = ob_get_clean();

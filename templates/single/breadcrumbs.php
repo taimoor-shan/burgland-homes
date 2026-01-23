@@ -9,7 +9,19 @@
 if (!defined('ABSPATH')) exit;
 $data = $args;
 ?>
-<section class="breadcrumbs-section bg-light py-3 mt-10">
+<style>
+.breadcrumbs-section .breadcrumb-item a {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: text-decoration 0.2s ease;
+}
+
+.breadcrumbs-section .breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+</style>
+<section class="breadcrumbs-section bg-light py-3">
     <div class="container-fluid px-5">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
