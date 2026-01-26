@@ -24,6 +24,11 @@ $features = get_post_meta($post_id, 'floor_plan_features', true);
 if (is_string($features)) {
     $features = array_filter(array_map('trim', explode("\n", $features)));
 }
+$floor_plan_pdf = !empty($floor_plan['pdf']) ? $floor_plan['pdf'] : null;
+// Handle ACF file field - extract URL if it's an array
+if (is_array($floor_plan_pdf) && isset($floor_plan_pdf['url'])) {
+    $floor_plan_pdf = $floor_plan_pdf['url'];
+}
 
 // Breadcrumbs
 $breadcrumbs = array(
@@ -40,81 +45,169 @@ if ($floor_plan['bedrooms']) $quick_info[] = array('label' => 'Bedrooms', 'value
 if ($floor_plan['bathrooms']) $quick_info[] = array('label' => 'Bathrooms', 'value' => $floor_plan['bathrooms']);
 if ($floor_plan['square_feet']) $quick_info[] = array('label' => 'Square Feet', 'value' => number_format($floor_plan['square_feet']));
 
-// Render Breadcrumbs at top
-$template_loader->render_single_component('breadcrumbs', array(
-    'breadcrumbs' => $breadcrumbs
-));
-
 // Start Content Capture
 ob_start();
 ?>
-    <!-- Gallery -->
-    <?php $template_loader->render_single_component('gallery', array(
-        'images' => $gallery_images,
-        'featured_image' => $floor_plan['thumbnail']
-    )); ?>
 
-    <!-- Actions -->
-    <?php $template_loader->render_single_component('actions', array(
-        'floor_plan_pdf' => !empty($floor_plan['pdf']) ? $floor_plan['pdf'] : null
-    )); ?>
+<section id="overview" class="overview-detail">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-12 col-lg-6 col-xxl-5 pt-5 pt-lg-4 px-lg-3 px-xl-5 px-xxxl-7">
+                <?php $template_loader->render_single_component('breadcrumbs', array(
+                    'breadcrumbs' => $breadcrumbs
+                ));
+                ?>
 
-    <!-- Header (after gallery) -->
-    <?php 
-    $header_specs = array();
-    if ($floor_plan['bedrooms']) $header_specs[] = array('label' => $floor_plan['bedrooms'] . ' Bed', 'icon' => 'house-door');
-    if ($floor_plan['bathrooms']) $header_specs[] = array('label' => $floor_plan['bathrooms'] . ' Bath', 'icon' => 'droplet');
-    if ($floor_plan['square_feet']) $header_specs[] = array('label' => number_format($floor_plan['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
-    if ($floor_plan['garage']) $header_specs[] = array('label' => $floor_plan['garage'] . ' Car', 'icon' => 'car-front');
-    
-    $template_loader->render_single_component('header', array(
-        'title' => $floor_plan['title'],
-        'price' => $floor_plan['price'],
-        'specs' => $header_specs,
-        'post_type' => 'bh_floor_plan'
-    )); ?>
+                <!-- Header -->
+                <?php 
+                $header_specs = array();
+                if ($floor_plan['bedrooms']) $header_specs[] = array('label' => $floor_plan['bedrooms'] . ' Bed', 'icon' => 'house-door');
+                if ($floor_plan['bathrooms']) $header_specs[] = array('label' => $floor_plan['bathrooms'] . ' Bath', 'icon' => 'droplet');
+                if ($floor_plan['square_feet']) $header_specs[] = array('label' => number_format($floor_plan['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
+                if ($floor_plan['garage']) $header_specs[] = array('label' => $floor_plan['garage'] . ' Car', 'icon' => 'car-front');
+                
+                $template_loader->render_single_component('header', array(
+                    'title' => $floor_plan['title'],
+                    'price' => $floor_plan['price'],
+                    'specs' => $header_specs,
+                    'post_type' => 'bh_floor_plan'
+                )); ?>
 
+            </div>
+            <div class="col-12 col-lg-6 col-xxl-7 pe-lg-0 mb-3 mb-lg-0">
+                <!-- Gallery -->
+                <?php $template_loader->render_single_component('gallery', array(
+                    'images' => $gallery_images,
+                    'featured_image' => $floor_plan['thumbnail']
+                )); ?>
+            </div>
+        </div>
 
-    <!-- Description -->
-    <?php $template_loader->render_single_component('description', array(
-        'title' => 'Description',
-        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
-    )); ?>
+        <?php if ($floor_plan_pdf) { ?>
+        <div class="row d-lg-none">
+            <div class="col-12">
+                <a role="button" href="<?php echo esc_url($floor_plan_pdf); ?>"
+                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                    Floor Plan
+                    <span class="visually-hidden">PDF Download</span>
+                </a>
+            </div>
+        </div>
+        <?php } ?>
 
-    <!-- Features -->
-    <?php if (!empty($features)) {
-        $template_loader->render_single_component('amenities', array(
-            'title' => 'Features & Amenities',
-            'items' => $features
-        ));
-    } ?>
+    </div>
+</section>
+
+<!-- Actions -->
+<?php 
+// Build dynamic navigation sections based on available content
+$nav_sections = array();
+
+// Overview is always present
+$nav_sections[] = array('id' => 'overview', 'label' => 'Overview');
+
+// Check if there's description content
+if (!empty(get_post_field('post_content', $post_id))) {
+    $nav_sections[] = array('id' => 'description', 'label' => 'About');
+}
+
+// Check if there are features
+if (!empty($features)) {
+    $nav_sections[] = array('id' => 'features', 'label' => 'Features');
+}
+
+// Check if there are gallery images
+if (!empty($gallery_images)) {
+    $nav_sections[] = array('id' => 'gallery-section', 'label' => 'Gallery');
+}
+
+// Check if there are available lots
+$lots_query = new WP_Query(array(
+    'post_type' => 'bh_lot',
+    'posts_per_page' => 1,
+    'meta_query' => array(
+        array(
+            'key' => 'lot_floor_plan',
+            'value' => $post_id,
+        )
+    )
+));
+if ($lots_query->have_posts()) {
+    $nav_sections[] = array('id' => 'available-lots', 'label' => 'Available Lots');
+}
+wp_reset_postdata();
+
+$template_loader->render_single_component('actions', array(
+    'sections' => $nav_sections,
+    'floor_plan_pdf' => $floor_plan_pdf
+)); ?>
+
+<div class="container">
+    <div class="row py-5">
+        <div class="col-12 col-lg-8">
+            <!-- Description -->
+            <div id="description">
+                <?php $template_loader->render_single_component('description', array(
+                    'title' => 'About This Floor Plan',
+                    'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+                )); ?>
+            </div>
+
+            <!-- Features -->
+            <?php if (!empty($features)) { ?>
+            <div id="features">
+                <?php $template_loader->render_single_component('amenities', array(
+                    'title' => 'Features & Amenities',
+                    'items' => $features
+                )); ?>
+            </div>
+            <?php } ?>
+
+            <!-- Gallery Section -->
+            <?php if (!empty($gallery_images)) { ?>
+            <div id="gallery-section" class="mb-5">
+                <h2 class="h3 mb-4">Gallery</h2>
+                <div class="row g-3">
+                    <?php foreach ($gallery_images as $image) : ?>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="<?php echo esc_url($image['url']); ?>" data-fslightbox="floor-plan-gallery">
+                                <img src="<?php echo esc_url($image['url']); ?>" 
+                                     alt="<?php echo esc_attr($image['alt']); ?>" 
+                                     class="img-fluid rounded shadow-sm hover-shadow-lg" 
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="col-12 col-lg-4">
+            <?php $template_loader->render_single_component('sidebar-contact', array(
+                'title' => 'Interested in This Floor Plan?',
+                'button_text' => 'Schedule a Tour'
+            )); ?>
+
+            <?php $template_loader->render_single_component('sidebar-quick-info', array(
+                'info' => $quick_info
+            )); ?>
+        </div>
+    </div>
 
     <!-- Related Lots grid -->
-    <?php $template_loader->render_single_component('floor-plan-lots-grid', array(
-        'floor_plan_id' => $post_id
-    )); ?>
+    <div id="available-lots">
+        <?php $template_loader->render_single_component('floor-plan-lots-grid', array(
+            'floor_plan_id' => $post_id
+        )); ?>
+    </div>
+</div>
 
 <?php
 $content = ob_get_clean();
 
-// Start Sidebar Capture
-ob_start();
-?>
-    <?php $template_loader->render_single_component('sidebar-contact', array(
-        'title' => 'Interested in this floor plan?',
-        'button_text' => 'Schedule a Tour'
-    )); ?>
-
-    <?php $template_loader->render_single_component('sidebar-quick-info', array(
-        'info' => $quick_info
-    )); ?>
-<?php
-$sidebar = ob_get_clean();
-
 // Render Layout
 $template_loader->render_single_component('layout', array(
     'content' => $content,
-    'sidebar' => $sidebar
 ));
 
 get_footer();

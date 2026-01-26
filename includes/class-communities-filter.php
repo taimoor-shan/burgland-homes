@@ -96,37 +96,8 @@ class Burgland_Homes_Communities_Filter {
             while ($communities->have_posts()) {
                 $communities->the_post();
                 
-                // Get custom fields
-                $city = get_post_meta(get_the_ID(), 'community_city', true);
-                $state = get_post_meta(get_the_ID(), 'community_state', true);
+                // Get price range for filtering
                 $community_price_range = get_post_meta(get_the_ID(), 'community_price_range', true);
-                $latitude = get_post_meta(get_the_ID(), 'community_latitude', true);
-                $longitude = get_post_meta(get_the_ID(), 'community_longitude', true);
-                
-                // Get status
-                $status_terms = wp_get_post_terms(get_the_ID(), 'bh_community_status');
-                $status_label = '';
-                $status_class = 'primary';
-                
-                if (!empty($status_terms) && !is_wp_error($status_terms)) {
-                    $status_label = $status_terms[0]->name;
-                    $status_slug = $status_terms[0]->slug;
-                    
-                    switch ($status_slug) {
-                        case 'active':
-                            $status_class = 'success';
-                            break;
-                        case 'selling-fast':
-                            $status_class = 'warning';
-                            break;
-                        case 'sold-out':
-                            $status_class = 'secondary';
-                            break;
-                        case 'coming-soon':
-                            $status_class = 'info';
-                            break;
-                    }
-                }
                 
                 // Filter by price range
                 if (!empty($price_range) && !empty($community_price_range)) {
@@ -135,22 +106,18 @@ class Burgland_Homes_Communities_Filter {
                         continue;
                     }
                 }
-                
-                // Render community card
-                $this->render_community_card(array(
-                    'id' => get_the_ID(),
-                    'title' => get_the_title(),
-                    'permalink' => get_permalink(),
-                    'thumbnail' => get_the_post_thumbnail('medium_large', array('class' => 'card-img-top community-card-img')),
-                    'city' => $city,
-                    'state' => $state,
-                    'price_range' => $community_price_range,
-                    'excerpt' => get_the_excerpt(),
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'status_label' => $status_label,
-                    'status_class' => $status_class,
-                ));
+
+                // Get custom fields for map data
+                $latitude = get_post_meta(get_the_ID(), 'community_latitude', true);
+                $longitude = get_post_meta(get_the_ID(), 'community_longitude', true);
+                ?>
+                <div class="col-md-6 community-card-wrapper" 
+                     data-lat="<?php echo esc_attr($latitude); ?>" 
+                     data-lng="<?php echo esc_attr($longitude); ?>"
+                     data-id="<?php echo esc_attr(get_the_ID()); ?>">
+                    <?php Burgland_Homes_Template_Loader::get_instance()->render_card(get_the_ID()); ?>
+                </div>
+                <?php
             }
             
             $html = ob_get_clean();
@@ -203,51 +170,4 @@ class Burgland_Homes_Communities_Filter {
         }
     }
     
-    /**
-     * Render community card HTML
-     */
-    private function render_community_card($data) {
-        ?>
-        <div class="col-md-6 community-card-wrapper" 
-             data-lat="<?php echo esc_attr($data['latitude']); ?>" 
-             data-lng="<?php echo esc_attr($data['longitude']); ?>"
-             data-id="<?php echo esc_attr($data['id']); ?>">
-          <div class="card community-card h-100 shadow-sm">
-            <?php if (!empty($data['thumbnail'])): ?>
-              <div class="position-relative">
-                <a href="<?php echo esc_url($data['permalink']); ?>">
-                  <?php echo $data['thumbnail']; ?>
-                </a>
-                <?php if (!empty($data['status_label'])): ?>
-                  <span class="badge bg-secondary text-dark position-absolute top-0 end-0 m-3">
-                    <?php echo esc_html($data['status_label']); ?>
-                  </span>
-                <?php endif; ?>
-              </div>
-            <?php endif; ?>
-            
-            <div class="card-body d-flex flex-column">
-              <h3 class="card-title h5 mb-2">
-                <a href="<?php echo esc_url($data['permalink']); ?>" class="text-decoration-none text-dark stretched-link">
-                  <?php echo esc_html($data['title']); ?>
-                </a>
-              </h3>
-              
-              <?php if (!empty($data['city']) && !empty($data['state'])): ?>
-                <p class="card-text text-muted mb-2">
-                  <i class="bi bi-geo-alt-fill"></i>
-                  <?php echo esc_html($data['city'] . ', ' . $data['state']); ?>
-                </p>
-              <?php endif; ?>
-              
-              <?php if (!empty($data['price_range'])): ?>
-                <p class="card-text text-primary fw-semibold mb-2">
-                  <?php echo esc_html($data['price_range']); ?>
-                </p>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
-        <?php
-    }
 }

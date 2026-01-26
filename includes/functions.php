@@ -110,31 +110,35 @@ function burgland_homes_get_floor_plan_data($floor_plan_id) {
 
 /**
  * Format address components for display
- * 
+ *
  * Provides consistent address formatting across the plugin.
- * Use $with_line_break = true for cards (default), false for single page headers.
- * 
+ * Uses semantic spans instead of <br> so spacing is controllable via CSS.
+ *
  * @param array $data Array with 'address', 'city', 'state', 'zip' keys
- * @param bool $with_line_break Whether to add <br> tag between address line and city/state/zip
- *                               true = "123 Main St<br>City, State 12345" (for cards)
- *                               false = "123 Main St City, State 12345" (for single pages)
+ * @param bool $with_line_break Whether to render address on two lines
+ *                              true  = stacked lines (cards)
+ *                              false = single line (headers)
  * @return string Formatted address HTML
  */
 function burgland_homes_format_address($data, $with_line_break = true) {
     $address = isset($data['address']) ? $data['address'] : '';
-    $city = isset($data['city']) ? $data['city'] : '';
-    $state = isset($data['state']) ? $data['state'] : '';
-    $zip = isset($data['zip']) ? $data['zip'] : '';
+    $city    = isset($data['city']) ? $data['city'] : '';
+    $state   = isset($data['state']) ? $data['state'] : '';
+    $zip     = isset($data['zip']) ? $data['zip'] : '';
 
-    $parts = array();
-    
-    // Add street address if present
+    $output = array();
+
+    // Street address
     if (!empty($address)) {
-        $parts[] = esc_html($address);
+        $output[] = sprintf(
+            '<span class="bh-address-line">%s</span>',
+            esc_html($address)
+        );
     }
-    
-    // Build city, state, zip line
+
+    // City, state, zip
     $location_parts = array();
+
     if (!empty($city)) {
         $location_parts[] = esc_html($city);
     }
@@ -144,12 +148,21 @@ function burgland_homes_format_address($data, $with_line_break = true) {
     if (!empty($zip)) {
         $location_parts[] = esc_html($zip);
     }
-    
+
     if (!empty($location_parts)) {
-        $parts[] = implode(', ', $location_parts);
+        $location = implode(', ', $location_parts);
+
+        $output[] = sprintf(
+            '<span class="bh-location-line">%s</span>',
+            $location
+        );
     }
-    
-    // Join with line break or space
-    $separator = $with_line_break ? '<br>' : ' ';
-    return implode($separator, $parts);
+
+    // Join output
+    if ($with_line_break) {
+        return implode('', $output);
+    }
+
+    // Single-line version
+    return wp_strip_all_tags(implode(' ', $output));
 }

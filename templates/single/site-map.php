@@ -20,7 +20,7 @@ if (empty($site_map) || empty($site_map['url'])) {
 
 <section class="bh-site-map mb-5" id="community-map">
     <div class="">
-        <div class="card-body p-4">
+        <div class="">
             <h2 class="h3 mb-3 text-primary">Site Map</h2>
             <div class="bh-site-map-image">
                 <img 

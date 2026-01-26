@@ -24,7 +24,7 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 <main id="site-main">
     <div class="communities-archive container-fluid px-5">
         <!-- Filters Section -->
-        <section class="bh-filters filters-section bg-white border-bottom py-4 mt-10">
+        <section class="bh-filters filters-section border-bottom py-4">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">

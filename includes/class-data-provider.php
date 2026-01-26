@@ -23,10 +23,10 @@ class Burgland_Homes_Data_Provider {
      * Spec configuration
      */
     private $spec_config = array(
-        'bedrooms' => array('suffix' => ' Bed', 'icon' => 'house-door'),
-        'bathrooms' => array('suffix' => ' Bath', 'icon' => 'droplet'),
-        'square_feet' => array('suffix' => ' sqft', 'icon' => 'arrows-angle-expand', 'format' => true),
-        'garage' => array('suffix' => ' Car', 'icon' => 'car-front'),
+        'bedrooms' => array('suffix' => ' Bed', 'icon' => 'fa-solid fa-bed'),
+        'bathrooms' => array('suffix' => ' Bath', 'icon' => 'fa-solid fa-bath'),
+        'square_feet' => array('suffix' => ' sqft', 'icon' => 'fa-solid fa-ruler-combined', 'format' => true),
+        'garage' => array('suffix' => ' Car', 'icon' => 'fa-solid fa-car'),
     );
     
     /**
@@ -87,6 +87,7 @@ class Burgland_Homes_Data_Provider {
                     'title' => $raw['title'],
                     'url' => $raw['permalink'],
                     'image' => $raw['thumbnail'],
+                    'image_caption' => $raw['thumbnail_caption'] ?? '',
                     'price' => $raw['price_range'],
                     'badges' => array(),
                     'specs' => array(),
@@ -103,7 +104,7 @@ class Burgland_Homes_Data_Provider {
                 }
                 
                 // Build specs from floor plan ranges
-                $data['specs'] = $this->build_specs_from_ranges($raw['floor_plan_ranges']);
+                $data['specs'] = $this->build_specs_from_ranges($raw['floor_plan_ranges'], true);
                 break;
 
             case 'bh_lot':
@@ -114,6 +115,7 @@ class Burgland_Homes_Data_Provider {
                     'title' => $raw['title'],
                     'url' => $raw['permalink'],
                     'image' => $raw['thumbnail'],
+                    'image_caption' => $raw['thumbnail_caption'] ?? '',
                     'price' => $raw['price'] ? 'Priced at: ' . $raw['price'] : '',
                     'badges' => array(),
                     'specs' => array(),
@@ -136,7 +138,7 @@ class Burgland_Homes_Data_Provider {
                     );
                 }
 
-                $data['specs'] = $this->build_specs($raw);
+                $data['specs'] = $this->build_specs($raw, true);
                 break;
 
             case 'bh_floor_plan':
@@ -147,12 +149,13 @@ class Burgland_Homes_Data_Provider {
                     'title' => $raw['title'],
                     'url' => $raw['permalink'],
                     'image' => $raw['thumbnail'],
+                    'image_caption' => $raw['thumbnail_caption'] ?? '',
                     'price' => $raw['price'],
                     'badges' => array(),
                     'specs' => array()
                 );
 
-                $data['specs'] = $this->build_specs($raw);
+                $data['specs'] = $this->build_specs($raw, true);
                 break;
         }
 
@@ -280,6 +283,7 @@ class Burgland_Homes_Data_Provider {
             'longitude' => get_post_meta($community_id, 'community_longitude', true),
             'has_thumbnail' => has_post_thumbnail($community_id),
             'thumbnail' => has_post_thumbnail($community_id) ? get_the_post_thumbnail_url($community_id, 'medium_large') : '',
+            'thumbnail_caption' => has_post_thumbnail($community_id) ? wp_get_attachment_caption(get_post_thumbnail_id($community_id)) : '',
             'status_label' => $status_label,
             'status_class' => $status_class,
             'floor_plan_ranges' => $floor_plan_ranges,
@@ -399,6 +403,7 @@ class Burgland_Homes_Data_Provider {
             'title' => get_the_title($lot_id),
             'permalink' => get_permalink($lot_id),
             'thumbnail' => get_the_post_thumbnail_url($lot_id, 'large'),
+            'thumbnail_caption' => has_post_thumbnail($lot_id) ? wp_get_attachment_caption(get_post_thumbnail_id($lot_id)) : '',
             'floor_plan_id' => $floor_plan_id,
             'floor_plan_name' => $floor_plan_name,
             'lot_number' => get_post_meta($lot_id, 'lot_number', true),
@@ -439,6 +444,7 @@ class Burgland_Homes_Data_Provider {
             'title' => get_the_title($floor_plan_id),
             'permalink' => get_permalink($floor_plan_id),
             'thumbnail' => get_the_post_thumbnail_url($floor_plan_id, 'large'),
+            'thumbnail_caption' => has_post_thumbnail($floor_plan_id) ? wp_get_attachment_caption(get_post_thumbnail_id($floor_plan_id)) : '',
             'price' => get_post_meta($floor_plan_id, 'floor_plan_price', true),
             'bedrooms' => get_post_meta($floor_plan_id, 'floor_plan_bedrooms', true),
             'bathrooms' => get_post_meta($floor_plan_id, 'floor_plan_bathrooms', true),
@@ -485,12 +491,18 @@ class Burgland_Homes_Data_Provider {
      * Build specs array from configuration and raw data
      * 
      * @param array $raw_data Raw data containing spec fields
+     * @param bool $exclude_garage Whether to exclude garage from specs (default: false)
      * @return array Array of formatted spec items
      */
-    private function build_specs($raw_data) {
+    private function build_specs($raw_data, $exclude_garage = false) {
         $specs = array();
         
         foreach ($this->spec_config as $key => $config) {
+            // Skip garage if exclude_garage is true
+            if ($exclude_garage && $key === 'garage') {
+                continue;
+            }
+            
             if (!empty($raw_data[$key])) {
                 $value = isset($config['format']) && $config['format'] 
                     ? number_format($raw_data[$key]) 
@@ -510,12 +522,18 @@ class Burgland_Homes_Data_Provider {
      * Build specs array from floor plan ranges (for communities)
      * 
      * @param array $ranges Floor plan ranges with formatted values
+     * @param bool $exclude_garage Whether to exclude garage from specs (default: false)
      * @return array Array of formatted spec items
      */
-    private function build_specs_from_ranges($ranges) {
+    private function build_specs_from_ranges($ranges, $exclude_garage = false) {
         $specs = array();
         
         foreach ($this->spec_config as $key => $config) {
+            // Skip garage if exclude_garage is true
+            if ($exclude_garage && $key === 'garage') {
+                continue;
+            }
+            
             if (isset($ranges[$key]) && !empty($ranges[$key]['formatted'])) {
                 $specs[] = array(
                     'label' => $ranges[$key]['formatted'] . $config['suffix'],

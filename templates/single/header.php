@@ -23,81 +23,102 @@
 if (!defined('ABSPATH')) exit;
 $data = $args;
 ?>
-<section class="plugin-page-header py-3 mb-3">
-    <div class="row align-items-center g-4">
-
-        <div class="col-lg-7 col-xl-8">
-            <h1 class=" text-primary">
+<section class="plugin-page-header">
+    <div class="row align-items-center">
+        <div class="col-12">
+            <h1 class="text-primary mb-2 lh-2">
                 <?php echo esc_html($data['title']); ?>
                 <?php if (!empty($data['title_suffix'])): ?>
                     <span class="text-lowercase fw-normal"> at </span>
                     <?php if (!empty($data['title_suffix_url'])): ?>
-                        <a href="<?php echo esc_url($data['title_suffix_url']); ?>" class="text-info text-decoration-none hover-underline"><?php echo esc_html($data['title_suffix']); ?></a>
+                        <a href="<?php echo esc_url($data['title_suffix_url']); ?>" class="text-decoration-none hover-underline"><?php echo esc_html($data['title_suffix']); ?></a>
                     <?php else: ?>
                         <?php echo esc_html($data['title_suffix']); ?>
                     <?php endif; ?>
                 <?php endif; ?>
             </h1>
+
+            <!-- Address (single-line format for single pages, without <br> tag, clickable to map) -->
+            <?php if (!empty($data['address']) || !empty($data['city']) || !empty($data['state']) || !empty($data['zip'])): ?>
+
+                <p class="mb-3">
+                    <?php if (!empty($data['map_url'])): ?>
+                        <a href="<?php echo esc_url($data['map_url']); ?>" class="text-muted text-decoration-none hover-underline lh-1" target="_blank" rel="noopener noreferrer">
+                            <?php echo burgland_homes_format_address($data, true); ?>
+                        </a>
+                    <?php else: ?>
+                        <?php echo burgland_homes_format_address($data, true); ?>
+                    <?php endif; ?>
+                </p>
+
+            <?php endif; ?>
+
+            <?php if (!empty($data['price'])): ?>
+                <h3 class="fw-semibold mb-1 text-info"><span class="small me-1">From</span><?php echo esc_html($data['price']); ?></h3>
+
+                <!-- Disclaimer -->
+                <?php
+                $classes = '';
+
+                if (!empty($data['post_type']) && $data['post_type'] === 'bh_floor_plan') {
+                    $classes .= ' text-muted text-end';
+                    $content = 'Hello world Floor';
+                } elseif (!empty($data['post_type']) && $data['post_type'] === 'bh_lot') {
+                    $classes .= ' text-muted lh-1.1';
+                    $content = '* Inventory home price above includes pre-selected homesite, flex options & design upgrades.';
+                } else {
+                    $content = '';
+                }
+
+                // Render only if we actually have content
+                if (!empty($content)) {
+                    echo '<p class="' . esc_attr($classes) . '">' . $content . '</p>';
+                }
+                ?>
+
+
+
+            <?php endif; ?>
             <!-- Specs -->
 
             <?php if (!empty($data['specs'])): ?>
-                <div class="mb-2">
-                    <p class="mb-0 h5 text-dark">
+                <div class="mt-4">
+                    <div class="row g-5 bh-header-specs">
                         <?php
-                        $spec_labels = array();
+                        // Map Bootstrap Icons to Font Awesome classes
+                        $icon_map = array(
+                            'house-door' => 'fa-solid fa-bed',
+                            'droplet' => 'fa-solid fa-bath',
+                            'arrows-angle-expand' => 'fa-solid fa-ruler-combined',
+                            'car-front' => 'fa-solid fa-car',
+                        );
+
                         foreach ($data['specs'] as $spec) {
                             // Remove trailing .00 from decimal values
                             $label = $spec['label'];
                             $label = preg_replace('/\.00(?=\s|$)/', '', $label);
-                            $spec_labels[] = esc_html($label);
-                        }
-                        echo implode(' &nbsp; | &nbsp; ', $spec_labels);
-                        ?>
-                    </p>
-                </div>
-            <?php endif; ?>
-            <!-- Address (single-line format for single pages, without <br> tag, clickable to map) -->
-            <?php if (!empty($data['address']) || !empty($data['city']) || !empty($data['state']) || !empty($data['zip'])): ?>
-                <div class="mb-2">
-                    <p class="mb-0">
-                        <strong>Address:</strong>
-                        <?php if (!empty($data['map_url'])): ?>
-                            <a href="<?php echo esc_url($data['map_url']); ?>" class="text-info text-decoration-none hover-underline" target="_blank" rel="noopener noreferrer">
-                                <?php echo burgland_homes_format_address($data, false); ?>
-                            </a>
-                        <?php else: ?>
-                            <?php echo burgland_homes_format_address($data, false); ?>
-                        <?php endif; ?>
-                    </p>
-                </div>
-            <?php endif; ?>
-        </div>
-        <div class="col-lg-5 col-xl-4">
-            <?php if (!empty($data['price'])): ?>
-                <h3 class="fw-semibold mb-2 text-primary text-end"><span class="text-info small me-2 fw-normal">From</span><?php echo esc_html($data['price']); ?></h3>
 
-              
-                    <?php
-                    if (!empty($data['post_type']) && $data['post_type'] === 'bh_floor_plan') {
-                        echo '<p class=" mb-0 text-muted text-end">Hello world Floor</p>';
-                    } elseif (!empty($data['post_type']) && $data['post_type'] === 'bh_lot') {
-                        echo '<p class="mb-0 text-muted text-end lh-1.1">* Inventory home price above includes pre-selected
-homesite, flex options & design upgrades.</p>';
-                    } else {
-                        if (!empty($data['city']) || !empty($data['state'])) {?>
-                          <h5 class=" mb-0 text-primary text-end"><?php
-                            echo esc_html($data['status']['label']) . ' in ' . esc_html($data['city']);
-                            if (!empty($data['city']) && !empty($data['state'])) {
-                                echo ', ';
+                            // Convert Bootstrap icon to Font Awesome if needed
+                            $icon_class = '';
+                            if (!empty($spec['icon'])) {
+                                $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
                             }
-                            echo esc_html($data['state']);
-                            ?></h5><?php
-                        }
-                    }
-                    ?>
-              
-
+                            ?>
+                            <div class="col-auto">
+                                <span class="spec-item">
+                                    <?php if ($icon_class): ?>
+                                        <i class="<?php echo esc_attr($icon_class); ?>"></i>
+                                    <?php endif; ?>
+                                    <span class="spec-label"><?php echo esc_html($label); ?></span>
+                                </span>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
             <?php endif; ?>
+
+
+
         </div>
 
     </div>

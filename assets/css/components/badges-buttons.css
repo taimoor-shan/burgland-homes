@@ -3,7 +3,7 @@
  */
 
 /* Badges */
-.bh-card-badges .badge {
+/* .bh-card-badges .badge {
     font-size: 0.75rem;
     font-weight: 400 !important;
     padding: 0.4rem 0.8rem;
@@ -22,7 +22,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Buttons */
+
 .btn {
     border-radius: 6px;
     padding: 0.5rem 1.25rem;
@@ -45,4 +45,4 @@
     .btn-mobile-full {
         width: 100%;
     }
-}
+} 

@@ -50,6 +50,11 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
     data-href="<?php echo esc_url($data['url']); ?>"
     style="cursor: pointer;">
     <div class="bh-card-image position-relative">
+        <?php if (!empty($data['image_caption'])) : ?>
+            <figcaption class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white small px-3 py-2 z-2">
+                <?php echo esc_html($data['image_caption']); ?>
+            </figcaption>
+        <?php endif; ?>
         <img src="<?php echo esc_url($thumbnail); ?>"
             class="card-img-top"
             alt="<?php echo esc_attr($data['title']); ?>"
@@ -67,11 +72,12 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
     </div>
     <div class="card-body d-flex flex-column p-4 pt-3">
         <h3 class="card-title h4 mb-1">
-            <?php echo esc_html($data['title']); ?>
-
+            <a href="<?php echo esc_url($data['url']); ?>" class="text-decoration-none text-dark">
+                <?php echo esc_html($data['title']); ?>
+            </a>
         </h3>
         <?php if (!empty($data['price'])): ?>
-            <h5 class="bh-card-price text-info mb-2">
+            <h5 class="bh-card-price bh-card-price-badge text-info mb-2">
                 <?php if ($show_from_label): ?>
                     <span class="me-1 small">From<sup>*</sup></span>
                 <?php endif; ?>

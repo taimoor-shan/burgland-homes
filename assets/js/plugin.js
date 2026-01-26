@@ -428,6 +428,9 @@
     
     // Initialize Read More functionality
     initReadMore();
+    
+    // Initialize ScrollSpy for single page navigation
+    initScrollSpy();
 
     // Check if we're on the communities archive page
     if ($('#communities-map').length) {
@@ -448,6 +451,95 @@
 
   // Expose init function globally for callback
   window.initCommunitiesMap = init;
+
+  /**
+   * Initialize ScrollSpy for Single Page Navigation
+   * Custom implementation for sticky subnav with active states
+   */
+  function initScrollSpy() {
+    const $nav = $('#scrollspy-nav');
+    
+    if (!$nav.length) {
+      return;
+    }
+    
+    const $navLinks = $nav.find('.nav-link');
+    const $sections = $navLinks.map(function() {
+      const href = $(this).attr('href');
+      if (href && href.startsWith('#')) {
+        const $section = $(href);
+        if ($section.length) {
+          return {
+            id: href,
+            $link: $(this),
+            $section: $section,
+            top: 0 // Will be calculated on scroll
+          };
+        }
+      }
+    }).get();
+    
+    if ($sections.length === 0) {
+      return;
+    }
+    
+    // Get offset from sticky nav
+    const navHeight = $('#subnav-detail').outerHeight() || 0;
+    const headerHeight = parseInt($('#subnav-detail').css('top')) || 134;
+    const offset = headerHeight + navHeight + 50; // Add some buffer
+    
+    // Update active link based on scroll position
+    function updateActiveLink() {
+      const scrollPos = $(window).scrollTop();
+      
+      // Update section positions
+      $sections.forEach(function(section) {
+        section.top = section.$section.offset().top;
+      });
+      
+      // Find the current section
+      let currentSection = null;
+      for (let i = $sections.length - 1; i >= 0; i--) {
+        if (scrollPos + offset >= $sections[i].top) {
+          currentSection = $sections[i];
+          break;
+        }
+      }
+      
+      // Update active states
+      $navLinks.removeClass('active').parent().removeClass('active');
+      if (currentSection) {
+        currentSection.$link.addClass('active').parent().addClass('active');
+      } else if (scrollPos < $sections[0].top - offset) {
+        // If we're above the first section, activate the first link
+        $sections[0].$link.addClass('active').parent().addClass('active');
+      }
+    }
+    
+    // Smooth scroll on click
+    $navLinks.on('click', function(e) {
+      e.preventDefault();
+      const href = $(this).attr('href');
+      if (href && href.startsWith('#')) {
+        const $target = $(href);
+        if ($target.length) {
+          $('html, body').animate({
+            scrollTop: $target.offset().top - offset + 20
+          }, 500);
+        }
+      }
+    });
+    
+    // Listen to scroll events
+    let scrollTimer;
+    $(window).on('scroll', function() {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(updateActiveLink, 10);
+    });
+    
+    // Initial update
+    updateActiveLink();
+  }
 
   /**
    * Initialize Read More Toggle Functionality

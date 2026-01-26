@@ -1,1 +1,28 @@
 
+.bh-header-specs{
+    margin: 1.5rem auto 1.875rem;
+    padding: 0;
+    list-style: none;
+}
+
+.bh-header-specs .col-auto:not(:last-child) {
+    border-right: 1px solid var(--light-color);
+}
+
+.spec-item  i {
+    font-size: 1.5rem;
+}
+.spec-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: .875rem;
+    line-height: 1.3;
+    font-weight: 700;
+    text-align: center;
+}
+
+.spec-label {
+       margin-top: .5rem;
+}

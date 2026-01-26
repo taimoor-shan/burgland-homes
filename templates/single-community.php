@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Single Community Template
  * 
@@ -39,125 +40,214 @@ if (!empty($community['price_range'])) {
     $quick_info[] = array('label' => 'Price Range', 'value' => $community['price_range']);
 }
 
-// Render Breadcrumbs at top
-$template_loader->render_single_component('breadcrumbs', array(
-    'breadcrumbs' => $breadcrumbs
-));
+
 
 // Start Content Capture
 ob_start();
 ?>
-    <!-- Gallery -->
-    <?php $template_loader->render_single_component('gallery', array(
-        'images' => $gallery_images,
-        'featured_image' => $community['thumbnail']
-    )); ?>
 
-     <!-- Actions -->
-    <?php $template_loader->render_single_component('actions', array(
-        'brochure' => $brochure,
-        'video_url' => $video_url,
-        'map_anchor' => '#community-map',
-        'map_url' => $community['map_url']
-    )); ?>
+<section id="overview" class="overview-detail">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-12 col-lg-6 col-xxl-5 pt-5 pt-lg-4 px-lg-3 px-xl-5 px-xxxl-7">
+                <?php $template_loader->render_single_component('breadcrumbs', array(
+                    'breadcrumbs' => $breadcrumbs
+                ));
+                ?>
 
-    <!-- Header (after gallery) -->
-    <?php 
-    $header_specs = array();
-    $spec_labels = array(
-        'bedrooms' => 'Bed',
-        'bathrooms' => 'Bath',
-        'square_feet' => 'sqft',
-        'garage' => 'Car'
-    );
-    $spec_icons = array(
-        'bedrooms' => 'house-door',
-        'bathrooms' => 'droplet',
-        'square_feet' => 'arrows-angle-expand',
-        'garage' => 'car-front'
-    );
-    
-    foreach (array('bedrooms', 'bathrooms', 'garage', 'square_feet') as $key) {
-        if (isset($community['floor_plan_ranges'][$key]) && $community['floor_plan_ranges'][$key]['min'] !== null) {
-            $header_specs[] = array(
-                'label' => $community['floor_plan_ranges'][$key]['formatted'] . ' ' . $spec_labels[$key],
-                'icon' => $spec_icons[$key]
-            );
-        }
-    }
-    
-    $template_loader->render_single_component('header', array(
-        'title' => $community['title'],
-        'address' => $community['address'],
-        'city' => $community['city'],
-        'state' => $community['state'],
-        'zip' => $community['zip'],
-        'map_url' => $community['map_url'],
-        'price' => $community['price_range'],
-        'specs' => $header_specs,
-        'status' => array(
-            'label' => $community['status_label'],
-            'class' => $community['status_class']
-        ),
-        'post_type' => 'bh_community'
-    )); ?>
+                <!-- Header (after gallery) -->
+                <?php
+                $header_specs = array();
+                $spec_labels = array(
+                    'bedrooms' => 'Bed',
+                    'bathrooms' => 'Bath',
+                    'square_feet' => 'sqft',
+                    'garage' => 'Car'
+                );
+                $spec_icons = array(
+                    'bedrooms' => 'house-door',
+                    'bathrooms' => 'droplet',
+                    'square_feet' => 'arrows-angle-expand',
+                    'garage' => 'car-front'
+                );
+
+                foreach (array('bedrooms', 'bathrooms', 'garage', 'square_feet') as $key) {
+                    if (isset($community['floor_plan_ranges'][$key]) && $community['floor_plan_ranges'][$key]['min'] !== null) {
+                        $header_specs[] = array(
+                            'label' => $community['floor_plan_ranges'][$key]['formatted'] . ' ' . $spec_labels[$key],
+                            'icon' => $spec_icons[$key]
+                        );
+                    }
+                }
+
+                $template_loader->render_single_component('header', array(
+                    'title' => $community['title'],
+                    'address' => $community['address'],
+                    'city' => $community['city'],
+                    'state' => $community['state'],
+                    'zip' => $community['zip'],
+                    'map_url' => $community['map_url'],
+                    'price' => $community['price_range'],
+                    'specs' => $header_specs,
+                    'status' => array(
+                        'label' => $community['status_label'],
+                        'class' => $community['status_class']
+                    ),
+                    'post_type' => 'bh_community'
+                )); ?>
 
 
-    <!-- Overview Stats -->
 
-    <!-- Description -->
-    <?php $template_loader->render_single_component('description', array(
-        'title' => 'About This Community',
-        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
-    )); ?>
+            </div>
+            <div class="col-12 col-lg-6 col-xxl-7 pe-lg-0 mb-3 mb-lg-0">
+                <!-- Gallery -->
+                <?php $template_loader->render_single_component('gallery', array(
+                    'images' => $gallery_images,
+                    'featured_image' => $community['thumbnail'],
+                    'video_url' => $video_url
+                )); ?>
+            </div>
+        </div>
 
-    <!-- Amenities -->
-    <?php if (!empty($amenities)) {
-        $template_loader->render_single_component('amenities', array(
-            'items' => $amenities
-        ));
-    } ?>
+        <div class="row d-lg-none">
+            <div class="col-12">
+                <a role="button"
+                    href="https://media.parksquarehomes.com/393/2025/1/23/WaltonIV_1811_Feature_Brighton.pdf"
+                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                    Floor Plan Brochure
+                </a>
+            </div>
+        </div>
+
+
+        <div class="row d-lg-none">
+            <div class="col-12">
+                <a role="button"
+                    href="https://media.homefiniti.com/393/2024/12/20/Brighton_OnlineStudio_1800x1200.pdf"
+                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                    Design Packages
+                    <span class="visually-hidden">PDF Download</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- Actions -->
+<?php 
+// Build dynamic navigation sections based on available content
+$nav_sections = array();
+
+// Overview is always present
+$nav_sections[] = array('id' => 'overview', 'label' => 'Overview');
+
+// Check if there's description content
+if (!empty(get_post_field('post_content', $post_id))) {
+    $nav_sections[] = array('id' => 'description', 'label' => 'About');
+}
+
+// Check if there are available lots/homes
+$lots_query = new WP_Query(array(
+    'post_type' => 'bh_lot',
+    'posts_per_page' => 1,
+    'meta_query' => array(
+        array(
+            'key' => 'lot_community',
+            'value' => $post_id,
+        )
+    )
+));
+if ($lots_query->have_posts()) {
+    $nav_sections[] = array('id' => 'available-homes', 'label' => 'Available Homes');
+}
+wp_reset_postdata();
+
+// Check if site map exists
+if (!empty($site_map)) {
+    $nav_sections[] = array('id' => 'community-map', 'label' => 'Site Map');
+}
+
+// Check if amenities exist
+if (!empty($amenities)) {
+    $nav_sections[] = array('id' => 'amenities', 'label' => 'Amenities');
+}
+
+$template_loader->render_single_component('actions', array(
+    'sections' => $nav_sections,
+    'brochure' => $brochure,
+    'map_anchor' => '#community-map'
+)); ?>
+
+
+<div class="container">
+    <div class="row py-5">
+        <div class="col-12 col-lg-8">
+            <!-- Description -->
+            <div id="description">
+                <?php $template_loader->render_single_component('description', array(
+                    'title' => 'About This Community',
+                    'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+                )); ?>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <?php $template_loader->render_single_component('sidebar-contact', array(
+                'title' => 'Interested in This Community?',
+                'brochure' => $brochure
+            )); ?>
+
+            <?php $template_loader->render_single_component('sidebar-quick-info', array(
+                'info' => $quick_info
+            )); ?>
+
+            <?php $template_loader->render_single_component('sidebar-location', array(
+                'map_url' => $community['map_url']
+            )); ?>
+        </div>
+    </div>
+
 
 
     <!-- Available Homes/Lots Grid -->
-    <?php $template_loader->render_single_component('lots-grid', array(
-        'community_id' => $post_id
-    )); ?>
+    <div id="available-homes">
+        <?php $template_loader->render_single_component('lots-grid', array(
+            'community_id' => $post_id
+        )); ?>
+    </div>
 
     <!-- Related Items (Floor Plans) -->
-    <?php 
+    <?php
     // This could be moved to a component too if reused
     $floor_plans = $data_provider->get_featured_communities(array('post_type' => 'bh_floor_plan', 'limit' => -1)); // This is wrong, need a generic getter
     // For now keep the query here or use a new method in data provider
     ?>
-        <!-- Site Map -->
+    <!-- Site Map -->
     <?php if (!empty($site_map)) {
         $template_loader->render_single_component('site-map', array(
             'site_map' => $site_map
         ));
     } ?>
 
+    <!-- Amenities -->
+    <?php if (!empty($amenities)) { ?>
+        <div id="amenities">
+            <?php $template_loader->render_single_component('amenities', array(
+                'items' => $amenities
+            )); ?>
+        </div>
+    <?php } ?>
+</div>
+
+
+
+
 <?php
 $content = ob_get_clean();
-
-// Start Sidebar Capture
-ob_start();
-?>
-    <?php $template_loader->render_single_component('sidebar-contact', array(
-        'title' => 'Interested in This Community?',
-        'brochure' => $brochure
-    )); ?>
-
-    <?php $template_loader->render_single_component('sidebar-quick-info', array(
-        'info' => $quick_info
-    )); ?>
-<?php
-$sidebar = ob_get_clean();
-
 // Render Layout
 $template_loader->render_single_component('layout', array(
     'content' => $content,
-    'sidebar' => $sidebar
 ));
 
 get_footer();
