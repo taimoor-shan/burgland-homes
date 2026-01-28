@@ -3,7 +3,7 @@
  * Plugin Name: Burgland Homes
  * Plugin URI: https://burglandhomes.com
  * Description: Comprehensive real estate management plugin for new development communities, floor plans, and lots/homes.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Burgland Homes
  * Author URI: https://burglandhomes.com
  * License: GPL v2 or later

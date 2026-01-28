@@ -17,7 +17,8 @@ $community = $data_provider->get_community_data($post_id);
 
 // Additional data for single view
 $gallery_images = Burgland_Homes_Gallery::get_gallery_images($post_id, 'full');
-$brochure = get_field('community_brochure', $post_id);
+$brochure = !empty($community['brochure']) ? $community['brochure'] : null;
+$design_package = !empty($community['design_package']) ? $community['design_package'] : null;
 $video_url = get_field('community_video_url', $post_id);
 $site_map = get_field('community_site_map', $post_id);
 $amenities = get_field('community_amenities', $post_id);
@@ -109,27 +110,29 @@ ob_start();
             </div>
         </div>
 
+        <?php if ($brochure && !empty($brochure['url'])) { ?>
         <div class="row d-lg-none">
             <div class="col-12">
-                <a role="button"
-                    href="https://media.parksquarehomes.com/393/2025/1/23/WaltonIV_1811_Feature_Brighton.pdf"
+                <a role="button" href="<?php echo esc_url($brochure['url']); ?>"
                     class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Floor Plan Brochure
-                </a>
-            </div>
-        </div>
-
-
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button"
-                    href="https://media.homefiniti.com/393/2024/12/20/Brighton_OnlineStudio_1800x1200.pdf"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Design Packages
+                    Community Brochure
                     <span class="visually-hidden">PDF Download</span>
                 </a>
             </div>
         </div>
+        <?php }
+        
+        if ($design_package && !empty($design_package['url'])) { ?>
+        <div class="row d-lg-none">
+            <div class="col-12">
+                <a role="button" href="<?php echo esc_url($design_package['url']); ?>"
+                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                    Design Package
+                    <span class="visually-hidden">PDF Download</span>
+                </a>
+            </div>
+        </div>
+        <?php } ?>
 
     </div>
 </section>
@@ -177,6 +180,8 @@ if (!empty($amenities)) {
 $template_loader->render_single_component('actions', array(
     'sections' => $nav_sections,
     'brochure' => $brochure,
+    'brochure_label' => 'Community Brochure',
+    'design_package' => $design_package,
     'map_anchor' => '#community-map'
 )); ?>
 

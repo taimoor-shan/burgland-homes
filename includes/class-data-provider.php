@@ -287,6 +287,8 @@ class Burgland_Homes_Data_Provider {
             'status_label' => $status_label,
             'status_class' => $status_class,
             'floor_plan_ranges' => $floor_plan_ranges,
+            'brochure' => get_field('community_brochure', $community_id),
+            'design_package' => get_field('community_design_package', $community_id),
         ), $community_id);
     }
     
@@ -427,8 +429,7 @@ class Burgland_Homes_Data_Provider {
             'square_feet' => $square_feet,
             'garage' => $garage,
             'stories' => get_post_meta($lot_id, 'lot_stories', true),
-            'brochure' => get_field('lot_brochure', $lot_id),
-            'floor_plan_pdf' => !empty($floor_plan_data['pdf']) ? $floor_plan_data['pdf'] : null,
+            'floor_plan_brochure' => !empty($floor_plan_data['brochure']) ? $floor_plan_data['brochure'] : null,
         ), $lot_id);
     }
     
@@ -452,7 +453,8 @@ class Burgland_Homes_Data_Provider {
             'garage' => get_post_meta($floor_plan_id, 'floor_plan_garage', true),
             'stories' => get_post_meta($floor_plan_id, 'floor_plan_stories', true),
             'features' => get_post_meta($floor_plan_id, 'floor_plan_features', true),
-            'pdf' => get_field('floor_plan_brochure', $floor_plan_id),
+            'brochure' => get_field('floor_plan_brochure', $floor_plan_id),
+            'design_package' => get_field('floor_plan_design_package', $floor_plan_id),
         ), $floor_plan_id);
     }
 

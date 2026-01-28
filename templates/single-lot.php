@@ -22,16 +22,7 @@ $features = get_post_meta($post_id, 'lot_features', true);
 if (is_string($features)) {
     $features = array_filter(array_map('trim', explode("\n", $features)));
 }
-$brochure = !empty($lot['brochure']) ? $lot['brochure'] : null;
-$floor_plan_pdf = !empty($lot['floor_plan_pdf']) ? $lot['floor_plan_pdf'] : null;
-
-// Handle ACF file fields - extract URL if they're arrays
-if (is_array($brochure) && isset($brochure['url'])) {
-    $brochure = $brochure['url'];
-}
-if (is_array($floor_plan_pdf) && isset($floor_plan_pdf['url'])) {
-    $floor_plan_pdf = $floor_plan_pdf['url'];
-}
+$floor_plan_brochure = !empty($lot['floor_plan_brochure']) ? $lot['floor_plan_brochure'] : null;
 
 // Breadcrumbs
 $breadcrumbs = array(
@@ -97,23 +88,12 @@ ob_start();
             </div>
         </div>
 
-        <?php if ($floor_plan_pdf) { ?>
+        <?php if ($floor_plan_brochure) { ?>
         <div class="row d-lg-none">
             <div class="col-12">
-                <a role="button" href="<?php echo esc_url($floor_plan_pdf); ?>"
+                <a role="button" href="<?php echo esc_url(is_array($floor_plan_brochure) ? $floor_plan_brochure['url'] : $floor_plan_brochure); ?>"
                     class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Floor Plan
-                </a>
-            </div>
-        </div>
-        <?php } ?>
-
-        <?php if ($brochure) { ?>
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button" href="<?php echo esc_url($brochure); ?>"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Brochure
+                    Floor Plan Brochure
                     <span class="visually-hidden">PDF Download</span>
                 </a>
             </div>
@@ -143,9 +123,8 @@ if (!empty($features)) {
 
 $template_loader->render_single_component('actions', array(
     'sections' => $nav_sections,
-    'map_url' => $lot['map_url'],
-    'brochure' => $brochure,
-    'floor_plan_pdf' => $floor_plan_pdf
+    'brochure' => $floor_plan_brochure,
+    'brochure_label' => 'Floor Plan Brochure'
 )); ?>
 
 <div class="container">
@@ -172,8 +151,7 @@ $template_loader->render_single_component('actions', array(
         <div class="col-12 col-lg-4">
             <?php $template_loader->render_single_component('sidebar-contact', array(
                 'title' => $lot['status_label'] === 'Sold' ? 'This lot is sold' : 'Interested in This Lot?',
-                'button_text' => $lot['status_label'] === 'Sold' ? 'Contact for Others' : 'Reserve Now',
-                'brochure' => $brochure
+                'button_text' => $lot['status_label'] === 'Sold' ? 'Contact for Others' : 'Reserve Now'
             )); ?>
 
             <?php $template_loader->render_single_component('sidebar-quick-info', array(

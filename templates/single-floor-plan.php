@@ -24,11 +24,8 @@ $features = get_post_meta($post_id, 'floor_plan_features', true);
 if (is_string($features)) {
     $features = array_filter(array_map('trim', explode("\n", $features)));
 }
-$floor_plan_pdf = !empty($floor_plan['pdf']) ? $floor_plan['pdf'] : null;
-// Handle ACF file field - extract URL if it's an array
-if (is_array($floor_plan_pdf) && isset($floor_plan_pdf['url'])) {
-    $floor_plan_pdf = $floor_plan_pdf['url'];
-}
+$floor_plan_brochure = !empty($floor_plan['brochure']) ? $floor_plan['brochure'] : null;
+$design_package = !empty($floor_plan['design_package']) ? $floor_plan['design_package'] : null;
 
 // Breadcrumbs
 $breadcrumbs = array(
@@ -83,12 +80,24 @@ ob_start();
             </div>
         </div>
 
-        <?php if ($floor_plan_pdf) { ?>
+        <?php if ($floor_plan_brochure) { ?>
         <div class="row d-lg-none">
             <div class="col-12">
-                <a role="button" href="<?php echo esc_url($floor_plan_pdf); ?>"
+                <a role="button" href="<?php echo esc_url(is_array($floor_plan_brochure) ? $floor_plan_brochure['url'] : $floor_plan_brochure); ?>"
                     class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Floor Plan
+                    Floor Plan Brochure
+                    <span class="visually-hidden">PDF Download</span>
+                </a>
+            </div>
+        </div>
+        <?php }
+        
+        if ($design_package) { ?>
+        <div class="row d-lg-none">
+            <div class="col-12">
+                <a role="button" href="<?php echo esc_url(is_array($design_package) ? $design_package['url'] : $design_package); ?>"
+                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                    Design Package
                     <span class="visually-hidden">PDF Download</span>
                 </a>
             </div>
@@ -107,9 +116,9 @@ $nav_sections = array();
 $nav_sections[] = array('id' => 'overview', 'label' => 'Overview');
 
 // Check if there's description content
-if (!empty(get_post_field('post_content', $post_id))) {
-    $nav_sections[] = array('id' => 'description', 'label' => 'About');
-}
+// if (!empty(get_post_field('post_content', $post_id))) {
+//     $nav_sections[] = array('id' => 'description', 'label' => 'About');
+// }
 
 // Check if there are features
 if (!empty($features)) {
@@ -139,7 +148,9 @@ wp_reset_postdata();
 
 $template_loader->render_single_component('actions', array(
     'sections' => $nav_sections,
-    'floor_plan_pdf' => $floor_plan_pdf
+    'brochure' => $floor_plan_brochure,
+    'brochure_label' => 'Floor Plan Brochure',
+    'design_package' => $design_package
 )); ?>
 
 <div class="container">

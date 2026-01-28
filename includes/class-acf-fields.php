@@ -187,15 +187,29 @@ class Burgland_Homes_ACF_Fields
                 ),
                 array(
                     'key' => 'field_community_brochure',
-                    'label' => 'Brochure/PDF',
+                    'label' => 'Community Brochure',
                     'name' => 'community_brochure',
                     'type' => 'file',
-                    'instructions' => 'Upload community brochure',
+                    'instructions' => 'Upload community brochure (PDF)',
                     'required' => 0,
                     'return_format' => 'array',
                     'library' => 'all',
                     'mime_types' => 'pdf',
-                       'wrapper' => array(
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_community_design_package',
+                    'label' => 'Design Package',
+                    'name' => 'community_design_package',
+                    'type' => 'file',
+                    'instructions' => 'Upload design package (PDF)',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'library' => 'all',
+                    'mime_types' => 'pdf',
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -321,17 +335,31 @@ class Burgland_Homes_ACF_Fields
                     'required' => 0,
                     'rows' => 5,
                 ),
-                   array(
+                array(
                     'key' => 'field_fp_brochure',
-                    'label' => 'Brochure/PDF',
+                    'label' => 'Floor Plan Brochure',
                     'name' => 'floor_plan_brochure',
                     'type' => 'file',
-                    'instructions' => 'Upload floor plan brochure',
+                    'instructions' => 'Upload floor plan brochure (PDF)',
                     'required' => 0,
                     'return_format' => 'array',
                     'library' => 'all',
                     'mime_types' => 'pdf',
-                       'wrapper' => array(
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_fp_design_package',
+                    'label' => 'Design Package',
+                    'name' => 'floor_plan_design_package',
+                    'type' => 'file',
+                    'instructions' => 'Upload design package (PDF)',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'library' => 'all',
+                    'mime_types' => 'pdf',
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -529,20 +557,7 @@ class Burgland_Homes_ACF_Fields
                         'width' => '50',
                     ),
                 ),
-                array(
-                    'key' => 'field_lot_brochure',
-                    'label' => 'Brochure/PDF',
-                    'name' => 'lot_brochure',
-                    'type' => 'file',
-                    'instructions' => 'Upload lot brochure (PDF)',
-                    'required' => 0,
-                    'return_format' => 'array',
-                    'library' => 'all',
-                    'mime_types' => 'pdf',
-                    'wrapper' => array(
-                        'width' => '50',
-                    ),
-                ),
+
             ),
             'location' => array(
                 array(
