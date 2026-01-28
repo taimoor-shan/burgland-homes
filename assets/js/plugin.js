@@ -259,6 +259,8 @@
   function setupFilterHandlers() {
     const $statusFilter = $('#status-filter');
     const $priceFilter = $('#price-filter');
+    const $bedroomsFilter = $('#bedrooms-filter');
+    const $bathroomsFilter = $('#bathrooms-filter');
 
     // Handle filter changes
     $statusFilter.on('change', function() {
@@ -266,6 +268,14 @@
     });
 
     $priceFilter.on('change', function() {
+      applyFilters();
+    });
+
+    $bedroomsFilter.on('change', function() {
+      applyFilters();
+    });
+
+    $bathroomsFilter.on('change', function() {
       applyFilters();
     });
   }
@@ -276,6 +286,8 @@
   function applyFilters() {
     const selectedStatus = $('#status-filter').val();
     const selectedPrice = $('#price-filter').val();
+    const selectedBedrooms = $('#bedrooms-filter').val();
+    const selectedBathrooms = $('#bathrooms-filter').val();
 
     // Show loading spinner
     $('.loading-spinner').show();
@@ -286,7 +298,9 @@
       action: 'filter_communities',
       nonce: burglandHomesArchive.nonce,
       status: selectedStatus,
-      price_range: selectedPrice
+      price_range: selectedPrice,
+      bedrooms: selectedBedrooms,
+      bathrooms: selectedBathrooms
     };
 
     // Make AJAX request

@@ -52,6 +52,9 @@ class Burgland_Homes_Admin {
         // Add row actions for communities
         add_filter('post_row_actions', array($this, 'community_row_actions'), 10, 2);
         
+        // Add Community Status button to Communities list page
+        add_action('manage_posts_extra_tablenav', array($this, 'add_community_status_button'), 10, 1);
+        
         // Handle cleanup action
         add_action('admin_post_bh_cleanup_orphaned_terms', array($this, 'handle_cleanup_orphaned_terms'));
         
@@ -85,7 +88,7 @@ class Burgland_Homes_Admin {
         
         // Add Community Management page (hidden from menu, accessed via row action)
         add_submenu_page(
-            'burgland-homes', // Parent slug (same as main menu, but not displayed due to duplicate slug)
+            null, // Hidden from menu - only accessible via direct link
             __('Manage Community', 'burgland-homes'),
             __('Manage Community', 'burgland-homes'),
             'edit_posts',
@@ -95,7 +98,7 @@ class Burgland_Homes_Admin {
         
         // Add Archive Settings page (hidden from menu, accessed via dashboard button)
         add_submenu_page(
-            'burgland-homes',
+            null, // Hidden from menu - only accessible via dashboard button
             __('Archive Settings', 'burgland-homes'),
             __('Archive Settings', 'burgland-homes'),
             'manage_options',
@@ -326,9 +329,16 @@ class Burgland_Homes_Admin {
     public function community_column_content($column, $post_id) {
         switch ($column) {
             case 'community_status':
+                // Get status category (hierarchical taxonomy like Categories)
                 $terms = get_the_terms($post_id, 'bh_community_status');
                 if ($terms && !is_wp_error($terms)) {
-                    echo esc_html($terms[0]->name);
+                    $term_names = array();
+                    foreach ($terms as $term) {
+                        $term_names[] = esc_html($term->name);
+                    }
+                    echo implode(', ', $term_names);
+                } else {
+                    echo '—';
                 }
                 break;
             case 'total_lots':
@@ -527,6 +537,26 @@ class Burgland_Homes_Admin {
             $actions['manage_community'] = '<a href="' . esc_url($manage_url) . '">' . __('Manage Community', 'burgland-homes') . '</a>';
         }
         return $actions;
+    }
+    
+    /**
+     * Add Community Status button next to "Add Community" button
+     */
+    public function add_community_status_button($which) {
+        global $typenow;
+        
+        // Only show on Communities list page and at the top of the table
+        if ($typenow === 'bh_community' && $which === 'top') {
+            $status_url = admin_url('edit-tags.php?taxonomy=bh_community_status&post_type=bh_community');
+            ?>
+            <div class="alignleft actions">
+                <a href="<?php echo esc_url($status_url); ?>" class="button">
+                    <span class="dashicons dashicons-category" style="margin-top: 3px;"></span>
+                    <?php _e('Manage Status', 'burgland-homes'); ?>
+                </a>
+            </div>
+            <?php
+        }
     }
     
     /**

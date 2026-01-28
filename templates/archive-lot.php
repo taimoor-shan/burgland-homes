@@ -213,16 +213,16 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
 <main id="site-main">
     <!-- Page Header Component -->
-    <header class="page-header container-fluid" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+    <header class="page-header container-fluid d-flex justify-content-start align-items-end" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
         <div class="container">
-            <div class="row justify-content-start align-items-end">
-                <div class="col-lg-8 mx-auto text-center">
+            <div class="row">
+                <div class="col-lg-8 text-start">
                     <h1 class="display-3 text-cursive">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
                     
                     <?php if ($archive_subtitle): ?>
-                        <p class="page-excerpt uppercase text-white">
+                        <p class="page-excerpt text-uppercase text-white lead">
                             <?php echo esc_html($archive_subtitle); ?>
                         </p>
                     <?php endif; ?>
@@ -236,7 +236,10 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             <div class="row mb-4">
                 <div class="col-12">
                     <h6 class="text-dark">
-                        Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) across all communities
+                        Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) across all communities. 
+                         <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                            Reset Filters
+                        </button>
                     </h6>
                 </div>
             </div>
@@ -302,7 +305,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                     <?php endif; ?>
 
                     <!-- Sort Order -->
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                         <label for="sort-order" class="form-label fw-semibold">Sort By</label>
                         <select name="sort_order" id="sort-order" class="form-select">
                             <option value="price-asc">Price: Low to High</option>
@@ -310,26 +313,19 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                             <option value="sqft-asc">Sqft: Low to High</option>
                             <option value="sqft-desc">Sqft: High to Low</option>
                         </select>
-                    </div>
-
-                    <!-- Reset Filters Button -->
-                    <div class="col-md-3">
-                        <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-arrow-clockwise"></i> Reset Filters
-                        </button>
-                    </div>
+                    </div> -->
 
                 </form>
             </section>
 
             <!-- Lots Grid -->
             <div id="lots-grid-container">
-                <div class="loading-spinner text-center py-5" style="display: none;">
+                <!-- <div class="loading-spinner text-center py-5" style="display: none;">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="text-muted mt-3">Loading homes...</p>
-                </div>
+                </div> -->
 
                 <div id="lots-grid" class="row g-4">
                     <?php if (!empty($lot_cards_data)) : ?>

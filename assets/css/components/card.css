@@ -52,22 +52,33 @@
     color: var(--info-color);
 }
 
-.bh-card-specs {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: .7rem;
-    font-size: 0.875rem;
+/* Card Specs Styles */
+.bh-header-specs.bh-card-specs .spec-item  i {
+    font-size: .875rem;
+}
+.bh-header-specs.bh-card-specs .spec-label{
+           margin-top: .25rem;
+           color: #000000;
+
 }
 
-.bh-card-specs .spec-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.bh-header-specs .col-md-3:not(:last-child) {
+    border-right: 1px solid #e6e7e8;
 }
 
-.bh-card-specs i {
-    color: var(--primary-color);
+.card .card-body hr {
+    margin: .75rem auto;
+     border-style: solid;
+    border-top-width: 1px;
+    border-bottom-width: 0px;
+    border-right-width: 0px;
+    border-left-width: 0px;
+    border-color: #e6e7e8;
+    opacity: 1;
 }
+
+
+
 
 .bh-card-footer {
     font-size: 0.875rem;
@@ -75,6 +86,10 @@
 }
 a.bh-card-footer-link {
     text-decoration: underline;
+    transition: color 0.2s ease;
+}
+a.bh-card-footer-link:hover {
+    color: var(--info-color);
 }
 
 /* Specific Card Type Variations */

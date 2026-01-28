@@ -23,10 +23,10 @@ class Burgland_Homes_Data_Provider {
      * Spec configuration
      */
     private $spec_config = array(
-        'bedrooms' => array('suffix' => ' Bed', 'icon' => 'fa-solid fa-bed'),
-        'bathrooms' => array('suffix' => ' Bath', 'icon' => 'fa-solid fa-bath'),
-        'square_feet' => array('suffix' => ' sqft', 'icon' => 'fa-solid fa-ruler-combined', 'format' => true),
-        'garage' => array('suffix' => ' Car', 'icon' => 'fa-solid fa-car'),
+        'bedrooms' => array('suffix' => '', 'icon' => 'fa-solid fa-bed'),
+        'bathrooms' => array('suffix' => ' ', 'icon' => 'fa-solid fa-bath'),
+        'square_feet' => array('suffix' => ' ft<sup>2</sup>', 'icon' => 'fa-solid fa-ruler-combined', 'format' => true),
+        'garage' => array('suffix' => '', 'icon' => 'fa-solid fa-car'),
     );
     
     /**
@@ -104,7 +104,7 @@ class Burgland_Homes_Data_Provider {
                 }
                 
                 // Build specs from floor plan ranges
-                $data['specs'] = $this->build_specs_from_ranges($raw['floor_plan_ranges'], true);
+                $data['specs'] = $this->build_specs_from_ranges($raw['floor_plan_ranges'], false);
                 break;
 
             case 'bh_lot':
@@ -138,7 +138,7 @@ class Burgland_Homes_Data_Provider {
                     );
                 }
 
-                $data['specs'] = $this->build_specs($raw, true);
+                $data['specs'] = $this->build_specs($raw, false);
                 break;
 
             case 'bh_floor_plan':
@@ -155,7 +155,7 @@ class Burgland_Homes_Data_Provider {
                     'specs' => array()
                 );
 
-                $data['specs'] = $this->build_specs($raw, true);
+                $data['specs'] = $this->build_specs($raw, false);
                 break;
         }
 
@@ -247,7 +247,7 @@ class Burgland_Homes_Data_Provider {
         $utilities = Burgland_Homes_Utilities::get_instance();
         $floor_plan_ranges = $utilities->get_floor_plan_ranges($community_id);
         
-        // Get status
+        // Get status from hierarchical taxonomy (like Categories)
         $status_terms = wp_get_post_terms($community_id, 'bh_community_status');
         $status_label = '';
         $status_class = 'primary';
@@ -537,8 +537,15 @@ class Burgland_Homes_Data_Provider {
             }
             
             if (isset($ranges[$key]) && !empty($ranges[$key]['formatted'])) {
+                $label = $ranges[$key]['formatted'];
+
+                // For square feet, if it's a range, show min+
+                if ($key === 'square_feet' && isset($ranges[$key]['min']) && isset($ranges[$key]['max']) && $ranges[$key]['min'] != $ranges[$key]['max']) {
+                    $label = number_format($ranges[$key]['min']) . '+';
+                }
+
                 $specs[] = array(
-                    'label' => $ranges[$key]['formatted'] . $config['suffix'],
+                    'label' => $label . $config['suffix'],
                     'icon' => $config['icon']
                 );
             }

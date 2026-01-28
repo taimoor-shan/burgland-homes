@@ -52,6 +52,8 @@ class Burgland_Homes_Communities_Filter {
         // Get filter parameters
         $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
         $price_range = isset($_POST['price_range']) ? sanitize_text_field($_POST['price_range']) : '';
+        $bedrooms = isset($_POST['bedrooms']) ? sanitize_text_field($_POST['bedrooms']) : '';
+        $bathrooms = isset($_POST['bathrooms']) ? sanitize_text_field($_POST['bathrooms']) : '';
         
         // Build query arguments
         $query_args = array(
@@ -62,7 +64,7 @@ class Burgland_Homes_Communities_Filter {
             'order' => 'ASC',
         );
         
-        // Add status filter
+        // Add status filter (hierarchical taxonomy like Categories)
         if (!empty($status)) {
             $query_args['tax_query'] = array(
                 array(
@@ -102,6 +104,14 @@ class Burgland_Homes_Communities_Filter {
                 // Filter by price range
                 if (!empty($price_range) && !empty($community_price_range)) {
                     $skip = $this->should_skip_by_price($price_range, $community_price_range);
+                    if ($skip) {
+                        continue;
+                    }
+                }
+                
+                // Filter by bedrooms and bathrooms
+                if (!empty($bedrooms) || !empty($bathrooms)) {
+                    $skip = $this->should_skip_by_floor_plan_specs(get_the_ID(), $bedrooms, $bathrooms);
                     if ($skip) {
                         continue;
                     }
@@ -168,6 +178,53 @@ class Burgland_Homes_Communities_Filter {
             default:
                 return false;
         }
+    }
+    
+    /**
+     * Check if community should be skipped based on bedrooms/bathrooms filter
+     */
+    private function should_skip_by_floor_plan_specs($community_id, $bedrooms_filter, $bathrooms_filter) {
+        // Get floor plans associated with this community
+        $floor_plan_query = new WP_Query(array(
+            'post_type' => 'bh_floor_plan',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'meta_query' => array(
+                array(
+                    'key' => 'floor_plans_communities',
+                    'value' => '"' . $community_id . '"',
+                    'compare' => 'LIKE',
+                ),
+            ),
+            'fields' => 'ids',
+        ));
+        
+        // If community has no floor plans, don't skip it
+        if (!$floor_plan_query->have_posts()) {
+            return false;
+        }
+        
+        $has_matching_floor_plan = false;
+        
+        // Check if any floor plan matches the filter criteria
+        foreach ($floor_plan_query->posts as $floor_plan_id) {
+            $plan_bedrooms = get_post_meta($floor_plan_id, 'floor_plan_bedrooms', true);
+            $plan_bathrooms = get_post_meta($floor_plan_id, 'floor_plan_bathrooms', true);
+            
+            $matches_bedrooms = empty($bedrooms_filter) || $plan_bedrooms == $bedrooms_filter;
+            $matches_bathrooms = empty($bathrooms_filter) || $plan_bathrooms == $bathrooms_filter;
+            
+            // If this floor plan matches all active filters
+            if ($matches_bedrooms && $matches_bathrooms) {
+                $has_matching_floor_plan = true;
+                break;
+            }
+        }
+        
+        wp_reset_postdata();
+        
+        // Skip if no matching floor plan found
+        return !$has_matching_floor_plan;
     }
     
 }

@@ -11,15 +11,48 @@
 get_header();
 b5st_mainbody_before();
 
-// Get all community status terms
-$status_terms = get_terms(array(
+// Get all community status categories (hierarchical)
+$status_categories = get_terms(array(
     'taxonomy' => 'bh_community_status',
     'hide_empty' => false,
+    'orderby' => 'name',
+    'order' => 'ASC',
 ));
 
 // Get filter values from URL
 $selected_status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : '';
 $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price_range']) : '';
+$selected_bedrooms = isset($_GET['bedrooms']) ? sanitize_text_field($_GET['bedrooms']) : '';
+$selected_bathrooms = isset($_GET['bathrooms']) ? sanitize_text_field($_GET['bathrooms']) : '';
+
+// Get unique bedroom and bathroom options from floor plans
+$bedrooms_options = array();
+$bathrooms_options = array();
+
+$floor_plans_query = new WP_Query(array(
+    'post_type' => 'bh_floor_plan',
+    'posts_per_page' => -1,
+    'post_status' => 'publish',
+));
+
+if ($floor_plans_query->have_posts()) {
+    while ($floor_plans_query->have_posts()) {
+        $floor_plans_query->the_post();
+        $bedrooms = get_post_meta(get_the_ID(), 'floor_plan_bedrooms', true);
+        $bathrooms = get_post_meta(get_the_ID(), 'floor_plan_bathrooms', true);
+        
+        if (!empty($bedrooms) && !in_array($bedrooms, $bedrooms_options)) {
+            $bedrooms_options[] = $bedrooms;
+        }
+        if (!empty($bathrooms) && !in_array($bathrooms, $bathrooms_options)) {
+            $bathrooms_options[] = $bathrooms;
+        }
+    }
+    wp_reset_postdata();
+}
+
+sort($bedrooms_options, SORT_NUMERIC);
+sort($bathrooms_options, SORT_NUMERIC);
 
 // Get archive settings from options
 $archive_title = get_option('bh_archive_communities_title', 'Florida');
@@ -29,16 +62,16 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 ?>
 
 <main id="site-main">
-    <header class="page-header container-fluid" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+    <header class="page-header container-fluid d-flex justify-content-start align-items-end" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
         <div class="container">
-            <div class="row justify-content-start align-items-center">
-                <div class="col-lg-8 mx-auto text-start">
+            <div class="row">
+                <div class="col-lg-8 text-start">
                     <h1 class="display-3 text-cursive">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
                     
                     <?php if ($archive_subtitle): ?>
-                        <p class="page-excerpt uppercase text-white">
+                        <p class="page-excerpt text-uppercase text-white fw-300 lead">
                             <?php echo esc_html($archive_subtitle); ?>
                         </p>
                     <?php endif; ?>
@@ -46,26 +79,22 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             </div>
         </div>
     </header>
-    <div class="communities-archive container-fluid">
+    <div class="communities-archive">
         <!-- Filters Section -->
-        <section class="bh-filters filters-section border-bottom py-4">
-            <div class="container-fluid">
+        <section class="bh-filters filters-section border-bottom py-4 bg-light">
+            <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <h1 class="mb-2 text-primary">Our Communities</h1>
-                        <p class="text-dark mb-0">Discover your perfect home in one of our beautiful communities</p>
-                    </div>
-                      <div class="col-md-6">
+                      <div class="col-12">
                         <form id="community-filters" class="row g-3 align-items-end">
-                            <!-- Status Filter -->
-                            <div class="col-md-6">
+                            <!-- Status Filter (Category Style) -->
+                            <div class="col-md-3">
                                 <label for="status-filter" class="form-label text-info">Community Status</label>
                                 <select name="status" id="status-filter" class="form-select">
                                     <option value="">All Communities</option>
-                                    <?php if (!empty($status_terms) && !is_wp_error($status_terms)): ?>
-                                        <?php foreach ($status_terms as $term): ?>
-                                            <option value="<?php echo esc_attr($term->slug); ?>" <?php selected($selected_status, $term->slug); ?>>
-                                                <?php echo esc_html($term->name); ?>
+                                    <?php if (!empty($status_categories) && !is_wp_error($status_categories)): ?>
+                                        <?php foreach ($status_categories as $category): ?>
+                                            <option value="<?php echo esc_attr($category->slug); ?>" <?php selected($selected_status, $category->slug); ?>>
+                                                <?php echo esc_html($category->name); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -73,7 +102,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                             </div>
 
                             <!-- Price Range Filter -->
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <label for="price-filter" class="form-label text-info">Price Range</label>
                                 <select name="price_range" id="price-filter" class="form-select">
                                     <option value="">All Price Ranges</option>
@@ -83,6 +112,36 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                 </select>
                             </div>
 
+                            <!-- Bedrooms Filter -->
+                            <?php if (!empty($bedrooms_options)): ?>
+                            <div class="col-md-3">
+                                <label for="bedrooms-filter" class="form-label text-info">Bedrooms</label>
+                                <select name="bedrooms" id="bedrooms-filter" class="form-select">
+                                    <option value="">All Bedrooms</option>
+                                    <?php foreach ($bedrooms_options as $bedrooms): ?>
+                                        <option value="<?php echo esc_attr($bedrooms); ?>" <?php selected($selected_bedrooms, $bedrooms); ?>>
+                                            <?php echo esc_html($bedrooms); ?> Bed<?php echo $bedrooms > 1 ? 's' : ''; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <?php endif; ?>
+
+                            <!-- Bathrooms Filter -->
+                            <?php if (!empty($bathrooms_options)): ?>
+                            <div class="col-md-3">
+                                <label for="bathrooms-filter" class="form-label text-info">Bathrooms</label>
+                                <select name="bathrooms" id="bathrooms-filter" class="form-select">
+                                    <option value="">All Bathrooms</option>
+                                    <?php foreach ($bathrooms_options as $bathrooms): ?>
+                                        <option value="<?php echo esc_attr($bathrooms); ?>" <?php selected($selected_bathrooms, $bathrooms); ?>>
+                                            <?php echo esc_html($bathrooms); ?> Bath<?php echo $bathrooms > 1 ? 's' : ''; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <?php endif; ?>
+
                         </form>
                     </div>
                 </div>
@@ -91,12 +150,12 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
         </section>
 
         <!-- Main Content: Two Column Layout -->
-        <section class="communities-content py-5">
-            <div class="container-fluid">
-                <div class="row g-4">
+        <section class="communities-content ">
+            <div class="container-fluid bg-warning">
+                <div class="row">
                     <!-- Left Column: Community Cards -->
                     <div class="col-lg-6">
-                        <div id="communities-grid" class="communities-grid">
+                        <div id="communities-grid" class="communities-grid pt-4">
                             <div class="loading-spinner text-center py-5" style="display: none;">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>

@@ -215,10 +215,10 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 ?>
 
 <main id="site-main">
-    <header class="page-header container-fluid" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+    <header class="page-header container-fluid d-flex justify-content-start align-items-end" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
         <div class="container">
             <div class="row justify-content-start align-items-end">
-                <div class="col-lg-8 mx-auto text-center">
+                <div class="col-lg-8 text-start">
                     <h1 class="display-3 text-cursive">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
@@ -235,11 +235,12 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
     <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
         <div class="container">
             <!-- Section Header -->
-            <div class="row mb-4">
+            <div class="row mb-3">
                 <div class="col-12">
-                    <h1 class="text-primary">Available Floor Plans</h1>
                     <h6 class="text-dark">
-                        Showing <span id="lots-count"><?php echo count($floor_plan_cards_data); ?></span> Floor Plan(s) across all communities
+                        Showing <span id="lots-count"><?php echo count($floor_plan_cards_data); ?></span> Floor Plan(s) across all communities <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                            Reset Filters
+                        </button>
                     </h6>
                 </div>
             </div>
@@ -249,7 +250,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
                     <!-- Community Filter -->
                     <?php if (!empty($community_options)) : ?>
-                        <div class="col-md-3 col-lg-2">
+                        <div class="col-md-3 col-lg-3">
                             <label for="community-filter" class="form-label fw-semibold">Community</label>
                             <select name="community" id="community-filter" class="form-select">
                                 <option value="">All Communities</option>
@@ -262,7 +263,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
                     <!-- Square Footage Range -->
                     <?php if (!empty($sqft_ranges)) : ?>
-                        <div class="col-md-3 col-lg-2">
+                        <div class="col-md-3 col-lg-3">
                             <label for="sqft-filter" class="form-label fw-semibold">Sqft Range</label>
                             <select name="sqft_range" id="sqft-filter" class="form-select">
                                 <option value="">All Sizes</option>
@@ -275,7 +276,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
                     <!-- Bedrooms Filter -->
                     <?php if (!empty($bedrooms_options)) : ?>
-                        <div class="col-md-3 col-lg-2">
+                        <div class="col-md-3 col-lg-3">
                             <label for="bedrooms-filter" class="form-label fw-semibold">Bedrooms</label>
                             <select name="bedrooms" id="bedrooms-filter" class="form-select">
                                 <option value="">All Bedrooms</option>
@@ -290,7 +291,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
                     <!-- Bathrooms Filter -->
                     <?php if (!empty($bathrooms_options)) : ?>
-                        <div class="col-md-3 col-lg-2">
+                        <div class="col-md-3 col-lg-3">
                             <label for="bathrooms-filter" class="form-label fw-semibold">Bathrooms</label>
                             <select name="bathrooms" id="bathrooms-filter" class="form-select">
                                 <option value="">All Bathrooms</option>
@@ -304,7 +305,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                     <?php endif; ?>
 
                     <!-- Sort Order -->
-                    <div class="col-md-3 col-lg-2">
+                    <!-- <div class="col-md-3 col-lg-2">
                         <label for="sort-order" class="form-label fw-semibold">Sort By</label>
                         <select name="sort_order" id="sort-order" class="form-select">
                             <option value="price-asc">Price: Low to High</option>
@@ -312,26 +313,21 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                             <option value="sqft-asc">Sqft: Low to High</option>
                             <option value="sqft-desc">Sqft: High to Low</option>
                         </select>
-                    </div>
+                    </div> -->
 
-                    <!-- Reset Filters Button -->
-                    <div class="col-md-3 col-lg-2">
-                        <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-arrow-clockwise"></i> Reset Filters
-                        </button>
-                    </div>
+                   
 
                 </form>
             </section>
 
             <!-- Floor Plans Grid -->
             <div id="lots-grid-container">
-                <div class="loading-spinner text-center py-5" style="display: none;">
+                <!-- <div class="loading-spinner text-center py-5" style="display: none;">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="text-muted mt-3">Loading floor plans...</p>
-                </div>
+                </div> -->
 
                 <div id="lots-grid" class="row g-4">
                     <?php if (!empty($floor_plan_cards_data)) : ?>
@@ -342,7 +338,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                 $communities_attr = implode(',', array_map('intval', $card['communities']));
                             }
                             ?>
-                            <div class="col-md-6 col-lg-3 lot-card-wrapper"
+                            <div class="col-md-6 col-lg-4 lot-card-wrapper"
                                 data-bedrooms="<?php echo esc_attr($card['bedrooms']); ?>"
                                 data-bathrooms="<?php echo esc_attr($card['bathrooms']); ?>"
                                 data-sqft="<?php echo esc_attr($card['sqft_numeric']); ?>"

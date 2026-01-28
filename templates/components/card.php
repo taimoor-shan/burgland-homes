@@ -71,24 +71,57 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
         <?php endif; ?>
     </div>
     <div class="card-body d-flex flex-column p-4 pt-3">
-        <h3 class="card-title h4 mb-1">
+        <h2 class="card-title mb-2 h4">
             <a href="<?php echo esc_url($data['url']); ?>" class="text-decoration-none text-dark">
                 <?php echo esc_html($data['title']); ?>
             </a>
-        </h3>
+        </h2>
+         <?php if ($card_type === 'community' && !empty($data['address'])): ?>
+            <!-- Address with line break between street and city/state/zip for better card layout -->
+            <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
+                <div>
+                 
+                    <p class="mb-3">
+                        <?php if (!empty($map_url)): ?>
+                            <a href="<?php echo esc_url($map_url); ?>" class="bh-card-footer-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">
+                                <?php echo wp_kses($data['address'], array('br' => array())); ?>
+                            </a>
+                        <?php else: ?>
+                            <span class="bh-card-footer-link"><?php echo wp_kses($data['address'], array('br' => array())); ?></span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+            </div>
+        <?php elseif ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
+            <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
+                <div>
+                    <p class="">
+                        <?php if (!empty($floor_plan_url)): ?>
+                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info" onclick="event.stopPropagation();">
+                                <?php echo esc_html($data['floor_plan_name']); ?>
+                            </a>
+                        <?php else: ?>
+                            <span class="bh-card-footer-link"><?php echo esc_html($data['floor_plan_name']); ?></span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+            </div>
+        <?php endif; ?>
         <?php if (!empty($data['price'])): ?>
-            <h5 class="bh-card-price bh-card-price-badge text-info mb-2">
+            <h3 class="text-info h4 border-bottom pb-3">
                 <?php if ($show_from_label): ?>
                     <span class="me-1 small">From<sup>*</sup></span>
                 <?php endif; ?>
                 <span class="fw"><?php echo esc_html($data['price']); ?></span>
-            </h5>
+            </h3>
         <?php endif; ?>
 
 
+
+
         <?php if (!empty($data['specs'])): ?>
-            <div class="mt-4">
-                <div class="row g-5 bh-header-specs bh-card-specs">
+            <div class="pt-2">
+                <div class="row g-2 bh-header-specs bh-card-specs mb-0">
                     <?php
                     // Map Bootstrap Icons to Font Awesome classes
                     $icon_map = array(
@@ -109,47 +142,15 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                             $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
                         }
                     ?>
-                        <div class="col-4">
+                        <div class="col-6 col-md-3">
                             <span class="spec-item">
                                 <?php if ($icon_class): ?>
                                     <i class="<?php echo esc_attr($icon_class); ?>"></i>
                                 <?php endif; ?>
-                                <span class="spec-label"><?php echo esc_html($label); ?></span>
+                                <span class="spec-label"><?php echo wp_kses($label, array('sup' => array())); ?></span>
                             </span>
                         </div>
                     <?php } ?>
-                </div>
-            </div>
-        <?php endif; ?>
-        <?php if ($card_type === 'community' && !empty($data['address'])): ?>
-            <!-- Address with line break between street and city/state/zip for better card layout -->
-            <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
-                <div>
-                    <p class="text-dark mb-1">Address:</p>
-                    <p class="text-info mb-0">
-                        <?php if (!empty($map_url)): ?>
-                            <a href="<?php echo esc_url($map_url); ?>" class="bh-card-footer-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">
-                                <?php echo wp_kses($data['address'], array('br' => array())); ?>
-                            </a>
-                        <?php else: ?>
-                            <span class="bh-card-footer-link"><?php echo wp_kses($data['address'], array('br' => array())); ?></span>
-                        <?php endif; ?>
-                    </p>
-                </div>
-            </div>
-        <?php elseif ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
-            <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
-                <div>
-                    <p class="mb-0">
-                        Floor Plan:
-                        <?php if (!empty($floor_plan_url)): ?>
-                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info" onclick="event.stopPropagation();">
-                                <?php echo esc_html($data['floor_plan_name']); ?>
-                            </a>
-                        <?php else: ?>
-                            <span class="bh-card-footer-link text-info"><?php echo esc_html($data['floor_plan_name']); ?></span>
-                        <?php endif; ?>
-                    </p>
                 </div>
             </div>
         <?php endif; ?>
