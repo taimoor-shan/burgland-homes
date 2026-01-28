@@ -209,8 +209,9 @@ if (!empty($community_ids_for_filter)) {
 ?>
 
 <main id="site-main">
+     <?php b5st_page_header(); ?>
     <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
-        <div class="container-fluid">
+        <div class="container">
             <!-- Section Header -->
             <div class="row mb-4">
                 <div class="col-12">
@@ -220,7 +221,6 @@ if (!empty($community_ids_for_filter)) {
                     </h6>
                 </div>
             </div>
-
             <!-- Filters Section -->
             <section class="bh-filters mb-4">
                 <form id="lots-filters" class="row g-3 align-items-end">

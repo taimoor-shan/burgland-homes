@@ -51,7 +51,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
     style="cursor: pointer;">
     <div class="bh-card-image position-relative">
         <?php if (!empty($data['image_caption'])) : ?>
-            <figcaption class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white small px-3 py-2 z-2">
+            <figcaption class="figCaption">
                 <?php echo esc_html($data['image_caption']); ?>
             </figcaption>
         <?php endif; ?>
@@ -61,7 +61,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
             style="aspect-ratio: 9/5; object-fit: cover;">
 
         <?php if (!empty($data['badges'])): ?>
-            <div class="bh-card-badges position-absolute top-0 start-0 p-2 d-flex flex-column gap-1">
+            <div class="bh-card-badges">
                 <?php foreach ($data['badges'] as $badge): ?>
                     <span class="badge bg-<?php echo esc_attr($badge['class']); ?> text-white">
                         <?php echo esc_html($badge['label']); ?>
@@ -87,17 +87,38 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
 
 
         <?php if (!empty($data['specs'])): ?>
-            <div class="bh-card-specs mb-3 text-dark h6">
-                <?php
-                $spec_labels = array();
-                foreach ($data['specs'] as $spec) {
-                    // Remove trailing .00 from decimal values
-                    $label = $spec['label'];
-                    $label = preg_replace('/\.00(?=\s|$)/', '', $label);
-                    $spec_labels[] = esc_html($label);
-                }
-                echo implode(' &nbsp; | &nbsp; ', $spec_labels);
-                ?>
+            <div class="mt-4">
+                <div class="row g-5 bh-header-specs bh-card-specs">
+                    <?php
+                    // Map Bootstrap Icons to Font Awesome classes
+                    $icon_map = array(
+                        'house-door' => 'fa-solid fa-bed',
+                        'droplet' => 'fa-solid fa-bath',
+                        'arrows-angle-expand' => 'fa-solid fa-ruler-combined',
+                        'car-front' => 'fa-solid fa-car',
+                    );
+
+                    foreach ($data['specs'] as $spec) {
+                        // Remove trailing .00 from decimal values
+                        $label = $spec['label'];
+                        $label = preg_replace('/\.00(?=\s|$)/', '', $label);
+
+                        // Convert Bootstrap icon to Font Awesome if needed
+                        $icon_class = '';
+                        if (!empty($spec['icon'])) {
+                            $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
+                        }
+                    ?>
+                        <div class="col-4">
+                            <span class="spec-item">
+                                <?php if ($icon_class): ?>
+                                    <i class="<?php echo esc_attr($icon_class); ?>"></i>
+                                <?php endif; ?>
+                                <span class="spec-label"><?php echo esc_html($label); ?></span>
+                            </span>
+                        </div>
+                    <?php } ?>
+                </div>
             </div>
         <?php endif; ?>
         <?php if ($card_type === 'community' && !empty($data['address'])): ?>
@@ -119,13 +140,14 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
         <?php elseif ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
             <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
                 <div>
-                    <p class="text-info mb-0">
+                    <p class="mb-0">
+                        Floor Plan:
                         <?php if (!empty($floor_plan_url)): ?>
-                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link" onclick="event.stopPropagation();">
+                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info" onclick="event.stopPropagation();">
                                 <?php echo esc_html($data['floor_plan_name']); ?>
                             </a>
                         <?php else: ?>
-                            <span class="bh-card-footer-link"><?php echo esc_html($data['floor_plan_name']); ?></span>
+                            <span class="bh-card-footer-link text-info"><?php echo esc_html($data['floor_plan_name']); ?></span>
                         <?php endif; ?>
                     </p>
                 </div>

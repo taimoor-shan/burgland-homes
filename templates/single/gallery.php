@@ -40,7 +40,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                     <div class="swiper-slide">
                         <figure class="m-0 position-relative">
                             <?php if ($caption) : ?>
-                                <figcaption class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white small px-3 py-2 z-2">
+                                <figcaption class="figCaption">
                                     <?php echo esc_html($caption); ?>
                                 </figcaption>
                             <?php endif; ?>
@@ -69,7 +69,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
         <div class="plugin-slider__single overflow-hidden position-relative">
             <figure class="m-0 position-relative">
                 <?php if ($caption) : ?>
-                    <figcaption class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white small px-3 py-2 z-2">
+                    <figcaption class="figCaption">
                         <?php echo esc_html($caption); ?>
                     </figcaption>
                 <?php endif; ?>

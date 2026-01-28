@@ -5,6 +5,10 @@
     list-style: none;
 }
 
+.bh-header-specs.bh-card-specs .spec-item  i {
+    font-size: .875rem;
+}
+
 .bh-header-specs .col-auto:not(:last-child) {
     border-right: 1px solid var(--light-color);
 }

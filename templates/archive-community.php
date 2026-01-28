@@ -9,6 +9,7 @@
  */
 
 get_header();
+b5st_mainbody_before();
 
 // Get all community status terms
 $status_terms = get_terms(array(
@@ -22,7 +23,8 @@ $selected_price = isset($_GET['price_range']) ? sanitize_text_field($_GET['price
 ?>
 
 <main id="site-main">
-    <div class="communities-archive container-fluid px-5">
+       <?php b5st_page_header(); ?>
+    <div class="communities-archive container-fluid">
         <!-- Filters Section -->
         <section class="bh-filters filters-section border-bottom py-4">
             <div class="container-fluid">

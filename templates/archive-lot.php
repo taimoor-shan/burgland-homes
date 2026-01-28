@@ -207,7 +207,7 @@ if (!empty($community_ids_for_filter)) {
 
 <main id="site-main">
     <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
-        <div class="container-fluid">
+        <div class="container">
             <!-- Section Header -->
             <div class="row mb-4">
                 <div class="col-12">
