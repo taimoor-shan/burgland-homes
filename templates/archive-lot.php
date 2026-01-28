@@ -203,15 +203,38 @@ if (!empty($community_ids_for_filter)) {
         }
     }
 }
+
+// Get archive settings from options
+$archive_title = get_option('bh_archive_lots_title', 'Available Homes');
+$archive_subtitle = get_option('bh_archive_lots_subtitle', 'Find Your Dream Property');
+$archive_image_id = get_option('bh_archive_lots_image', '');
+$background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) : '';
 ?>
 
 <main id="site-main">
+    <!-- Page Header Component -->
+    <header class="page-header container-fluid" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+        <div class="container">
+            <div class="row justify-content-start align-items-end">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-3 text-cursive">
+                        <?php echo esc_html($archive_title); ?>
+                    </h1>
+                    
+                    <?php if ($archive_subtitle): ?>
+                        <p class="page-excerpt uppercase text-white">
+                            <?php echo esc_html($archive_subtitle); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </header>
     <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
         <div class="container">
             <!-- Section Header -->
             <div class="row mb-4">
                 <div class="col-12">
-                    <h1 class="text-primary">Available Homes</h1>
                     <h6 class="text-dark">
                         Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) across all communities
                     </h6>

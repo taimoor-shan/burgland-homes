@@ -92,6 +92,16 @@ class Burgland_Homes_Admin {
             'burgland-homes-manage-community',
             array($this, 'render_community_management')
         );
+        
+        // Add Archive Settings page (hidden from menu, accessed via dashboard button)
+        add_submenu_page(
+            'burgland-homes',
+            __('Archive Settings', 'burgland-homes'),
+            __('Archive Settings', 'burgland-homes'),
+            'manage_options',
+            'burgland-homes-archive-settings',
+            array($this, 'render_archive_settings')
+        );
     }
     
     /**
@@ -206,17 +216,13 @@ class Burgland_Homes_Admin {
                 </div>
                 
                 <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h2>Data Cleanup Tools</h2>
-                    <p>If you're experiencing issues with deleted communities still appearing, use this tool to clean up orphaned taxonomy terms.</p>
-                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onsubmit="return confirm('Are you sure you want to clean up orphaned taxonomy terms? This will remove any community terms that no longer have a corresponding published community post.');">
-                        <?php wp_nonce_field('bh_cleanup_orphaned_terms', 'bh_cleanup_nonce'); ?>
-                        <input type="hidden" name="action" value="bh_cleanup_orphaned_terms" />
-                        <button type="submit" class="button button-secondary">
-                            <span class="dashicons dashicons-update" style="vertical-align: middle;"></span>
-                            Clean Up Orphaned Community Terms
-                        </button>
-                    </form>
-                    <p class="description">This tool will delete any taxonomy terms that don't have a matching published community post and remove them from all floor plans.</p>
+                    <h2>Archive Pages Settings</h2>
+                    <p>Customize the header section for your archive pages (Communities, Floor Plans, and Lots).</p>
+                    <a href="<?php echo admin_url('admin.php?page=burgland-homes-archive-settings'); ?>" class="button button-primary">
+                        <span class="dashicons dashicons-admin-settings" style="vertical-align: middle;"></span>
+                        Manage Archive Settings
+                    </a>
+                    <p class="description" style="margin-top: 10px;">Configure title, subtitle, and featured images for each archive page.</p>
                 </div>
             </div>
         </div>
@@ -239,7 +245,8 @@ class Burgland_Homes_Admin {
         
         // Check for main plugin dashboard and community management pages
         if ($screen && ($screen->id === 'toplevel_page_burgland-homes' || 
-                       $screen->id === 'burgland-homes_page_burgland-homes-manage-community')) {
+                       $screen->id === 'burgland-homes_page_burgland-homes-manage-community' ||
+                       $screen->id === 'burgland-homes_page_burgland-homes-archive-settings')) {
             $is_plugin_page = true;
         }
         
@@ -250,6 +257,11 @@ class Burgland_Homes_Admin {
         
         if (!$is_plugin_page) {
             return;
+        }
+        
+        // Enqueue media uploader for archive settings page
+        if ($screen && $screen->id === 'burgland-homes_page_burgland-homes-archive-settings') {
+            wp_enqueue_media();
         }
         
         wp_enqueue_style(
@@ -1047,5 +1059,298 @@ class Burgland_Homes_Admin {
             </div>
             <?php
         }
+    }
+    
+    /**
+     * Render Archive Settings page
+     */
+    public function render_archive_settings() {
+        // Check user permissions
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have permission to access this page.', 'burgland-homes'));
+        }
+        
+        // Handle form submission
+        if (isset($_POST['bh_save_archive_settings']) && check_admin_referer('bh_archive_settings', 'bh_archive_settings_nonce')) {
+            $this->save_archive_settings();
+            echo '<div class="notice notice-success is-dismissible"><p>' . __('Archive settings saved successfully!', 'burgland-homes') . '</p></div>';
+        }
+        
+        // Get current settings
+        $communities_title = get_option('bh_archive_communities_title', 'Florida');
+        $communities_subtitle = get_option('bh_archive_communities_subtitle', 'New Home Communities');
+        $communities_image = get_option('bh_archive_communities_image', '');
+        
+        $floor_plans_title = get_option('bh_archive_floor_plans_title', 'Our Floor Plans');
+        $floor_plans_subtitle = get_option('bh_archive_floor_plans_subtitle', 'Find Your Perfect Home Design');
+        $floor_plans_image = get_option('bh_archive_floor_plans_image', '');
+        
+        $lots_title = get_option('bh_archive_lots_title', 'Available Homes');
+        $lots_subtitle = get_option('bh_archive_lots_subtitle', 'Find Your Dream Property');
+        $lots_image = get_option('bh_archive_lots_image', '');
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html__('Archive Pages Settings', 'burgland-homes'); ?></h1>
+            <p><?php _e('Customize the header section for each archive page.', 'burgland-homes'); ?></p>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('bh_archive_settings', 'bh_archive_settings_nonce'); ?>
+                
+                <div style="display: grid; gap: 30px; margin-top: 30px;">
+                    
+                    <!-- Communities Archive -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-admin-multisite" style="color: #1e40af;"></span>
+                            <?php _e('Communities Archive', 'burgland-homes'); ?>
+                        </h2>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="communities_title"><?php _e('Title', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="communities_title" name="communities_title" 
+                                           value="<?php echo esc_attr($communities_title); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Main heading for the communities archive page', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="communities_subtitle"><?php _e('Subtitle', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="communities_subtitle" name="communities_subtitle" 
+                                           value="<?php echo esc_attr($communities_subtitle); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="communities_image"><?php _e('Featured Image', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <div class="bh-image-upload-wrapper">
+                                        <input type="hidden" id="communities_image" name="communities_image" 
+                                               value="<?php echo esc_attr($communities_image); ?>" />
+                                        <button type="button" class="button bh-upload-image-button" data-target="communities_image">
+                                            <?php _e('Choose Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <button type="button" class="button bh-remove-image-button" data-target="communities_image" 
+                                                style="<?php echo empty($communities_image) ? 'display:none;' : ''; ?>">
+                                            <?php _e('Remove Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <div class="bh-image-preview" style="margin-top: 10px;">
+                                            <?php if ($communities_image): ?>
+                                                <img src="<?php echo esc_url(wp_get_attachment_url($communities_image)); ?>" 
+                                                     style="max-width: 300px; height: auto; display: block;" />
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Floor Plans Archive -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-layout" style="color: #059669;"></span>
+                            <?php _e('Floor Plans Archive', 'burgland-homes'); ?>
+                        </h2>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="floor_plans_title"><?php _e('Title', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="floor_plans_title" name="floor_plans_title" 
+                                           value="<?php echo esc_attr($floor_plans_title); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Main heading for the floor plans archive page', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="floor_plans_subtitle"><?php _e('Subtitle', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="floor_plans_subtitle" name="floor_plans_subtitle" 
+                                           value="<?php echo esc_attr($floor_plans_subtitle); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="floor_plans_image"><?php _e('Featured Image', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <div class="bh-image-upload-wrapper">
+                                        <input type="hidden" id="floor_plans_image" name="floor_plans_image" 
+                                               value="<?php echo esc_attr($floor_plans_image); ?>" />
+                                        <button type="button" class="button bh-upload-image-button" data-target="floor_plans_image">
+                                            <?php _e('Choose Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <button type="button" class="button bh-remove-image-button" data-target="floor_plans_image" 
+                                                style="<?php echo empty($floor_plans_image) ? 'display:none;' : ''; ?>">
+                                            <?php _e('Remove Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <div class="bh-image-preview" style="margin-top: 10px;">
+                                            <?php if ($floor_plans_image): ?>
+                                                <img src="<?php echo esc_url(wp_get_attachment_url($floor_plans_image)); ?>" 
+                                                     style="max-width: 300px; height: auto; display: block;" />
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Lots/Homes Archive -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-location" style="color: #dc2626;"></span>
+                            <?php _e('Lots/Homes Archive', 'burgland-homes'); ?>
+                        </h2>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="lots_title"><?php _e('Title', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="lots_title" name="lots_title" 
+                                           value="<?php echo esc_attr($lots_title); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Main heading for the lots/homes archive page', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="lots_subtitle"><?php _e('Subtitle', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" id="lots_subtitle" name="lots_subtitle" 
+                                           value="<?php echo esc_attr($lots_subtitle); ?>" 
+                                           class="regular-text" />
+                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="lots_image"><?php _e('Featured Image', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <div class="bh-image-upload-wrapper">
+                                        <input type="hidden" id="lots_image" name="lots_image" 
+                                               value="<?php echo esc_attr($lots_image); ?>" />
+                                        <button type="button" class="button bh-upload-image-button" data-target="lots_image">
+                                            <?php _e('Choose Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <button type="button" class="button bh-remove-image-button" data-target="lots_image" 
+                                                style="<?php echo empty($lots_image) ? 'display:none;' : ''; ?>">
+                                            <?php _e('Remove Image', 'burgland-homes'); ?>
+                                        </button>
+                                        <div class="bh-image-preview" style="margin-top: 10px;">
+                                            <?php if ($lots_image): ?>
+                                                <img src="<?php echo esc_url(wp_get_attachment_url($lots_image)); ?>" 
+                                                     style="max-width: 300px; height: auto; display: block;" />
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                </div>
+                
+                <p class="submit">
+                    <input type="submit" name="bh_save_archive_settings" class="button button-primary" 
+                           value="<?php esc_attr_e('Save Settings', 'burgland-homes'); ?>" />
+                    <a href="<?php echo admin_url('admin.php?page=burgland-homes'); ?>" class="button">
+                        <?php _e('Back to Dashboard', 'burgland-homes'); ?>
+                    </a>
+                </p>
+            </form>
+        </div>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            // Media uploader
+            var mediaUploader;
+            
+            $('.bh-upload-image-button').on('click', function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var targetId = button.data('target');
+                var targetInput = $('#' + targetId);
+                var wrapper = button.closest('.bh-image-upload-wrapper');
+                
+                if (mediaUploader) {
+                    mediaUploader.open();
+                    return;
+                }
+                
+                mediaUploader = wp.media({
+                    title: '<?php _e('Choose Image', 'burgland-homes'); ?>',
+                    button: {
+                        text: '<?php _e('Use This Image', 'burgland-homes'); ?>'
+                    },
+                    multiple: false
+                });
+                
+                mediaUploader.on('select', function() {
+                    var attachment = mediaUploader.state().get('selection').first().toJSON();
+                    targetInput.val(attachment.id);
+                    wrapper.find('.bh-image-preview').html('<img src="' + attachment.url + '" style="max-width: 300px; height: auto; display: block;" />');
+                    wrapper.find('.bh-remove-image-button').show();
+                });
+                
+                mediaUploader.open();
+            });
+            
+            $('.bh-remove-image-button').on('click', function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var targetId = button.data('target');
+                var wrapper = button.closest('.bh-image-upload-wrapper');
+                
+                $('#' + targetId).val('');
+                wrapper.find('.bh-image-preview').html('');
+                button.hide();
+            });
+        });
+        </script>
+        <?php
+    }
+    
+    /**
+     * Save archive settings
+     */
+    private function save_archive_settings() {
+        // Communities
+        update_option('bh_archive_communities_title', sanitize_text_field($_POST['communities_title']));
+        update_option('bh_archive_communities_subtitle', sanitize_text_field($_POST['communities_subtitle']));
+        update_option('bh_archive_communities_image', intval($_POST['communities_image']));
+        
+        // Floor Plans
+        update_option('bh_archive_floor_plans_title', sanitize_text_field($_POST['floor_plans_title']));
+        update_option('bh_archive_floor_plans_subtitle', sanitize_text_field($_POST['floor_plans_subtitle']));
+        update_option('bh_archive_floor_plans_image', intval($_POST['floor_plans_image']));
+        
+        // Lots
+        update_option('bh_archive_lots_title', sanitize_text_field($_POST['lots_title']));
+        update_option('bh_archive_lots_subtitle', sanitize_text_field($_POST['lots_subtitle']));
+        update_option('bh_archive_lots_image', intval($_POST['lots_image']));
     }
 }

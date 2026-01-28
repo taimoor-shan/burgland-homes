@@ -206,10 +206,32 @@ if (!empty($community_ids_for_filter)) {
         }
     }
 }
+
+// Get archive settings from options
+$archive_title = get_option('bh_archive_floor_plans_title', 'Our Floor Plans');
+$archive_subtitle = get_option('bh_archive_floor_plans_subtitle', 'Find Your Perfect Home Design');
+$archive_image_id = get_option('bh_archive_floor_plans_image', '');
+$background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) : '';
 ?>
 
 <main id="site-main">
-     <?php b5st_page_header(); ?>
+    <header class="page-header container-fluid" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+        <div class="container">
+            <div class="row justify-content-start align-items-end">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-3 text-cursive">
+                        <?php echo esc_html($archive_title); ?>
+                    </h1>
+                    
+                    <?php if ($archive_subtitle): ?>
+                        <p class="page-excerpt uppercase text-white">
+                            <?php echo esc_html($archive_subtitle); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </header>
     <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
         <div class="container">
             <!-- Section Header -->
