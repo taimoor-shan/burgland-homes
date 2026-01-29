@@ -106,28 +106,6 @@ class Burgland_Homes_ACF_Fields
                     ),
                 ),
                 array(
-                    'key' => 'field_community_latitude',
-                    'label' => 'Latitude',
-                    'name' => 'community_latitude',
-                    'type' => 'text',
-                    'instructions' => 'For map display (e.g., 40.7128)',
-                    'wrapper' => array(
-                        'width' => '50',
-                    ),
-                    'required' => 0,
-                ),
-                array(
-                    'key' => 'field_community_longitude',
-                    'label' => 'Longitude',
-                    'name' => 'community_longitude',
-                    'type' => 'text',
-                    'instructions' => 'For map display (e.g., -74.0060)',
-                    'wrapper' => array(
-                        'width' => '50',
-                    ),
-                    'required' => 0,
-                ),
-                array(
                     'key' => 'field_community_total_lots',
                     'label' => 'Total Lots',
                     'name' => 'community_total_lots',

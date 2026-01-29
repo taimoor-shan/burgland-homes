@@ -121,7 +121,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
 
         <?php if (!empty($data['specs'])): ?>
             <div class="pt-2">
-                <div class="row g-2 bh-header-specs bh-card-specs mb-0">
+                <div class="row g-3 bh-header-specs bh-card-specs mb-0">
                     <?php
                     // Map Bootstrap Icons to Font Awesome classes
                     $icon_map = array(
@@ -142,7 +142,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                             $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
                         }
                     ?>
-                        <div class="col-6 col-md-3">
+                        <div class="col-3">
                             <span class="spec-item">
                                 <?php if ($icon_class): ?>
                                     <i class="<?php echo esc_attr($icon_class); ?>"></i>

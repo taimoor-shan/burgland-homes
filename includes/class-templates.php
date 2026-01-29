@@ -232,12 +232,17 @@ class Burgland_Homes_Templates {
                 window.burgland_homes_init_maps = function() {
                     window.burglandHomesMapLoaded = true;
                     
-                    // 1. Trigger Archive Map if callback exists
+                    // 1. Trigger Community Archive Map if callback exists
                     if (typeof window.initCommunitiesMap === "function") {
                         window.initCommunitiesMap();
                     }
                     
-                    // 2. Flush Generic Queue (used by Featured Communities and others)
+                    // 2. Trigger Lots Archive Map if callback exists
+                    if (typeof window.initLotsMap === "function") {
+                        window.initLotsMap();
+                    }
+                    
+                    // 3. Flush Generic Queue (used by Featured Communities and others)
                     if (window.burglandHomesMapsQueue && window.burglandHomesMapsQueue.length > 0) {
                         window.burglandHomesMapsQueue.forEach(function(initFn) {
                             if (typeof initFn === "function") {

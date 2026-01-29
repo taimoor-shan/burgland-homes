@@ -64,6 +64,7 @@ class Burgland_Homes_Plugin {
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-gallery.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-communities-filter.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-utilities.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-geocoding-service.php';
         
         // NEW: Data layer and template system
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-data-provider.php';
@@ -80,6 +81,10 @@ class Burgland_Homes_Plugin {
         
         add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('after_setup_theme', array($this, 'init'), 5);
+        
+        // Geocoding hooks
+        add_action('save_post_bh_community', array($this, 'geocode_on_save'), 20, 3);
+        add_action('save_post_bh_lot', array($this, 'geocode_on_save'), 20, 3);
     }
     
     /**
@@ -130,6 +135,40 @@ class Burgland_Homes_Plugin {
     public function deactivate() {
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+    
+    /**
+     * Geocode address on post save
+     * 
+     * @param int $post_id Post ID
+     * @param WP_Post $post Post object
+     * @param bool $update Whether this is an update or new post
+     */
+    public function geocode_on_save($post_id, $post, $update) {
+        // Skip autosave
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+        
+        // Skip revisions
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+        
+        // Skip if not published
+        if ($post->post_status !== 'publish') {
+            return;
+        }
+        
+        // Get geocoding service
+        $geocoding_service = Burgland_Homes_Geocoding_Service::get_instance();
+        
+        // Geocode based on post type
+        if ($post->post_type === 'bh_community') {
+            $geocoding_service->geocode_community($post_id);
+        } elseif ($post->post_type === 'bh_lot') {
+            $geocoding_service->geocode_lot($post_id);
+        }
     }
 }
 

@@ -85,7 +85,17 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             <div class="container">
                 <div class="row">
                       <div class="col-12">
-                        <form id="community-filters" class="row g-3 align-items-end">
+                        <!-- Mobile Filter Toggle Button -->
+                        <div class="d-md-none mb-3">
+                            <button type="button" id="filter-toggle" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between">
+                                <span>Filter By</span>
+                                <i class="bi bi-chevron-down filter-toggle-icon"></i>
+                            </button>
+                        </div>
+
+                        <!-- Filter Form Container -->
+                        <div id="filter-form-container" class="filter-form-container">
+                            <form id="community-filters" class="row g-3 align-items-end">
                             <!-- Status Filter (Category Style) -->
                             <div class="col-md-3">
                                 <label for="status-filter" class="form-label text-info">Community Status</label>
@@ -145,6 +155,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                         </form>
                     </div>
                 </div>
+            </div>
 
             </div>
         </section>
@@ -201,8 +212,8 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                 if ($communities->have_posts()):
                                     while ($communities->have_posts()): $communities->the_post();
                                         $post_id = get_the_ID();
-                                        $latitude = get_post_meta($post_id, 'community_latitude', true);
-                                        $longitude = get_post_meta($post_id, 'community_longitude', true);
+                                        $latitude = get_post_meta($post_id, '_geocoded_latitude', true);
+                                        $longitude = get_post_meta($post_id, '_geocoded_longitude', true);
                                         $price_range = get_post_meta($post_id, 'community_price_range', true);
 
                                         // Filter by price range if selected (keep existing logic)

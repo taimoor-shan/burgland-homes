@@ -943,8 +943,8 @@ class Burgland_Homes_Admin {
      * Render Map Tab
      */
     private function render_community_map_tab($community_id) {
-        $latitude = get_post_meta($community_id, 'community_latitude', true);
-        $longitude = get_post_meta($community_id, 'community_longitude', true);
+        $latitude = get_post_meta($community_id, '_geocoded_latitude', true);
+        $longitude = get_post_meta($community_id, '_geocoded_longitude', true);
         
         ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">

@@ -279,8 +279,8 @@ class Burgland_Homes_Data_Provider {
                 'zip' => get_post_meta($community_id, 'community_zip', true),
             )),
             'price_range' => $price_range,
-            'latitude' => get_post_meta($community_id, 'community_latitude', true),
-            'longitude' => get_post_meta($community_id, 'community_longitude', true),
+            'latitude' => get_post_meta($community_id, '_geocoded_latitude', true),
+            'longitude' => get_post_meta($community_id, '_geocoded_longitude', true),
             'has_thumbnail' => has_post_thumbnail($community_id),
             'thumbnail' => has_post_thumbnail($community_id) ? get_the_post_thumbnail_url($community_id, 'medium_large') : '',
             'thumbnail_caption' => has_post_thumbnail($community_id) ? wp_get_attachment_caption(get_post_thumbnail_id($community_id)) : '',
@@ -431,6 +431,55 @@ class Burgland_Homes_Data_Provider {
             'stories' => get_post_meta($lot_id, 'lot_stories', true),
             'floor_plan_brochure' => !empty($floor_plan_data['brochure']) ? $floor_plan_data['brochure'] : null,
         ), $lot_id);
+    }
+    
+    /**
+     * Get lot location data (coordinates and address)
+     * 
+     * @param int $lot_id Lot post ID
+     * @return array Location data including latitude, longitude, and address
+     */
+    public function get_lot_location_data($lot_id) {
+        // Try to get lot's own geocoded coordinates
+        $latitude = get_post_meta($lot_id, '_geocoded_latitude', true);
+        $longitude = get_post_meta($lot_id, '_geocoded_longitude', true);
+        
+        // Get lot address
+        $lot_address = get_post_meta($lot_id, 'lot_address', true);
+        
+        // Get parent community for fallback
+        $community_id = get_post_meta($lot_id, 'lot_community', true);
+        
+        // If lot doesn't have coordinates, inherit from community
+        if ((empty($latitude) || empty($longitude)) && $community_id) {
+            $latitude = get_post_meta($community_id, '_geocoded_latitude', true);
+            $longitude = get_post_meta($community_id, '_geocoded_longitude', true);
+        }
+        
+        // Build full address
+        $city = '';
+        $state = '';
+        $zip = '';
+        
+        if ($community_id) {
+            $city = get_post_meta($community_id, 'community_city', true);
+            $state = get_post_meta($community_id, 'community_state', true);
+            $zip = get_post_meta($community_id, 'community_zip', true);
+        }
+        
+        $address_parts = array_filter(array($lot_address, $city, $state, $zip));
+        $full_address = implode(', ', $address_parts);
+        
+        return array(
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'address' => $full_address,
+            'lot_address' => $lot_address,
+            'city' => $city,
+            'state' => $state,
+            'zip' => $zip,
+            'has_coordinates' => !empty($latitude) && !empty($longitude),
+        );
     }
     
     /**

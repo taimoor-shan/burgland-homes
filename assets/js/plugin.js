@@ -445,6 +445,9 @@
     
     // Initialize ScrollSpy for single page navigation
     initScrollSpy();
+    
+    // Initialize mobile filter toggle
+    initMobileFilterToggle();
 
     // Check if we're on the communities archive page
     if ($('#communities-map').length) {
@@ -457,6 +460,17 @@
       }
     }
     
+    // Check if we're on the lots archive page with map
+    if ($('#lots-map').length) {
+      // Wait for Google Maps to load
+      if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+        initLotsArchive();
+      } else {
+        // If Google Maps isn't loaded yet, wait for it
+        window.initLotsMap = initLotsArchive;
+      }
+    }
+    
     // Initialize lots grid filter if it exists
     if ($('#lots-filters').length > 0) {
       initLotsFilter();
@@ -465,6 +479,357 @@
 
   // Expose init function globally for callback
   window.initCommunitiesMap = init;
+  window.initLotsMap = initLotsArchive;
+
+  /**
+   * ============================================
+   * LOTS ARCHIVE PAGE WITH MAP
+   * ============================================
+   */
+  
+  let lotMap = null;
+  let lotMarkers = [];
+  let lotInfoWindows = [];
+  let lotData = [];
+
+  /**
+   * Initialize the lots archive page
+   */
+  function initLotsArchive() {
+    // Collect lot data from DOM
+    collectLotData();
+    
+    // Initialize Google Map
+    initLotsMap();
+    
+    // Setup card hover interactions
+    setupLotCardHover();
+  }
+
+  /**
+   * Collect lot data from DOM
+   */
+  function collectLotData() {
+    lotData = [];
+    
+    $('.lot-card-wrapper').each(function() {
+      const $card = $(this);
+      const lat = parseFloat($card.attr('data-lat'));
+      const lng = parseFloat($card.attr('data-lng'));
+      const id = $card.attr('data-id');
+      
+      if (lat && lng && id) {
+        // Get lot title and other info from card
+        const $cardContent = $card.find('.bh-card');
+        const title = $cardContent.find('.card-title').text().trim() || 'Lot ' + id;
+        const price = $cardContent.find('.text-primary').first().text().trim();
+        const thumbnail = $cardContent.find('img').first().attr('src') || '';
+        const permalink = $cardContent.attr('data-href') || '';
+        
+        lotData.push({
+          id: id,
+          lat: lat,
+          lng: lng,
+          title: title,
+          price: price,
+          thumbnail: thumbnail,
+          permalink: permalink
+        });
+      }
+    });
+  }
+
+  /**
+   * Initialize Google Map for lots
+   */
+  function initLotsMap() {
+    // Check if Google Maps is loaded
+    if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+      console.warn('Google Maps API not loaded. Please add your API key.');
+      $('#lots-map').html(
+        '<div class="d-flex align-items-center justify-content-center h-100 text-center p-4">' +
+          '<div>' +
+            '<i class="bi bi-exclamation-triangle fs-1 text-warning d-block mb-3"></i>' +
+            '<h5>Google Maps API Key Required</h5>' +
+            '<p class="text-muted">Please configure your Google Maps API key to display the map.</p>' +
+          '</div>' +
+        '</div>'
+      );
+      return;
+    }
+
+    // Calculate center of all lots
+    let centerLat = 0;
+    let centerLng = 0;
+    let validCount = 0;
+
+    lotData.forEach(function(lot) {
+      if (lot.lat && lot.lng) {
+        centerLat += lot.lat;
+        centerLng += lot.lng;
+        validCount++;
+      }
+    });
+
+    if (validCount === 0) {
+      $('#lots-map').html(
+        '<div class="d-flex align-items-center justify-content-center h-100 text-center p-4">' +
+          '<div>' +
+            '<i class="bi bi-map fs-1 text-muted d-block mb-3"></i>' +
+            '<p class="text-muted">No lots with location data available.</p>' +
+          '</div>' +
+        '</div>'
+      );
+      return;
+    }
+
+    centerLat = centerLat / validCount;
+    centerLng = centerLng / validCount;
+
+    // Create map
+    lotMap = new google.maps.Map(document.getElementById('lots-map'), {
+      center: { lat: centerLat, lng: centerLng },
+      zoom: validCount === 1 ? 12 : 8,
+      mapTypeControl: true,
+      streetViewControl: false,
+      fullscreenControl: true,
+      zoomControl: true,
+      styles: [
+        {
+          featureType: 'poi',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        }
+      ]
+    });
+
+    // Add markers for all lots
+    addLotMarkers();
+  }
+
+  /**
+   * Add markers to the lots map
+   */
+  function addLotMarkers() {
+    if (!lotMap) return;
+
+    // Clear existing markers
+    clearLotMarkers();
+
+    lotData.forEach(function(lot) {
+      if (!lot.lat || !lot.lng) return;
+
+      // Create marker
+      const marker = new google.maps.Marker({
+        position: { lat: lot.lat, lng: lot.lng },
+        map: lotMap,
+        title: lot.title,
+        animation: google.maps.Animation.DROP,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+            '<svg width="32" height="42" xmlns="http://www.w3.org/2000/svg">' +
+              '<path d="M16 0C7.2 0 0 7.2 0 16c0 8.8 16 26 16 26s16-17.2 16-26c0-8.8-7.2-16-16-16z" fill="#28a745"/>' +
+              '<circle cx="16" cy="16" r="6" fill="white"/>' +
+            '</svg>'
+          ),
+          scaledSize: new google.maps.Size(32, 42),
+          anchor: new google.maps.Point(16, 42)
+        }
+      });
+
+      // Create info window content
+      const infoWindowContent = `
+        <div class="map-infowindow">
+          ${lot.thumbnail ? '<img src="' + lot.thumbnail + '" alt="' + lot.title + '" class="map-infowindow-img">' : ''}
+          <div class="map-infowindow-content">
+            <h6 class="mb-2">${lot.title}</h6>
+            ${lot.price ? '<p class="text-primary fw-bold mb-2">' + lot.price + '</p>' : ''}
+            <a href="${lot.permalink}" class="btn btn-primary btn-sm">View Details</a>
+          </div>
+        </div>
+      `;
+
+      // Create info window
+      const infoWindow = new google.maps.InfoWindow({
+        content: infoWindowContent,
+        maxWidth: 300
+      });
+
+      // Add click listener to marker
+      marker.addListener('click', function() {
+        // Close all other info windows
+        closeAllLotInfoWindows();
+        
+        // Open this info window
+        infoWindow.open(lotMap, marker);
+        
+        // Highlight corresponding card
+        highlightLotCard(lot.id);
+        
+        // Scroll to card
+        scrollToLotCard(lot.id);
+      });
+
+      // Store marker and info window
+      lotMarkers.push(marker);
+      lotInfoWindows.push(infoWindow);
+    });
+
+    // Adjust map bounds to fit all markers
+    if (lotMarkers.length > 1) {
+      const bounds = new google.maps.LatLngBounds();
+      lotMarkers.forEach(function(marker) {
+        bounds.extend(marker.getPosition());
+      });
+      lotMap.fitBounds(bounds);
+      
+      // Limit max zoom
+      google.maps.event.addListenerOnce(lotMap, 'bounds_changed', function() {
+        if (lotMap.getZoom() > 15) {
+          lotMap.setZoom(15);
+        }
+      });
+    }
+  }
+
+  /**
+   * Clear all lot markers from the map
+   */
+  function clearLotMarkers() {
+    lotMarkers.forEach(function(marker) {
+      marker.setMap(null);
+    });
+    lotMarkers = [];
+    
+    closeAllLotInfoWindows();
+    lotInfoWindows = [];
+  }
+
+  /**
+   * Close all lot info windows
+   */
+  function closeAllLotInfoWindows() {
+    lotInfoWindows.forEach(function(infoWindow) {
+      infoWindow.close();
+    });
+  }
+
+  /**
+   * Highlight lot card
+   */
+  function highlightLotCard(lotId) {
+    // Remove previous highlights
+    $('.lot-card').removeClass('card-highlight');
+    
+    // Add highlight to target card
+    const $wrapper = $('.lot-card-wrapper[data-id="' + lotId + '"]');
+    $wrapper.find('.lot-card').addClass('card-highlight');
+    
+    // Remove highlight after 2 seconds
+    setTimeout(function() {
+      $wrapper.find('.lot-card').removeClass('card-highlight');
+    }, 2000);
+  }
+
+  /**
+   * Scroll to lot card
+   */
+  function scrollToLotCard(lotId) {
+    const $wrapper = $('.lot-card-wrapper[data-id="' + lotId + '"]');
+    
+    if ($wrapper.length) {
+      $('html, body').animate({
+        scrollTop: $wrapper.offset().top - 150
+      }, 500);
+    }
+  }
+
+  /**
+   * Setup card hover to focus map marker
+   */
+  function setupLotCardHover() {
+    $(document).on('mouseenter', '.lot-card', function() {
+      const $wrapper = $(this).closest('.lot-card-wrapper');
+      const lotId = $wrapper.attr('data-id');
+      
+      // Find corresponding marker and trigger interactions
+      const markerIndex = lotData.findIndex(l => l.id === lotId);
+      
+      if (markerIndex !== -1 && lotMarkers[markerIndex]) {
+        // Bounce marker
+        lotMarkers[markerIndex].setAnimation(google.maps.Animation.BOUNCE);
+        
+        // Stop bounce after 750ms
+        setTimeout(function() {
+          if (lotMarkers[markerIndex]) {
+            lotMarkers[markerIndex].setAnimation(null);
+          }
+        }, 750);
+        
+        // Open info window
+        closeAllLotInfoWindows();
+        lotInfoWindows[markerIndex].open(lotMap, lotMarkers[markerIndex]);
+        
+        // Center map on marker
+        lotMap.panTo(lotMarkers[markerIndex].getPosition());
+      }
+    });
+    
+    // Close info window on mouse leave
+    $(document).on('mouseleave', '.lot-card', function() {
+      // Delay closing to allow clicking on info window
+      setTimeout(function() {
+        closeAllLotInfoWindows();
+      }, 300);
+    });
+  }
+
+  /**
+   * Update lot markers based on visible lots (for filtering)
+   */
+  function updateLotMarkers() {
+    if (!lotMap) return;
+    
+    // Get visible lot IDs
+    const visibleLotIds = [];
+    $('.lot-card-wrapper:visible').each(function() {
+      const lotId = $(this).attr('data-id');
+      if (lotId) {
+        visibleLotIds.push(lotId);
+      }
+    });
+    
+    // Show/hide markers based on visibility
+    lotMarkers.forEach(function(marker, index) {
+      const lot = lotData[index];
+      if (lot && visibleLotIds.includes(lot.id)) {
+        marker.setMap(lotMap);
+      } else {
+        marker.setMap(null);
+      }
+    });
+    
+    // Adjust map bounds to fit visible markers
+    const visibleMarkers = lotMarkers.filter(function(marker) {
+      return marker.getMap() !== null;
+    });
+    
+    if (visibleMarkers.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      visibleMarkers.forEach(function(marker) {
+        bounds.extend(marker.getPosition());
+      });
+      lotMap.fitBounds(bounds);
+      
+      if (visibleMarkers.length === 1) {
+        google.maps.event.addListenerOnce(lotMap, 'bounds_changed', function() {
+          if (lotMap.getZoom() > 15) {
+            lotMap.setZoom(15);
+          }
+        });
+      }
+    }
+  }
 
   /**
    * Initialize ScrollSpy for Single Page Navigation
@@ -639,6 +1004,24 @@
   });
 
   /**
+   * Initialize Mobile Filter Toggle
+   */
+  function initMobileFilterToggle() {
+    const $toggle = $('#filter-toggle');
+    const $container = $('#filter-form-container');
+    const $icon = $('.filter-toggle-icon');
+    
+    if (!$toggle.length || !$container.length) {
+      return;
+    }
+    
+    $toggle.on('click', function() {
+      $container.toggleClass('expanded');
+      $icon.toggleClass('rotated');
+    });
+  }
+
+  /**
    * Initialize Lots Grid Filter (for single community page and floor plan page)
    */
   function initLotsFilter() {
@@ -764,6 +1147,11 @@
         $noResults.show();
       } else {
         $noResults.hide();
+      }
+      
+      // Update map markers to match visible lots
+      if (typeof updateLotMarkers === 'function') {
+        updateLotMarkers();
       }
     }
   }

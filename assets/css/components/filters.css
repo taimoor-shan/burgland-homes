@@ -25,7 +25,41 @@
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
 }
 
+/* Mobile Filter Toggle */
+#filter-toggle {
+    display: none;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
 @media (max-width: 767.98px) {
+    #filter-toggle {
+        display: flex;
+    }
+    
+    .filter-form-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+    }
+    
+    .filter-form-container.expanded {
+        max-height: 1000px;
+        margin-top: 1rem;
+    }
+    
+    .bh-filters .col-md-3,
+    .bh-filters [class*="col-"] {
+        width: 100% !important;
+        flex: 0 0 100%;
+    }
+    
     .bh-filters .row {
         row-gap: 1rem;
     }
