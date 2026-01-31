@@ -76,11 +76,10 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                 <?php echo esc_html($data['title']); ?>
             </a>
         </h2>
-         <?php if ($card_type === 'community' && !empty($data['address'])): ?>
+        <?php if (!empty($data['address'])): ?>
             <!-- Address with line break between street and city/state/zip for better card layout -->
             <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
                 <div>
-                 
                     <p class="mb-3">
                         <?php if (!empty($map_url)): ?>
                             <a href="<?php echo esc_url($map_url); ?>" class="bh-card-footer-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">
@@ -92,10 +91,12 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                     </p>
                 </div>
             </div>
-        <?php elseif ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
-            <div class="bh-card-footer mt-auto d-flex align-items-center justify-content-between w-100 gap-3">
+        <?php endif; ?>
+        <?php if ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
+            <div class="bh-card-footer <?php echo empty($data['address']) ? 'mt-auto' : ''; ?> d-flex align-items-center justify-content-between w-100 gap-3">
                 <div>
                     <p class="">
+                        <b>Floor Plan:</b>
                         <?php if (!empty($floor_plan_url)): ?>
                             <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info" onclick="event.stopPropagation();">
                                 <?php echo esc_html($data['floor_plan_name']); ?>
@@ -120,8 +121,8 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
 
 
         <?php if (!empty($data['specs'])): ?>
-            <div class="pt-2">
-                <div class="row g-3 bh-header-specs bh-card-specs mb-0">
+            <div class="">
+                <div class="row g-2 g-lg-3 bh-header-specs bh-card-specs my-0">
                     <?php
                     // Map Bootstrap Icons to Font Awesome classes
                     $icon_map = array(
@@ -154,5 +155,21 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                 </div>
             </div>
         <?php endif; ?>
+
+        <?php
+        $button_text = 'Learn More'; // default
+
+        if ($card_type === 'lot') {
+            $button_text = 'View Home';
+        } elseif ($card_type === 'floor-plan') {
+            $button_text = 'View Floor Plan';
+        } elseif ($card_type === 'community') {
+            $button_text = 'View Community';
+        }
+        ?>
+
+        <span class="btn btn-outline-secondary w-100 mt-3">
+            <?= esc_html($button_text); ?>
+        </span>
     </div>
 </div>

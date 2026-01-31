@@ -54,15 +54,16 @@
 
 /* Card Specs Styles */
 .bh-header-specs.bh-card-specs .spec-item  i {
-    font-size: .875rem;
+    font-size: 1rem;
+    margin-bottom: .25rem;
 }
 .bh-header-specs.bh-card-specs .spec-label{
            margin-top: .25rem;
-           color: #000000;
+           color: var(--bs-primary-color);
 
 }
 
-.bh-header-specs .col-md-3:not(:last-child) {
+.bh-header-specs .col-3:not(:last-child) {
     border-right: 1px solid #e6e7e8;
 }
 
@@ -85,11 +86,10 @@
     line-height: 1.4;
 }
 a.bh-card-footer-link {
-    text-decoration: underline;
     transition: color 0.2s ease;
 }
 a.bh-card-footer-link:hover {
-    color: var(--info-color);
+   text-decoration: underline;
 }
 
 /* Specific Card Type Variations */

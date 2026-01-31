@@ -320,11 +320,11 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
         <!-- Main Content: Two Column Layout -->
         <section class="lots-content">
-            <div class="container-fluid">
+            <div class="container-fluid bg-warning">
                 <div class="row">
                     <!-- Left Column: Lot Cards -->
-                    <div class="col-lg-6">
-                        <div id="lots-grid" class="row g-4 pt-4">
+                    <div class="col-lg-6 bh-listings-column col-12 col-lg-7 order-1 order-lg-2 pt-4 pe-lg-4">
+                        <div id="lots-grid" class="row g-4 align-items-stretch mb-5">
                             <?php if (!empty($lot_cards_data)) : ?>
                                 <?php foreach ($lot_cards_data as $lot_card) : ?>
                                     <?php
@@ -366,8 +366,8 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                     </div>
 
                     <!-- Right Column: Map -->
-                    <div class="col-lg-6">
-                        <div class="bh-map-container map-container sticky-top" style="top: 200px;">
+                    <div class="col-12 col-lg-5 order-2 order-lg-1 ps-lg-0 bh-map-column">
+                        <div class="bh-map-container map-container ">
                             <div id="lots-map" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
                                 <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                     <div class="text-center">

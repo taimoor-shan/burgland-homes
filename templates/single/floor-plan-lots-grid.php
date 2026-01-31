@@ -195,7 +195,10 @@ $sqft_ranges = burgland_generate_sqft_ranges_for_floor_plan($sqft_values, count(
                 <h2 class="text-primary">Available Homes with this Floor Plan</h2>
                 <!-- Results Count -->
                 <h6 class="text-dark">
-                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) available
+                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) available.
+                        <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                        Reset Filters
+                    </button>
                 </h6>
             </div>
         </div>
@@ -259,13 +262,6 @@ $sqft_ranges = burgland_generate_sqft_ranges_for_floor_plan($sqft_values, count(
                         <option value="sqft-asc">Sqft: Low to High</option>
                         <option value="sqft-desc">Sqft: High to Low</option>
                     </select>
-                </div>
-
-                <!-- Reset Filters Button -->
-                <div class="col-md-3">
-                    <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Filters
-                    </button>
                 </div>
 
             </form>

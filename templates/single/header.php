@@ -26,7 +26,7 @@ $data = $args;
 <section class="plugin-page-header">
     <div class="row align-items-center">
         <div class="col-12">
-            <h1 class="text-primary mb-2 lh-2">
+            <h1 class="text-primary mb-2 lh-lg">
                 <?php echo esc_html($data['title']); ?>
                 <?php if (!empty($data['title_suffix'])): ?>
                     <span class="text-lowercase fw-normal"> at </span>
@@ -61,10 +61,10 @@ $data = $args;
                 $classes = '';
 
                 if (!empty($data['post_type']) && $data['post_type'] === 'bh_floor_plan') {
-                    $classes .= ' text-muted text-end';
+                    $classes .= ' text-muted small lh-sm';
                     $content = 'Hello world Floor';
                 } elseif (!empty($data['post_type']) && $data['post_type'] === 'bh_lot') {
-                    $classes .= ' text-muted lh-1.1';
+                    $classes .= ' text-muted lh-sm small max-width-50';
                     $content = '* Inventory home price above includes pre-selected homesite, flex options & design upgrades.';
                 } else {
                     $content = '';

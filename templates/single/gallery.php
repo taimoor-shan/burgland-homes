@@ -22,11 +22,11 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
 
             <div class="position-absolute top-0 end-0 m-3 z-3 d-flex gap-2">
                 <?php if ($video_url) : ?>
-                    <a href="<?php echo esc_url($video_url); ?>" class="btn btn-sm btn-outline-primary glightbox bg-light" data-type="video">
+                    <a href="<?php echo esc_url($video_url); ?>" class="btn btn-sm btn-outline-primary bg-light" data-fancybox data-type="iframe">
                         <i class="fa-solid fa-video me-1"></i> Video
                     </a>
                 <?php endif; ?>
-                <a href="#" class="btn btn-sm btn-outline-primary bg-light" onclick="event.preventDefault(); this.closest('.plugin-slider').querySelector('.swiper-wrapper .glightbox, .plugin-slider__single .glightbox').click();">
+                <a href="#" class="btn btn-sm btn-outline-primary bg-light" onclick="event.preventDefault(); this.closest('.plugin-slider').querySelector('.swiper-wrapper [data-fancybox], .plugin-slider__single [data-fancybox]').click();">
                     <i class="fa-solid fa-image me-1"></i>
                     <span class="fw-bold"><?php echo count($images); ?> Photos</span>
                 </a>
@@ -46,8 +46,8 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                             <?php endif; ?>
                             
                             <a href="<?php echo esc_url($image['url']); ?>"
-                                class="glightbox"
-                                data-gallery="single-gallery">
+                                data-fancybox="single-gallery"
+                                data-caption="<?php echo esc_attr($caption ?: $image['alt'] ?? ''); ?>">
 
                                 <img src="<?php echo esc_url($image['url']); ?>"
                                     alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
@@ -74,7 +74,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                     </figcaption>
                 <?php endif; ?>
                 
-                <a href="<?php echo esc_url(wp_get_attachment_url($featured_image_id)); ?>" class="glightbox">
+                <a href="<?php echo esc_url(wp_get_attachment_url($featured_image_id)); ?>" data-fancybox="single-gallery" data-caption="<?php echo esc_attr($caption ?? ''); ?>">
                     <?php echo wp_get_attachment_image(
                         $featured_image_id,
                         'full',

@@ -121,7 +121,10 @@ class Burgland_Homes_Data_Provider {
                     'specs' => array(),
                     'floor_plan_info' => $raw['floor_plan_name'] ? 'Floor Plan: ' . $raw['floor_plan_name'] : '',
                     'floor_plan_name' => $raw['floor_plan_name'],
-                    'floor_plan_url' => $raw['floor_plan_id'] ? get_permalink($raw['floor_plan_id']) : ''
+                    'floor_plan_url' => $raw['floor_plan_id'] ? get_permalink($raw['floor_plan_id']) : '',
+                    'address' => $this->format_full_address($raw),
+                    'address_plain' => $this->format_plain_address($raw),
+                    'map_url' => $this->format_map_url($raw)
                 );
 
                 if ($raw['status_label']) {

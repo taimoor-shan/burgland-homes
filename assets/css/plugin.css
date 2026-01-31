@@ -109,7 +109,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: 9999;
   background: rgba(255, 255, 255, 0.95);
   width: 100%;
   border-radius: var(--border-radius);
@@ -270,14 +270,123 @@
 }
 
 /* figCaption */
-.figCaption{
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    /* background-color: var(--dark-color); */
-    color: #ffffff;
-    padding: 10px;
-    box-sizing: border-box;
-    z-index: 1;
-    font-size: 14px;
+.figCaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  /* background-color: var(--dark-color); */
+  color: #ffffff;
+  padding: 10px;
+  box-sizing: border-box;
+  z-index: 1;
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   Split Scroll Layout - Pure CSS Solution
+   ========================================================================== */
+
+.bh-split-scroll-wrapper {
+  position: relative;
+}
+
+.bh-split-section {
+  position: relative;
+}
+
+
+
+/**
+ * Left column - scrollable
+ */
+.bh-listings-column {
+  overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+
+  /* Hide scrollbar by default */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+ 
+}
+
+.bh-listings-grid {
+
+  
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.bh-listings-grid::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* Show scrollbar on hover or while scrolling */
+.bh-listings-grid:hover,
+.bh-listings-grid:focus-within {
+  scrollbar-width: thin; /* Firefox */
+}
+
+.bh-listings-grid:hover::-webkit-scrollbar,
+.bh-listings-grid:focus-within::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bh-listings-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.bh-listings-grid::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.bh-listings-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/**
+ * Right column - fixed map
+ */
+
+.bh-map-column {
+  display: block;
+  width: 100%;
+  min-height: 300px;
+}
+
+@media (min-width: 992px) {
+  .bh-map-column,
+  .bh-listings-column {
+    height: 64rem;
+    max-height: 85vh;
+  }
+}
+
+#communities-map {
+  height: 100%;
+  width: 100%;
+  background: #e9ecef;
+}
+
+/* ==========================================================================
+   Mobile Responsive
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+  .bh-listings-column,
+  .bh-map-column {
+    position: static;
+    height: auto;
+  }
+
+  .bh-listings-grid {
+    height: auto;
+    overflow: visible;
+  }
+
+  #communities-map {
+    height: 500px;
+    margin-top: 1rem;
+  }
 }

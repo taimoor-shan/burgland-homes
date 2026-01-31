@@ -403,7 +403,7 @@
   }
 
   /**
-   * Initialize Swiper and GLightbox for single gallery
+   * Initialize Swiper and FancyBox for single gallery
    */
   function initGallery() {
     // Initialize Swiper
@@ -425,12 +425,21 @@
       });
     }
 
-    // Initialize GLightbox
-    if ($('.glightbox').length && typeof GLightbox !== 'undefined') {
-      GLightbox({
-        selector: '.glightbox',
-        touchNavigation: true,
-        loop: true,
+    // Initialize FancyBox
+    if (typeof Fancybox !== 'undefined') {
+      Fancybox.bind('[data-fancybox]', {
+        Toolbar: {
+          display: {
+            left: [],
+            middle: [],
+            right: ['close'],
+          },
+        },
+        Images: {
+          zoom: true,
+        },
+        animated: true,
+        hideScrollbar: true,
       });
     }
   }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Single Floor Plan Template
  * 
@@ -56,13 +57,13 @@ ob_start();
                 ?>
 
                 <!-- Header -->
-                <?php 
+                <?php
                 $header_specs = array();
                 if ($floor_plan['bedrooms']) $header_specs[] = array('label' => $floor_plan['bedrooms'] . ' Bed', 'icon' => 'house-door');
                 if ($floor_plan['bathrooms']) $header_specs[] = array('label' => $floor_plan['bathrooms'] . ' Bath', 'icon' => 'droplet');
                 if ($floor_plan['square_feet']) $header_specs[] = array('label' => number_format($floor_plan['square_feet']) . ' sqft', 'icon' => 'arrows-angle-expand');
                 if ($floor_plan['garage']) $header_specs[] = array('label' => $floor_plan['garage'] . ' Car', 'icon' => 'car-front');
-                
+
                 $template_loader->render_single_component('header', array(
                     'title' => $floor_plan['title'],
                     'price' => $floor_plan['price'],
@@ -81,34 +82,34 @@ ob_start();
         </div>
 
         <?php if ($floor_plan_brochure) { ?>
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button" href="<?php echo esc_url(is_array($floor_plan_brochure) ? $floor_plan_brochure['url'] : $floor_plan_brochure); ?>"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Floor Plan Brochure
-                    <span class="visually-hidden">PDF Download</span>
-                </a>
+            <div class="row d-lg-none">
+                <div class="col-12">
+                    <a role="button" href="<?php echo esc_url(is_array($floor_plan_brochure) ? $floor_plan_brochure['url'] : $floor_plan_brochure); ?>"
+                        class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                        Floor Plan Brochure
+                        <span class="visually-hidden">PDF Download</span>
+                    </a>
+                </div>
             </div>
-        </div>
         <?php }
-        
+
         if ($design_package) { ?>
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button" href="<?php echo esc_url(is_array($design_package) ? $design_package['url'] : $design_package); ?>"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Design Package
-                    <span class="visually-hidden">PDF Download</span>
-                </a>
+            <div class="row d-lg-none">
+                <div class="col-12">
+                    <a role="button" href="<?php echo esc_url(is_array($design_package) ? $design_package['url'] : $design_package); ?>"
+                        class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                        Design Package
+                        <span class="visually-hidden">PDF Download</span>
+                    </a>
+                </div>
             </div>
-        </div>
         <?php } ?>
 
     </div>
 </section>
 
 <!-- Actions -->
-<?php 
+<?php
 // Build dynamic navigation sections based on available content
 $nav_sections = array();
 
@@ -166,31 +167,45 @@ $template_loader->render_single_component('actions', array(
 
             <!-- Features -->
             <?php if (!empty($features)) { ?>
-            <div id="features">
-                <?php $template_loader->render_single_component('amenities', array(
-                    'title' => 'Features & Amenities',
-                    'items' => $features
-                )); ?>
-            </div>
+                <div id="features">
+                    <?php $template_loader->render_single_component('amenities', array(
+                        'title' => 'Features & Amenities',
+                        'items' => $features
+                    )); ?>
+                </div>
             <?php } ?>
 
             <!-- Gallery Section -->
             <?php if (!empty($gallery_images)) { ?>
-            <div id="gallery-section" class="mb-5">
-                <h2 class="h3 mb-4">Gallery</h2>
-                <div class="row g-3">
-                    <?php foreach ($gallery_images as $image) : ?>
-                        <div class="col-md-3 col-sm-6">
-                            <a href="<?php echo esc_url($image['url']); ?>" data-fslightbox="floor-plan-gallery">
-                                <img src="<?php echo esc_url($image['url']); ?>" 
-                                     alt="<?php echo esc_attr($image['alt']); ?>" 
-                                     class="img-fluid rounded shadow-sm hover-shadow-lg" 
-                                     style="width: 100%; height: 200px; object-fit: cover;">
-                            </a>
-                        </div>
-                    <?php endforeach; ?>
+                <div id="gallery-section" class="mb-5">
+                    <h2 class="h3 mb-4">Available Elevations</h2>
+
+                    <div class="row g-3">
+                        <?php foreach ($gallery_images as $image) :
+                            $caption = $image['caption'] ?? '';
+                        ?>
+                            <div class="col-md-3 col-sm-6">
+                                <figure class="m-0 position-relative">
+
+                                    <?php if ($caption) : ?>
+                                        <figcaption class="figCaption">
+                                            <?php echo esc_html($caption); ?>
+                                        </figcaption>
+                                    <?php endif; ?>
+
+                                    <a href="<?php echo esc_url($image['url']); ?>"
+                                        data-fslightbox="floor-plan-gallery">
+
+                                        <img src="<?php echo esc_url($image['url']); ?>"
+                                            alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
+                                            class="img-fluid rounded shadow-sm hover-shadow-lg"
+                                            style="width:100%; height:200px; object-fit:cover;">
+                                    </a>
+                                </figure>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-            </div>
             <?php } ?>
         </div>
         <div class="col-12 col-lg-4">

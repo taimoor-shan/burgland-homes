@@ -109,7 +109,7 @@ class Burgland_Homes_Templates {
         $is_plugin_single = is_singular($post_types);
         
         if ($is_plugin_archive || $is_plugin_single) {
-            // 1. Enqueue Vendor Assets (Swiper, GLightbox) - ONLY FOR SINGLE PAGES
+            // 1. Enqueue Vendor Assets (Swiper, FancyBox) - ONLY FOR SINGLE PAGES
             if ($is_plugin_single) {
                 $this->enqueue_vendor_assets();
             }
@@ -128,12 +128,12 @@ class Burgland_Homes_Templates {
     }
 
     /**
-     * Enqueue vendor assets (Swiper, GLightbox)
+     * Enqueue vendor assets (Swiper, FancyBox)
      */
     private function enqueue_vendor_assets() {
-        // GLightbox
-        wp_enqueue_style('glightbox', 'https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css', array(), '3.2.0');
-        wp_enqueue_script('glightbox', 'https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js', array(), '3.2.0', true);
+        // FancyBox
+        wp_enqueue_style('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css', array(), '5.0');
+        wp_enqueue_script('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array(), '5.0', true);
 
         // Swiper
         wp_enqueue_style('swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0');
@@ -169,7 +169,7 @@ class Burgland_Homes_Templates {
         $deps = array('jquery');
         if ($include_vendors) {
             $deps[] = 'swiper';
-            $deps[] = 'glightbox';
+            $deps[] = 'fancybox';
         }
 
         wp_enqueue_script(

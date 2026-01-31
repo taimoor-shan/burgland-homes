@@ -55,8 +55,6 @@ ob_start();
                     'breadcrumbs' => $breadcrumbs
                 ));
                 ?>
-
-                <!-- Header (after gallery) -->
                 <?php
                 $header_specs = array();
                 $spec_labels = array(
@@ -111,27 +109,27 @@ ob_start();
         </div>
 
         <?php if ($brochure && !empty($brochure['url'])) { ?>
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button" href="<?php echo esc_url($brochure['url']); ?>"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Community Brochure
-                    <span class="visually-hidden">PDF Download</span>
-                </a>
+            <div class="row d-lg-none">
+                <div class="col-12">
+                    <a role="button" href="<?php echo esc_url($brochure['url']); ?>"
+                        class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                        Community Brochure
+                        <span class="visually-hidden">PDF Download</span>
+                    </a>
+                </div>
             </div>
-        </div>
         <?php }
-        
+
         if ($design_package && !empty($design_package['url'])) { ?>
-        <div class="row d-lg-none">
-            <div class="col-12">
-                <a role="button" href="<?php echo esc_url($design_package['url']); ?>"
-                    class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
-                    Design Package
-                    <span class="visually-hidden">PDF Download</span>
-                </a>
+            <div class="row d-lg-none">
+                <div class="col-12">
+                    <a role="button" href="<?php echo esc_url($design_package['url']); ?>"
+                        class="btn btn-sm btn-outline-primary w-100 mb-3" target="_blank">
+                        Design Package
+                        <span class="visually-hidden">PDF Download</span>
+                    </a>
+                </div>
             </div>
-        </div>
         <?php } ?>
 
     </div>
@@ -139,7 +137,7 @@ ob_start();
 
 
 <!-- Actions -->
-<?php 
+<?php
 // Build dynamic navigation sections based on available content
 $nav_sections = array();
 
@@ -147,9 +145,7 @@ $nav_sections = array();
 $nav_sections[] = array('id' => 'overview', 'label' => 'Overview');
 
 // Check if there's description content
-if (!empty(get_post_field('post_content', $post_id))) {
-    $nav_sections[] = array('id' => 'description', 'label' => 'About');
-}
+// 1
 
 // Check if there are available lots/homes
 $lots_query = new WP_Query(array(
@@ -173,9 +169,9 @@ if (!empty($site_map)) {
 }
 
 // Check if amenities exist
-if (!empty($amenities)) {
-    $nav_sections[] = array('id' => 'amenities', 'label' => 'Amenities');
-}
+// if (!empty($amenities)) {
+//     $nav_sections[] = array('id' => 'amenities', 'label' => 'Amenities');
+// }
 
 $template_loader->render_single_component('actions', array(
     'sections' => $nav_sections,
@@ -186,63 +182,74 @@ $template_loader->render_single_component('actions', array(
 )); ?>
 
 
-<div class="container">
-    <div class="row py-5">
-        <div class="col-12 col-lg-8">
-            <!-- Description -->
-            <div id="description">
-                <?php $template_loader->render_single_component('description', array(
-                    'title' => 'About This Community',
-                    'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+<div class="container-fluid py-lg-4">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-12 col-lg-8 pe-lg-5">
+                <!-- Description -->
+                <div id="description">
+                    <?php $template_loader->render_single_component('description', array(
+                        'title' => '',
+                        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+                    )); ?>
+
+                    <!-- Amenities -->
+                    <?php if (!empty($amenities)) { ?>
+                        <div id="amenities">
+                            <?php $template_loader->render_single_component('amenities', array(
+                                'items' => $amenities
+                            )); ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4 py-3">
+                <?php $template_loader->render_single_component('sidebar-contact', array(
+                    'title' => 'Interested in This Community?',
+                    'brochure' => $brochure
                 )); ?>
+
+                <?php //$template_loader->render_single_component('sidebar-quick-info', array(
+                //'info' => $quick_info
+                //)); 
+                ?>
+
+                <?php //$template_loader->render_single_component('sidebar-location', array(
+                //'map_url' => $community['map_url']
+                //)); 
+                ?>
             </div>
         </div>
-        <div class="col-12 col-lg-4">
-            <?php $template_loader->render_single_component('sidebar-contact', array(
-                'title' => 'Interested in This Community?',
-                'brochure' => $brochure
+    </div>
+</div>
+<div class="container-fluid bg-light">
+    <div class="container">
+        <!-- Available Homes/Lots Grid -->
+        <div id="available-homes" class="pt-lg-7 pt-5">
+            <?php $template_loader->render_single_component('lots-grid', array(
+                'community_id' => $post_id
             )); ?>
+        </div>
 
-            <?php $template_loader->render_single_component('sidebar-quick-info', array(
-                'info' => $quick_info
-            )); ?>
-
-            <?php $template_loader->render_single_component('sidebar-location', array(
-                'map_url' => $community['map_url']
+        <!-- Available Floor Plans Grid -->
+        <div id="available-floor-plans" class="py-lg-7 py-5">
+            <?php $template_loader->render_single_component('floor-plans-grid', array(
+                'community_id' => $post_id
             )); ?>
         </div>
     </div>
+</div>
 
 
-
-    <!-- Available Homes/Lots Grid -->
-    <div id="available-homes">
-        <?php $template_loader->render_single_component('lots-grid', array(
-            'community_id' => $post_id
-        )); ?>
+<div class="container-fluid py-lg-6 py-5">
+    <div class="container">
+        <!-- Site Map -->
+        <?php if (!empty($site_map)) {
+            $template_loader->render_single_component('site-map', array(
+                'site_map' => $site_map
+            ));
+        } ?>
     </div>
-
-    <!-- Related Items (Floor Plans) -->
-    <?php
-    // This could be moved to a component too if reused
-    $floor_plans = $data_provider->get_featured_communities(array('post_type' => 'bh_floor_plan', 'limit' => -1)); // This is wrong, need a generic getter
-    // For now keep the query here or use a new method in data provider
-    ?>
-    <!-- Site Map -->
-    <?php if (!empty($site_map)) {
-        $template_loader->render_single_component('site-map', array(
-            'site_map' => $site_map
-        ));
-    } ?>
-
-    <!-- Amenities -->
-    <?php if (!empty($amenities)) { ?>
-        <div id="amenities">
-            <?php $template_loader->render_single_component('amenities', array(
-                'items' => $amenities
-            )); ?>
-        </div>
-    <?php } ?>
 </div>
 
 
