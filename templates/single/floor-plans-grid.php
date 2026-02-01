@@ -196,8 +196,8 @@ $sqft_ranges = burgland_homes_generate_sqft_ranges_for_floor_plans($sqft_values,
         <!-- Section Header -->
         <div class="row mb-4">
             <div class="col-12">
-                    <h6 class="text-dark">
-                    <span id="floor-plans-count badge-count badge fs-3 me-3"><?php echo count($floor_plan_cards_data); ?></span> <span class="text-uppercase">Floor Plans</span>
+                    <h6 class="">
+                    <span class="badge-count badge fs-3 me-3 bg-secondary" id="floor-plans-count"><?php echo count($floor_plan_cards_data); ?></span> <span class="text-uppercase text-muted letter-spacing-wide">Floor Plans</span>
                     <?php //if (!empty($floor_plan_cards_data)) : 
                     ?>
                     <!-- <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
@@ -206,7 +206,7 @@ $sqft_ranges = burgland_homes_generate_sqft_ranges_for_floor_plans($sqft_values,
                     <?php //endif; 
                     ?>
                 </h6>
-                <h2 class="text-cursive display-5 text-primary">Available Floor Plans</h2>
+                <h2 class="display-5 text-primary">Available Floor Plans</h2>
                 <!-- Results Count -->
             
             </div>

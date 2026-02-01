@@ -40,6 +40,7 @@ class Burgland_Homes_ACF_Fields
         add_action('acf/include_fields', array($this, 'register_community_fields'));
         add_action('acf/include_fields', array($this, 'register_floor_plan_fields'));
         add_action('acf/include_fields', array($this, 'register_lot_fields'));
+        add_action('acf/include_fields', array($this, 'register_team_fields'));
 
         // Pre-populate community field when adding from community context
         add_filter('acf/load_value/name=lot_community', array($this, 'prepopulate_lot_community'), 10, 3);
@@ -64,6 +65,19 @@ class Burgland_Homes_ACF_Fields
             'key' => 'group_community_details',
             'title' => 'Community Details',
             'fields' => array(
+                array(
+                    'key' => 'field_community_featured',
+                    'label' => 'Featured',
+                    'name' => 'featured',
+                    'type' => 'true_false',
+                    'instructions' => 'Check to feature this community on the landing page',
+                    'required' => 0,
+                    'default_value' => 0,
+                    'ui' => 1,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
                 array(
                     'key' => 'field_community_address',
                     'label' => 'Address',
@@ -387,6 +401,19 @@ class Burgland_Homes_ACF_Fields
             'title' => 'Lot/Home Details',
             'fields' => array(
                 array(
+                    'key' => 'field_lot_featured',
+                    'label' => 'Featured',
+                    'name' => 'featured',
+                    'type' => 'true_false',
+                    'instructions' => 'Check to feature this lot on the landing page',
+                    'required' => 0,
+                    'default_value' => 0,
+                    'ui' => 1,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
                     'key' => 'field_lot_community',
                     'label' => 'Community',
                     'name' => 'lot_community',
@@ -543,6 +570,83 @@ class Burgland_Homes_ACF_Fields
                         'param' => 'post_type',
                         'operator' => '==',
                         'value' => 'bh_lot',
+                    ),
+                ),
+            ),
+            'menu_order' => 0,
+            'position' => 'normal',
+            'style' => 'default',
+            'label_placement' => 'top',
+            'instruction_placement' => 'label',
+        ));
+    }
+
+    /**
+     * Register Team Member ACF Fields
+     */
+    public function register_team_fields()
+    {
+        if (!function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        acf_add_local_field_group(array(
+            'key' => 'group_team_details',
+            'title' => 'Team Member Details',
+            'fields' => array(
+                array(
+                    'key' => 'field_team_featured',
+                    'label' => 'Featured',
+                    'name' => 'featured',
+                    'type' => 'true_false',
+                    'instructions' => 'Check to feature this team member',
+                    'required' => 0,
+                    'default_value' => 0,
+                    'ui' => 1,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_team_position',
+                    'label' => 'Position/Title',
+                    'name' => 'team_position',
+                    'type' => 'text',
+                    'instructions' => 'Job title or position (e.g., Sales Manager, New Home Counselor)',
+                    'required' => 0,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_team_phone',
+                    'label' => 'Phone Number',
+                    'name' => 'team_phone',
+                    'type' => 'text',
+                    'instructions' => 'Contact phone number',
+                    'required' => 0,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+                array(
+                    'key' => 'field_team_email',
+                    'label' => 'Email Address',
+                    'name' => 'team_email',
+                    'type' => 'email',
+                    'instructions' => 'Contact email address',
+                    'required' => 0,
+                    'wrapper' => array(
+                        'width' => '50',
+                    ),
+                ),
+            ),
+            'location' => array(
+                array(
+                    array(
+                        'param' => 'post_type',
+                        'operator' => '==',
+                        'value' => 'team',
                     ),
                 ),
             ),

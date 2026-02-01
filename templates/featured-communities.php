@@ -45,7 +45,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
                 <div class="bh-listings-column">
                     <div class="bh-listings-grid">
                        
-                            <h2 class="text-primary">Featured Communities</h2>
+                            <h2 class="text-primary mt-4">Featured Communities</h2>
                             <p class="mb-4">Browse our featured communities below:</p>
                             <div class="featured-communities-grid row g-4 align-items-stretch mb-5">
                                 <?php foreach ($communities as $community): ?>

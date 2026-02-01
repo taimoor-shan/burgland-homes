@@ -208,15 +208,27 @@ class Burgland_Homes_Data_Provider {
             'order' => 'ASC',
             'orderby' => 'title',
             'exclude' => array(),
+            'featured' => false,
         );
         
         $args = wp_parse_args($args, $defaults);
+        
+        $meta_query = array();
+        
+        if (!empty($args['featured'])) {
+            $meta_query[] = array(
+                'key' => 'featured',
+                'value' => '1',
+                'compare' => '==',
+            );
+        }
         
         $query_args = $this->build_base_query_args('bh_community', array(
             'posts_per_page' => intval($args['limit']),
             'orderby' => $args['orderby'],
             'order' => $args['order'],
             'post__not_in' => $args['exclude'],
+            'meta_query' => $meta_query,
         ));
         
         $communities = new WP_Query($query_args);
@@ -296,6 +308,82 @@ class Burgland_Homes_Data_Provider {
     }
     
     /**
+     * Get featured team members data
+     * 
+     * @param array $args Query arguments
+     * @return array Structured data array
+     */
+    public function get_featured_team_members($args = array()) {
+        $defaults = array(
+            'limit' => 1,
+            'order' => 'ASC',
+            'orderby' => 'menu_order',
+            'featured' => false,
+        );
+        
+        $args = wp_parse_args($args, $defaults);
+        
+        $meta_query = array();
+        
+        if (!empty($args['featured'])) {
+            $meta_query[] = array(
+                'key' => 'featured',
+                'value' => '1',
+                'compare' => '==',
+            );
+        }
+        
+        $query_args = $this->build_base_query_args('team', array(
+            'posts_per_page' => intval($args['limit']),
+            'orderby' => $args['orderby'],
+            'order' => $args['order'],
+            'meta_query' => $meta_query,
+        ));
+        
+        $team_members = new WP_Query($query_args);
+        $data = array();
+        
+        if ($team_members->have_posts()) {
+            while ($team_members->have_posts()) {
+                $team_members->the_post();
+                $post_id = get_the_ID();
+                
+                $data[] = $this->get_team_member_data($post_id);
+            }
+            wp_reset_postdata();
+        }
+        
+        return apply_filters('burgland_homes_featured_team_members_data', $data, $args);
+    }
+    
+    /**
+     * Get single team member data
+     * 
+     * @param int $team_member_id
+     * @return array
+     */
+    public function get_team_member_data($team_member_id) {
+        // Validate team member ID
+        if (!$team_member_id || !get_post($team_member_id)) {
+            return array();
+        }
+        
+        return apply_filters('burgland_homes_team_member_data', array(
+            'id' => $team_member_id,
+            'title' => get_the_title($team_member_id),
+            'name' => get_the_title($team_member_id),
+            'content' => get_the_content(null, false, $team_member_id),
+            'excerpt' => has_excerpt($team_member_id) ? get_the_excerpt($team_member_id) : '',
+            'permalink' => get_permalink($team_member_id),
+            'thumbnail' => get_the_post_thumbnail_url($team_member_id, 'medium'),
+            'thumbnail_full' => get_the_post_thumbnail_url($team_member_id, 'full'),
+            'phone' => get_post_meta($team_member_id, 'team_phone', true),
+            'email' => get_post_meta($team_member_id, 'team_email', true),
+            'position' => get_post_meta($team_member_id, 'team_position', true),
+        ), $team_member_id);
+    }
+    
+    /**
      * Get available lots
      * 
      * @param array $args
@@ -307,22 +395,33 @@ class Burgland_Homes_Data_Provider {
             'orderby' => 'menu_order',
             'order' => 'ASC',
             'exclude_states' => array('sold', 'empty_lot'),
+            'featured' => false,
         );
         
         $args = wp_parse_args($args, $defaults);
+        
+        $meta_query = array(
+            'relation' => 'AND',
+            array(
+                'key' => 'lot_state',
+                'value' => $args['exclude_states'],
+                'compare' => 'NOT IN'
+            )
+        );
+        
+        if (!empty($args['featured'])) {
+            $meta_query[] = array(
+                'key' => 'featured',
+                'value' => '1',
+                'compare' => '==',
+            );
+        }
         
         $query_args = $this->build_base_query_args('bh_lot', array(
             'posts_per_page' => intval($args['limit']),
             'orderby' => $args['orderby'],
             'order' => $args['order'],
-            'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'key' => 'lot_state',
-                    'value' => $args['exclude_states'],
-                    'compare' => 'NOT IN'
-                )
-            )
+            'meta_query' => $meta_query,
         ));
         
         $lots = new WP_Query($query_args);
@@ -509,7 +608,124 @@ class Burgland_Homes_Data_Provider {
             'design_package' => get_field('floor_plan_design_package', $floor_plan_id),
         ), $floor_plan_id);
     }
-
+        
+    /**
+     * Get header data for single post types
+     * 
+     * @param int $post_id
+     * @param string $post_type
+     * @return array
+     */
+    public function get_header_data($post_id, $post_type) {
+        $data = array(
+            'post_id' => $post_id,
+            'post_type' => $post_type,
+            'title' => get_the_title($post_id),
+        );
+            
+        // Add price disclaimer based on post type
+        switch ($post_type) {
+            case 'bh_community':
+                $data['price_disclaimer'] = get_post_meta($post_id, 'community_price_disclaimer', true);
+                $data['price'] = get_post_meta($post_id, 'community_price_range', true);
+                break;
+            case 'bh_floor_plan':
+                $data['price_disclaimer'] = get_post_meta($post_id, 'floor_plan_price_disclaimer', true);
+                $data['price'] = get_post_meta($post_id, 'floor_plan_price', true);
+                break;
+            case 'bh_lot':
+                $data['price_disclaimer'] = get_post_meta($post_id, 'lot_price_disclaimer', true);
+                $data['price'] = get_post_meta($post_id, 'lot_price', true);
+                break;
+        }
+            
+        // Add other common header data
+        $data['address'] = '';
+        $data['city'] = '';
+        $data['state'] = '';
+        $data['zip'] = '';
+        $data['map_url'] = '';
+            
+        // Get address data based on post type
+        if ($post_type === 'bh_community') {
+            $data['address'] = get_post_meta($post_id, 'community_address', true);
+            $data['city'] = get_post_meta($post_id, 'community_city', true);
+            $data['state'] = get_post_meta($post_id, 'community_state', true);
+            $data['zip'] = get_post_meta($post_id, 'community_zip', true);
+        } elseif ($post_type === 'bh_lot') {
+            // For lots, get address and inherit city/state from community
+            $data['address'] = get_post_meta($post_id, 'lot_address', true);
+            $community_id = get_post_meta($post_id, 'lot_community', true);
+            if ($community_id) {
+                $data['city'] = get_post_meta($community_id, 'community_city', true);
+                $data['state'] = get_post_meta($community_id, 'community_state', true);
+                $data['zip'] = get_post_meta($community_id, 'community_zip', true);
+            }
+        } elseif ($post_type === 'bh_floor_plan') {
+            // For floor plans, get address from associated communities if any
+            $community_ids = get_field('floor_plans_communities', $post_id);
+            if (!empty($community_ids) && is_array($community_ids)) {
+                $first_community_id = $community_ids[0];
+                $data['city'] = get_post_meta($first_community_id, 'community_city', true);
+                $data['state'] = get_post_meta($first_community_id, 'community_state', true);
+            }
+        }
+            
+        // Format map URL
+        $address_parts = array_filter(array($data['address'], $data['city'], $data['state'], $data['zip']));
+        $full_address = implode(', ', $address_parts);
+        if ($full_address) {
+            $data['map_url'] = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($full_address);
+        }
+            
+        // Get status badge if applicable
+        $data['status'] = array();
+        if ($post_type === 'bh_community') {
+            $status_terms = wp_get_post_terms($post_id, 'bh_community_status');
+            if (!empty($status_terms) && !is_wp_error($status_terms)) {
+                $status_label = $status_terms[0]->name;
+                $status = $status_terms[0]->slug;
+                $status_config = $this->get_status_config('community');
+                $status_class = isset($status_config[$status]) ? $status_config[$status]['class'] : 'primary';
+                $data['status'] = array('label' => $status_label, 'class' => $status_class);
+            }
+        } elseif ($post_type === 'bh_lot') {
+            $lot_state = get_post_meta($post_id, 'lot_state', true);
+            $status_config = $this->get_status_config('lot');
+            $status_info = isset($status_config[$lot_state]) ? $status_config[$lot_state] : array(
+                'label' => ucfirst(str_replace('_', ' ', $lot_state)),
+                'class' => 'primary'
+            );
+            $data['status'] = array('label' => $status_info['label'], 'class' => $status_info['class']);
+        }
+            
+        // Get specs based on post type
+        $data['specs'] = array();
+        if ($post_type === 'bh_community') {
+            $utilities = Burgland_Homes_Utilities::get_instance();
+            $floor_plan_ranges = $utilities->get_floor_plan_ranges($post_id);
+            $data['specs'] = $this->build_specs_from_ranges($floor_plan_ranges, false);
+        } else {
+            $raw_data = array();
+            if ($post_type === 'bh_lot') {
+                $raw_data['bedrooms'] = get_post_meta($post_id, 'lot_bedrooms', true);
+                $raw_data['bathrooms'] = get_post_meta($post_id, 'lot_bathrooms', true);
+                $raw_data['square_feet'] = get_post_meta($post_id, 'lot_square_feet', true);
+                $raw_data['garage'] = get_post_meta($post_id, 'lot_garage', true);
+                $raw_data['stories'] = get_post_meta($post_id, 'lot_stories', true);
+            } elseif ($post_type === 'bh_floor_plan') {
+                $raw_data['bedrooms'] = get_post_meta($post_id, 'floor_plan_bedrooms', true);
+                $raw_data['bathrooms'] = get_post_meta($post_id, 'floor_plan_bathrooms', true);
+                $raw_data['square_feet'] = get_post_meta($post_id, 'floor_plan_square_feet', true);
+                $raw_data['garage'] = get_post_meta($post_id, 'floor_plan_garage', true);
+                $raw_data['stories'] = get_post_meta($post_id, 'floor_plan_stories', true);
+            }
+            $data['specs'] = $this->build_specs($raw_data, false);
+        }
+            
+        return apply_filters('burgland_homes_header_data', $data, $post_id, $post_type);
+    }
+        
     /**
      * Format plain address from data array
      *

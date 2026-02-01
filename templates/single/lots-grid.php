@@ -192,13 +192,16 @@ $sqft_ranges = generate_sqft_ranges($sqft_values, count($lot_cards_data));
         <!-- Section Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <h2 class="text-cursive display-5 text-primary">Available Homes</h2>
-                <!-- Results Count -->
                 <h6 class="text-dark">
-                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) for this community  <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                    <span class="badge-count badge fs-3 me-3 bg-secondary" id="lots-count"><?php echo count($lot_cards_data); ?></span> <span class="text-uppercase text-muted letter-spacing-wide">Inventory Homes</span>
+
+                    <!-- <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
                          Reset Filters
-                    </button>
+                    </button> -->
                 </h6>
+                <h2 class=" display-5 text-primary">Available Homes</h2>
+                <!-- Results Count -->
+                
             </div>
         </div>
 

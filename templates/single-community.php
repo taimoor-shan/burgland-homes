@@ -208,16 +208,6 @@ $template_loader->render_single_component('actions', array(
                     'title' => 'Interested in This Community?',
                     'brochure' => $brochure
                 )); ?>
-
-                <?php //$template_loader->render_single_component('sidebar-quick-info', array(
-                //'info' => $quick_info
-                //)); 
-                ?>
-
-                <?php //$template_loader->render_single_component('sidebar-location', array(
-                //'map_url' => $community['map_url']
-                //)); 
-                ?>
             </div>
         </div>
     </div>

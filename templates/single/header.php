@@ -56,27 +56,31 @@ $data = $args;
             <?php if (!empty($data['price'])): ?>
                 <h3 class="fw-semibold mb-1 text-info"><span class="small me-1">From</span><?php echo esc_html($data['price']); ?></h3>
 
-                <!-- Disclaimer -->
+                <!-- Price Disclaimer -->
                 <?php
-                $classes = '';
+                $disclaimer = '';
+                $classes = 'text-muted small lh-sm';
 
-                if (!empty($data['post_type']) && $data['post_type'] === 'bh_floor_plan') {
-                    $classes .= ' text-muted small lh-sm';
-                    $content = 'Hello world Floor';
-                } elseif (!empty($data['post_type']) && $data['post_type'] === 'bh_lot') {
-                    $classes .= ' text-muted lh-sm small max-width-50';
-                    $content = '* Inventory home price above includes pre-selected homesite, flex options & design upgrades.';
-                } else {
-                    $content = '';
+                // Get price disclaimer based on post type
+                if (!empty($data['post_type']) && !empty($data['post_id'])) {
+                    switch ($data['post_type']) {
+                        case 'bh_community':
+                            $disclaimer = get_post_meta($data['post_id'], 'community_price_disclaimer', true);
+                            break;
+                        case 'bh_floor_plan':
+                            $disclaimer = get_post_meta($data['post_id'], 'floor_plan_price_disclaimer', true);
+                            break;
+                        case 'bh_lot':
+                            $disclaimer = get_post_meta($data['post_id'], 'lot_price_disclaimer', true);
+                            break;
+                    }
                 }
 
-                // Render only if we actually have content
-                if (!empty($content)) {
-                    echo '<p class="' . esc_attr($classes) . '">' . $content . '</p>';
+                // Render only if we actually have disclaimer content
+                if (!empty($disclaimer)) {
+                    echo '<p class="' . esc_attr($classes) . '">' . wp_kses_post($disclaimer) . '</p>';
                 }
                 ?>
-
-
 
             <?php endif; ?>
             <!-- Specs -->

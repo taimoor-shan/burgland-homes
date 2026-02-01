@@ -166,3 +166,25 @@ function burgland_homes_format_address($data, $with_line_break = true) {
     // Single-line version
     return wp_strip_all_tags(implode(' ', $output));
 }
+
+/**
+ * Get featured team members data
+ * 
+ * @param array $args Query arguments
+ * @return array
+ */
+function burgland_homes_get_featured_team_members($args = array()) {
+    $data_provider = Burgland_Homes_Data_Provider::get_instance();
+    return $data_provider->get_featured_team_members($args);
+}
+
+/**
+ * Get team member data
+ * 
+ * @param int $team_member_id
+ * @return array
+ */
+function burgland_homes_get_team_member_data($team_member_id) {
+    $data_provider = Burgland_Homes_Data_Provider::get_instance();
+    return $data_provider->get_team_member_data($team_member_id);
+}

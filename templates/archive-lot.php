@@ -218,7 +218,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 text-start">
-                    <h1 class="display-3 text-cursive">
+                    <h1 class="display-5">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
                     

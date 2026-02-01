@@ -12,7 +12,7 @@ $title = isset($args['title']) ? $args['title'] : 'About';
 $content = isset($args['content']) ? $args['content'] : '';
 ?>
 <div class="mb-5">
-    <div class="pb-4 border-bottom">
+    <div class="pb-4">
         <!-- <h2 class="h3 card-title mb-3"><?php echo esc_html($title); ?></h2> -->
         <div class="bh-read-more-wrapper">
             <div class="content bh-read-more-content">

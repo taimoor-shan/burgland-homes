@@ -127,40 +127,41 @@ $template_loader->render_single_component('actions', array(
     'brochure_label' => 'Floor Plan Brochure'
 )); ?>
 
-<div class="container">
-    <div class="row py-5">
-        <div class="col-12 col-lg-8">
-            <!-- Description -->
-            <div id="description">
-                <?php $template_loader->render_single_component('description', array(
-                    'title' => 'About This Lot',
-                    'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+<div class="container-fluid py-lg-4">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-12 col-lg-8 pe-lg-5">
+                <!-- Description -->
+                <div id="description">
+                    <?php $template_loader->render_single_component('description', array(
+                        'title' => '',
+                        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
+                    )); ?>
+
+                    <!-- Features -->
+                    <?php if (!empty($features)) { ?>
+                        <div id="features">
+                            <?php $template_loader->render_single_component('amenities', array(
+                                'items' => $features
+                            )); ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4 py-3">
+                <?php $template_loader->render_single_component('sidebar-contact', array(
+                    'title' => $lot['status_label'] === 'Sold' ? 'This lot is sold' : 'Interested in This Lot?',
+                    'button_text' => $lot['status_label'] === 'Sold' ? 'Contact for Others' : 'Reserve Now'
+                )); ?>
+
+                <?php $template_loader->render_single_component('sidebar-quick-info', array(
+                    'info' => $quick_info
+                )); ?>
+
+                <?php $template_loader->render_single_component('sidebar-location', array(
+                    'map_url' => $lot['map_url']
                 )); ?>
             </div>
-
-            <!-- Features -->
-            <?php if (!empty($features)) { ?>
-            <div id="features">
-                <?php $template_loader->render_single_component('amenities', array(
-                    'title' => 'Lot Features',
-                    'items' => $features
-                )); ?>
-            </div>
-            <?php } ?>
-        </div>
-        <div class="col-12 col-lg-4">
-            <?php $template_loader->render_single_component('sidebar-contact', array(
-                'title' => $lot['status_label'] === 'Sold' ? 'This lot is sold' : 'Interested in This Lot?',
-                'button_text' => $lot['status_label'] === 'Sold' ? 'Contact for Others' : 'Reserve Now'
-            )); ?>
-
-            <?php $template_loader->render_single_component('sidebar-quick-info', array(
-                'info' => $quick_info
-            )); ?>
-
-            <?php $template_loader->render_single_component('sidebar-location', array(
-                'map_url' => $lot['map_url']
-            )); ?>
         </div>
     </div>
 </div>

@@ -27,6 +27,7 @@ if (is_string($features)) {
 }
 $floor_plan_brochure = !empty($floor_plan['brochure']) ? $floor_plan['brochure'] : null;
 $design_package = !empty($floor_plan['design_package']) ? $floor_plan['design_package'] : null;
+$fp_thumbnail = get_field('floor_plan_thumbnail', $post_id); // Floor Plan Thumbnail
 
 // Breadcrumbs
 $breadcrumbs = array(
@@ -128,7 +129,11 @@ if (!empty($features)) {
 
 // Check if there are gallery images
 if (!empty($gallery_images)) {
-    $nav_sections[] = array('id' => 'gallery-section', 'label' => 'Gallery');
+    $nav_sections[] = array('id' => 'gallery-section', 'label' => 'Elevations');
+}
+// Check if there are gallery images
+if (!empty($fp_thumbnail)) {
+    $nav_sections[] = array('id' => 'floor-plan-thumbnail', 'label' => 'Floor Plan');
 }
 
 // Check if there are available lots
@@ -154,77 +159,100 @@ $template_loader->render_single_component('actions', array(
     'design_package' => $design_package
 )); ?>
 
-<div class="container">
-    <div class="row py-5">
-        <div class="col-12 col-lg-8">
-            <!-- Description -->
-            <div id="description">
-                <?php $template_loader->render_single_component('description', array(
-                    'title' => 'About This Floor Plan',
-                    'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
-                )); ?>
-            </div>
-
-            <!-- Features -->
-            <?php if (!empty($features)) { ?>
-                <div id="features">
-                    <?php $template_loader->render_single_component('amenities', array(
-                        'title' => 'Features & Amenities',
-                        'items' => $features
+<div class="container-fluid py-lg-4">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-12 col-lg-8 pe-lg-5">
+                <!-- Description -->
+                <div id="description">
+                    <?php $template_loader->render_single_component('description', array(
+                        'title' => '',
+                        'content' => apply_filters('the_content', get_post_field('post_content', $post_id))
                     )); ?>
+
+                    <!-- Features -->
+                    <?php if (!empty($features)) { ?>
+                        <div id="features" class="mt-4">
+                            <?php $template_loader->render_single_component('amenities', array(
+                                'items' => $features
+                            )); ?>
+                        </div>
+                    <?php } ?>
                 </div>
-            <?php } ?>
+            </div>
+            <div class="col-12 col-lg-4 pt-4 pt-lg-0">
+                <?php $template_loader->render_single_component('sidebar-contact', array(
+                    'title' => 'Interested in This Floor Plan?',
+                    'button_text' => 'Schedule a Tour'
+                )); ?>
 
-            <!-- Gallery Section -->
-            <?php if (!empty($gallery_images)) { ?>
-                <div id="gallery-section" class="mb-5">
-                    <h2 class="h3 mb-4">Available Elevations</h2>
 
-                    <div class="row g-3">
-                        <?php foreach ($gallery_images as $image) :
-                            $caption = $image['caption'] ?? '';
-                        ?>
-                            <div class="col-md-3 col-sm-6">
-                                <figure class="m-0 position-relative">
-
-                                    <?php if ($caption) : ?>
-                                        <figcaption class="figCaption">
-                                            <?php echo esc_html($caption); ?>
-                                        </figcaption>
-                                    <?php endif; ?>
-
-                                    <a href="<?php echo esc_url($image['url']); ?>"
-                                        data-fslightbox="floor-plan-gallery">
-
-                                        <img src="<?php echo esc_url($image['url']); ?>"
-                                            alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
-                                            class="img-fluid rounded shadow-sm hover-shadow-lg"
-                                            style="width:100%; height:200px; object-fit:cover;">
-                                    </a>
-                                </figure>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php } ?>
-        </div>
-        <div class="col-12 col-lg-4">
-            <?php $template_loader->render_single_component('sidebar-contact', array(
-                'title' => 'Interested in This Floor Plan?',
-                'button_text' => 'Schedule a Tour'
-            )); ?>
-
-            <?php $template_loader->render_single_component('sidebar-quick-info', array(
-                'info' => $quick_info
-            )); ?>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Related Lots grid -->
-    <div id="available-lots">
-        <?php $template_loader->render_single_component('floor-plan-lots-grid', array(
-            'floor_plan_id' => $post_id
-        )); ?>
+<div class="container-fluid bg-light">
+    <div class="container">
+        <!-- Gallery Section -->
+        <?php if (!empty($gallery_images)) { ?>
+            <div id="gallery-section" class="py-5 py-lg-7">
+                <h2 class="h3 mb-4  display-5 text-primary">Available Elevations</h2>
+
+                <div class="row g-3">
+                    <?php foreach ($gallery_images as $image) :
+                        $caption = $image['caption'] ?? '';
+                    ?>
+                        <div class="col-md-3 col-sm-6">
+                            <figure class="m-0 position-relative">
+                                <a href="<?php echo esc_url($image['url']); ?>"
+                                    data-fancybox="single-gallery-3"
+                                    data-caption="<?php echo esc_attr($caption ?: $image['alt'] ?? ''); ?>">
+                                    <img src="<?php echo esc_url($image['url']); ?>"
+                                        alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
+                                        class="img-fluid rounded shadow-sm hover-shadow-lg"
+                                        style="width:100%; height:200px; object-fit:cover;">
+                                </a>
+                                <?php if ($caption) : ?>
+                                    <figcaption class="figCaptionRelative text-primary">
+                                        <?php echo esc_html($caption); ?>
+                                    </figcaption>
+                                <?php endif; ?>
+                            </figure>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php } ?>
+
+        <!-- Floor Plan Thumbnail -->
+        <?php
+       
+        if ($fp_thumbnail) { ?>
+            <div id="floor-plan-thumbnail" class="pb-lg-7 pb-5">
+                <h2 class="h3 mb-4 display-5 text-primary">Floor Plan Layout</h2>
+                <div class="row g-3">
+                    <div class="col-md-3 col-sm-6">
+                        <figure class="m-0 position-relative">
+                            <a href="<?php echo esc_url($fp_thumbnail['url']); ?>"
+                                data-fancybox="single-gallery-2"
+                                data-caption="Floor Plan Layout">
+                                <img src="<?php echo esc_url($fp_thumbnail['url']); ?>"
+                                    alt="Floor Plan Layout"
+                                    class="img-fluid rounded shadow-sm hover-shadow-lg"
+                                    style="width:100%;">
+                            </a>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        <?php } ?>
+        <!-- Related Lots grid -->
+        <div id="available-lots" class="pb-lg-7 pb-5">
+            <?php $template_loader->render_single_component('floor-plan-lots-grid', array(
+                'floor_plan_id' => $post_id
+            )); ?>
+        </div>
     </div>
 </div>
 

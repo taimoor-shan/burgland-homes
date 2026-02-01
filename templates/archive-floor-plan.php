@@ -219,12 +219,12 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
         <div class="container">
             <div class="row justify-content-start align-items-end">
                 <div class="col-lg-8 text-start">
-                    <h1 class="display-3 text-cursive">
+                    <h1 class="display-5">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
                     
                     <?php if ($archive_subtitle): ?>
-                        <p class="page-excerpt uppercase text-white">
+                        <p class="page-excerpt text-uppercase text-white lead">
                             <?php echo esc_html($archive_subtitle); ?>
                         </p>
                     <?php endif; ?>
@@ -232,7 +232,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             </div>
         </div>
     </header>
-    <section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
+    <section class="bh-lots-grid-section py-5">
         <div class="container">
             <!-- Section Header -->
             <div class="row mb-3">

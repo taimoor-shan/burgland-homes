@@ -103,7 +103,8 @@ sort($bathrooms_options, SORT_NUMERIC);
  * 3. Create ranges that actually contain data
  * 4. Round to human-friendly numbers
  */
-function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes) {
+function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes)
+{
     if (empty($sqft_values)) {
         return array();
     }
@@ -140,7 +141,7 @@ function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes
     // Round step to human-friendly increments
     $step_options = array(100, 250, 500, 750, 1000, 1500, 2000, 2500, 5000, 10000, 25000, 50000);
     $step = 500; // default
-    
+
     foreach ($step_options as $option) {
         if ($ideal_step <= $option) {
             $step = $option;
@@ -150,15 +151,15 @@ function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes
 
     // Start from a rounded number
     $start = floor($sqft_min / $step) * $step;
-    
+
     // Generate ranges
     $ranges = array();
     $current = $start;
-    
+
     while ($current < $sqft_max) {
         $range_min = $current;
         $range_max = $current + $step - 1;
-        
+
         // Check if this range contains any actual data
         $has_data = false;
         foreach ($sqft_values as $sqft) {
@@ -167,14 +168,14 @@ function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes
                 break;
             }
         }
-        
+
         // Only add ranges that contain data
         if ($has_data) {
             $ranges["$range_min-$range_max"] = number_format($range_min) . ' - ' . number_format($range_max) . ' sqft';
         }
-        
+
         $current += $step;
-        
+
         // Safety limit to prevent infinite loops
         if (count($ranges) > 15) {
             break;
@@ -187,86 +188,88 @@ function burgland_generate_sqft_ranges_for_floor_plan($sqft_values, $total_homes
 $sqft_ranges = burgland_generate_sqft_ranges_for_floor_plan($sqft_values, count($lot_cards_data));
 ?>
 
-<section class="bh-lots-grid-section py-4 px-3 bg-light border mb-5">
+<section class="bh-lots-grid-section">
     <div class="container-fluid">
         <!-- Section Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <h2 class="text-primary">Available Homes with this Floor Plan</h2>
-                <!-- Results Count -->
-                <h6 class="text-dark">
-                    Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) available.
-                        <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                 <h6 class="text-dark">
+                    <span class="badge-count badge fs-3 me-3 bg-secondary" id="lots-count"><?php echo count($lot_cards_data); ?></span> <span class="text-uppercase text-muted letter-spacing-wide">Inventory Homes</span>
+                    <!-- <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
                         Reset Filters
-                    </button>
+                    </button> -->
                 </h6>
+                <h2 class="text-primary display-5">Available Homes</h2>
+                <!-- Results Count -->
+
             </div>
         </div>
+        <?php if (false): ?>
+            <!-- Only show filters if there are lots -->
+            <?php if (!empty($lot_cards_data)) : ?>
 
-        <!-- Only show filters if there are lots -->
-        <?php if (!empty($lot_cards_data)) : ?>
+                <!-- Filters Section -->
+                <section class="bh-filters mb-4">
+                    <form id="lots-filters" class="row g-3 align-items-end" data-floor-plan-id="<?php echo esc_attr($floor_plan_id); ?>">
 
-        <!-- Filters Section -->
-        <section class="bh-filters mb-4">
-            <form id="lots-filters" class="row g-3 align-items-end" data-floor-plan-id="<?php echo esc_attr($floor_plan_id); ?>">
+                        <!-- Square Footage Range -->
+                        <?php if (!empty($sqft_ranges)): ?>
+                            <div class="col-md-3">
+                                <label for="sqft-filter" class="form-label fw-semibold">Sqft Range</label>
+                                <select name="sqft_range" id="sqft-filter" class="form-select">
+                                    <option value="">All Sizes</option>
+                                    <?php foreach ($sqft_ranges as $value => $label): ?>
+                                        <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
 
-                <!-- Square Footage Range -->
-                <?php if (!empty($sqft_ranges)): ?>
-                <div class="col-md-3">
-                    <label for="sqft-filter" class="form-label fw-semibold">Sqft Range</label>
-                    <select name="sqft_range" id="sqft-filter" class="form-select">
-                        <option value="">All Sizes</option>
-                        <?php foreach ($sqft_ranges as $value => $label): ?>
-                            <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
+                        <!-- Bedrooms Filter -->
+                        <?php if (!empty($bedrooms_options)): ?>
+                            <div class="col-md-3">
+                                <label for="bedrooms-filter" class="form-label fw-semibold">Bedrooms</label>
+                                <select name="bedrooms" id="bedrooms-filter" class="form-select">
+                                    <option value="">All Bedrooms</option>
+                                    <?php foreach ($bedrooms_options as $bedrooms): ?>
+                                        <option value="<?php echo esc_attr($bedrooms); ?>">
+                                            <?php echo esc_html($bedrooms); ?> Bed<?php echo $bedrooms > 1 ? 's' : ''; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
 
-                <!-- Bedrooms Filter -->
-                <?php if (!empty($bedrooms_options)): ?>
-                <div class="col-md-3">
-                    <label for="bedrooms-filter" class="form-label fw-semibold">Bedrooms</label>
-                    <select name="bedrooms" id="bedrooms-filter" class="form-select">
-                        <option value="">All Bedrooms</option>
-                        <?php foreach ($bedrooms_options as $bedrooms): ?>
-                            <option value="<?php echo esc_attr($bedrooms); ?>">
-                                <?php echo esc_html($bedrooms); ?> Bed<?php echo $bedrooms > 1 ? 's' : ''; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
+                        <!-- Bathrooms Filter -->
+                        <?php if (!empty($bathrooms_options)): ?>
+                            <div class="col-md-3">
+                                <label for="bathrooms-filter" class="form-label fw-semibold">Bathrooms</label>
+                                <select name="bathrooms" id="bathrooms-filter" class="form-select">
+                                    <option value="">All Bathrooms</option>
+                                    <?php foreach ($bathrooms_options as $bathrooms): ?>
+                                        <option value="<?php echo esc_attr($bathrooms); ?>">
+                                            <?php echo esc_html($bathrooms); ?> Bath<?php echo $bathrooms > 1 ? 's' : ''; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
 
-                <!-- Bathrooms Filter -->
-                <?php if (!empty($bathrooms_options)): ?>
-                <div class="col-md-3">
-                    <label for="bathrooms-filter" class="form-label fw-semibold">Bathrooms</label>
-                    <select name="bathrooms" id="bathrooms-filter" class="form-select">
-                        <option value="">All Bathrooms</option>
-                        <?php foreach ($bathrooms_options as $bathrooms): ?>
-                            <option value="<?php echo esc_attr($bathrooms); ?>">
-                                <?php echo esc_html($bathrooms); ?> Bath<?php echo $bathrooms > 1 ? 's' : ''; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
+                        <!-- Sort Order -->
+                        <div class="col-md-3">
+                            <label for="sort-order" class="form-label fw-semibold">Sort By</label>
+                            <select name="sort_order" id="sort-order" class="form-select">
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="sqft-asc">Sqft: Low to High</option>
+                                <option value="sqft-desc">Sqft: High to Low</option>
+                            </select>
+                        </div>
 
-                <!-- Sort Order -->
-                <div class="col-md-3">
-                    <label for="sort-order" class="form-label fw-semibold">Sort By</label>
-                    <select name="sort_order" id="sort-order" class="form-select">
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="sqft-asc">Sqft: Low to High</option>
-                        <option value="sqft-desc">Sqft: High to Low</option>
-                    </select>
-                </div>
+                    </form>
+                </section>
 
-            </form>
-        </section>
-
+            <?php endif; ?>
         <?php endif; ?>
 
         <!-- Lots Grid -->

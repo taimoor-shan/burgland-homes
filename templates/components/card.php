@@ -168,7 +168,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
         }
         ?>
 
-        <span class="btn btn-outline-secondary w-100 mt-3">
+        <span class="btn btn-sm btn-outline-secondary w-100 mt-3">
             <?= esc_html($button_text); ?>
         </span>
     </div>

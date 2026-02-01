@@ -65,6 +65,7 @@ class Burgland_Homes_Plugin {
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-communities-filter.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-utilities.php';
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-geocoding-service.php';
+        require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-shortcodes.php';
         
         // NEW: Data layer and template system
         require_once BURGLAND_HOMES_PLUGIN_DIR . 'includes/class-data-provider.php';
@@ -108,6 +109,7 @@ class Burgland_Homes_Plugin {
         Burgland_Homes_Gallery::get_instance();
         Burgland_Homes_Communities_Filter::get_instance();
         Burgland_Homes_Utilities::get_instance();
+        Burgland_Homes_Shortcodes::get_instance();
         
         // NEW: Initialize new data and template system
         Burgland_Homes_Data_Provider::get_instance();

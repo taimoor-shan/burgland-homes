@@ -8,7 +8,7 @@
   border-radius: 0;
   box-shadow: var(--card-shadow);
   margin-bottom: 0;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
 }
 
 .plugin-slider__swiperBaap,

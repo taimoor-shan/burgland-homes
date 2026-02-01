@@ -52,7 +52,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                                 <img src="<?php echo esc_url($image['url']); ?>"
                                     alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
                                     class="w-100"
-                                    style="aspect-ratio: 16/10; object-fit: cover;">
+                                    style="aspect-ratio: 16/9; object-fit: cover;">
                             </a>
                         </figure>
                     </div>
@@ -81,7 +81,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                         false,
                         [
                             'class' => 'img-fluid w-100',
-                            'style' => 'aspect-ratio: 16/10; object-fit: cover;',
+                            'style' => 'aspect-ratio: 16/9; object-fit: cover;',
                         ]
                     ); ?>
                 </a>
