@@ -38,7 +38,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
                     $caption  = $image_id ? wp_get_attachment_caption($image_id) : '';
                 ?>
                     <div class="swiper-slide">
-                        <figure class="m-0 position-relative">
+                        <figure class="m-0 position-relative oi-aspect four-three sixteen-nine-xx">
                             <?php if ($caption) : ?>
                                 <figcaption class="figCaption">
                                     <?php echo esc_html($caption); ?>
@@ -51,8 +51,7 @@ $video_url = isset($args['video_url']) ? $args['video_url'] : '';
 
                                 <img src="<?php echo esc_url($image['url']); ?>"
                                     alt="<?php echo esc_attr($image['alt'] ?? ''); ?>"
-                                    class="w-100"
-                                    style="aspect-ratio: 16/9; object-fit: cover;">
+                                    class="img-fluid">
                             </a>
                         </figure>
                     </div>

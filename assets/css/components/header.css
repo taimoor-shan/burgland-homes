@@ -7,7 +7,7 @@
 
 
 .bh-header-specs .col-auto:not(:last-child) {
-    border-right: 1px solid var(--light-color);
+    border-right: 1px solid #E6E7E8;
 }
 
 .spec-item  i {

@@ -30,18 +30,18 @@ $data = $args;
             <?php if (!empty($data['status'])): ?>
                 <span class="badge bg-<?php echo esc_attr($data['status']['class']); ?> my-3"><?php echo esc_html($data['status']['label']); ?></span>
             <?php endif; ?>
-            <h1 class="text-dark mb-2">
+            <h1 class="text-dark mb-3">
                 <?php echo esc_html($data['title']); ?>
                 
             </h1>
-
-            <p class="">Homesite #<?php echo esc_html($data['lot_number']); ?></p>
-
+            <?php if (!empty($data['lot_number'])): ?>
+                <p class="mb-3">Homesite #<?php echo esc_html($data['lot_number']); ?></p>
+            <?php endif; ?>
 
             <!-- Address (single-line format for single pages, without <br> tag, clickable to map) -->
             <?php if (!empty($data['address']) || !empty($data['city']) || !empty($data['state']) || !empty($data['zip'])): ?>
 
-                <p class="mb-3">
+                <p class="mb-4">
                     <?php if (!empty($data['map_url'])): ?>
                         <a href="<?php echo esc_url($data['map_url']); ?>" class="text-dark locationLink" target="_blank" rel="noopener noreferrer">
                             <?php echo burgland_homes_format_address($data, true); ?>
@@ -59,7 +59,7 @@ $data = $args;
                 <!-- Price Disclaimer -->
                 <?php
                 $disclaimer = '';
-                $classes = 'small lh-sm';
+                $classes = 'small lh-sm italic';
 
                 // Get price disclaimer based on post type
                 if (!empty($data['post_type'])) {
@@ -78,7 +78,7 @@ $data = $args;
 
                 // Render only if we actually have disclaimer content
                 if (!empty($disclaimer)) {
-                    echo '<em class="' . esc_attr($classes) . '">' . wp_kses_post($disclaimer) . '</em>';
+                    echo '<p class="' . esc_attr($classes) . '">' . wp_kses_post($disclaimer) . '</p>';
                 }
                 ?>
 
@@ -86,8 +86,8 @@ $data = $args;
             <!-- Specs -->
 
             <?php if (!empty($data['specs'])): ?>
-                <div class="mt-5">
-                    <div class="row g-5 bh-header-specs">
+                <div class="mt-4 mt-lg-5">
+                    <div class="row bh-header-specs justify-content-center g-0">
                         <?php
                         // Map Bootstrap Icons to Font Awesome classes
                         $icon_map = array(
@@ -108,7 +108,7 @@ $data = $args;
                                 $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
                             }
                             ?>
-                            <div class="col-auto">
+                            <div class="col-3">
                                 <span class="spec-item">
                                     <?php if ($icon_class): ?>
                                         <i class="<?php echo esc_attr($icon_class); ?>"></i>
@@ -120,9 +120,6 @@ $data = $args;
                     </div>
                 </div>
             <?php endif; ?>
-
-
-
         </div>
 
     </div>

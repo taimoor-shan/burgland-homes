@@ -48,7 +48,7 @@ if (!defined('ABSPATH')) exit;
                     <div class="container text-white">
                         <div class="row">
                             <div class="col-12">
-                                <p class="text-uppercase text-white tracking-wide">
+                                <p class="text-uppercase text-white tracking-wide fw-300 mb-4">
 
                                     Contact Us
 

@@ -47,7 +47,7 @@ if (!empty($community['price_range'])) {
 ob_start();
 ?>
 
-<section id="overview" class="overview-detail">
+<section id="overview" class="overview-detail bg-light">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-12 col-lg-6 col-xxl-5 pt-5 pt-lg-4 px-lg-3 px-xl-5 px-xxxl-7">
@@ -147,20 +147,9 @@ $nav_sections[] = array('id' => 'overview', 'label' => 'Overview');
 // Check if there's description content
 // 1
 
-// Check if there are available lots/homes
-$lots_query = new WP_Query(array(
-    'post_type' => 'bh_lot',
-    'posts_per_page' => 1,
-    'meta_query' => array(
-        array(
-            'key' => 'lot_community',
-            'value' => $post_id,
-        )
-    )
-));
-if ($lots_query->have_posts()) {
     $nav_sections[] = array('id' => 'available-homes', 'label' => 'Available Homes');
-}
+    $nav_sections[] = array('id' => 'available-floor-plans', 'label' => 'Floor Plans');
+
 wp_reset_postdata();
 
 // Check if site map exists

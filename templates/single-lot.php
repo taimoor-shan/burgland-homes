@@ -48,7 +48,7 @@ if ($lot['price'])
 ob_start();
 ?>
 
-<section id="overview" class="overview-detail">
+<section id="overview" class="overview-detail bg-light">
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-12 col-lg-6 col-xxl-5 pt-5 pt-lg-4 px-lg-3 px-xl-5 px-xxxl-7">

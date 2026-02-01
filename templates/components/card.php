@@ -49,16 +49,15 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
     tabindex="0"
     data-href="<?php echo esc_url($data['url']); ?>"
     style="cursor: pointer;">
-    <div class="bh-card-image position-relative">
+    <div class=" position-relative oi-aspect sixteen-nine">
         <?php if (!empty($data['image_caption'])) : ?>
             <figcaption class="figCaption">
                 <?php echo esc_html($data['image_caption']); ?>
             </figcaption>
         <?php endif; ?>
         <img src="<?php echo esc_url($thumbnail); ?>"
-            class="card-img-top"
-            alt="<?php echo esc_attr($data['title']); ?>"
-            style="aspect-ratio: 9/5; object-fit: cover;">
+            class="card-img-top oi-aspect-img"
+            alt="<?php echo esc_attr($data['title']); ?>">
 
         <?php if (!empty($data['badges'])): ?>
             <div class="bh-card-badges">

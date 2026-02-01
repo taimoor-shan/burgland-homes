@@ -23,7 +23,7 @@ $data = $args;
 </style>
 
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
+            <ol class="breadcrumb mb-3">
                 <li class="breadcrumb-item text-info"><a href="<?php echo home_url(); ?>">Home</a></li>
                 <?php foreach ($data['breadcrumbs'] as $crumb): ?>
                     <?php if (!empty($crumb['url'])): ?>

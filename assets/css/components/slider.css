@@ -1,6 +1,43 @@
 /**
  * Slider Component Styles (Swiper Integration)
  */
+
+
+ .oi-aspect:before {
+    content: "";
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: block;
+    background-position: center center;
+    background-size: cover;
+}
+
+
+.oi-aspect.four-three:before {
+    padding-bottom: 75%;
+}
+@media (min-width: 1400px) {
+    .oi-aspect.four-three:before {
+        padding-bottom: 56.25%;
+    }
+}
+.oi-aspect.sixteen-nine:before {
+    padding-bottom: 56.25%;
+}
+.oi-aspect.three-two:before {
+    padding-bottom: 66.66%;
+}
+.oi-aspect.five-sixteen:before {
+    padding-bottom: 60%;
+}
+.oi-aspect.eighty-one:before {
+    padding-bottom: 50%;
+}
+.oi-aspect.custom:before {
+    padding-bottom: 56.25%;
+}
+
 .plugin-slider {
   position: relative;
   width: 100%;
@@ -8,7 +45,6 @@
   border-radius: 0;
   box-shadow: var(--card-shadow);
   margin-bottom: 0;
-  aspect-ratio: 16 / 9;
 }
 
 .plugin-slider__swiperBaap,
@@ -31,13 +67,15 @@
   overflow: hidden;
 }
 
-.plugin-slider__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.3s ease;
+.plugin-slider .oi-aspect img{
+     width: 100%;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    object-fit: cover;
 }
 
 .plugin-slider__slide.swiper-slide-active .plugin-slider__image {

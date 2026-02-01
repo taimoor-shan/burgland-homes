@@ -66,9 +66,7 @@ class Burgland_Homes_Admin
         add_action('admin_notices', array($this, 'show_orphaned_lot_notice'));
         add_action('edit_form_after_title', array($this, 'show_lot_community_warning'));
 
-        // Add price disclaimer meta boxes
-        add_action('add_meta_boxes', array($this, 'add_price_disclaimer_meta_boxes'));
-        add_action('save_post', array($this, 'save_price_disclaimer_meta_box'));
+
     }
 
     /**
@@ -155,7 +153,7 @@ class Burgland_Homes_Admin
             'fields' => 'ids',
         ));
 
-?>
+        ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Burgland Homes Dashboard', 'burgland-homes'); ?></h1>
 
@@ -177,46 +175,54 @@ class Burgland_Homes_Admin
             <div class="burgland-homes-dashboard" style="margin-top: 30px;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
 
-                    <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <div class="dashboard-card"
+                        style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
                         <h2 class="dashboard-card-title" style="margin-top: 0; color: #1e40af;">
                             <span class="dashicons dashicons-admin-multisite" style="font-size: 30px;"></span>
                             <span style=""><?php echo esc_html($communities_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Communities</p>
-                        <a href="<?php echo admin_url('edit.php?post_type=bh_community'); ?>" class="button" style="margin-top: 10px;">
+                        <a href="<?php echo admin_url('edit.php?post_type=bh_community'); ?>" class="button"
+                            style="margin-top: 10px;">
                             View All
                         </a>
                     </div>
 
-                    <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <div class="dashboard-card"
+                        style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
                         <h2 class="dashboard-card-title" style="margin-top: 0; color: #059669;">
                             <span class="dashicons dashicons-layout" style="font-size: 30px;"></span>
                             <span><?php echo esc_html($floor_plans_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Floor Plans</p>
-                        <a href="<?php echo admin_url('edit.php?post_type=bh_floor_plan'); ?>" class="button" style="margin-top: 10px;">
+                        <a href="<?php echo admin_url('edit.php?post_type=bh_floor_plan'); ?>" class="button"
+                            style="margin-top: 10px;">
                             View All
                         </a>
                     </div>
 
-                    <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <div class="dashboard-card"
+                        style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
                         <h2 class="dashboard-card-title" style="margin-top: 0; color: #dc2626;">
                             <span class="dashicons dashicons-location" style="font-size: 30px;"></span>
                             <span><?php echo esc_html($lots_count); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Total Lots</p>
-                        <a href="<?php echo admin_url('edit.php?post_type=bh_lot'); ?>" class="button" style="margin-top: 10px;">
+                        <a href="<?php echo admin_url('edit.php?post_type=bh_lot'); ?>" class="button"
+                            style="margin-top: 10px;">
                             View All
                         </a>
                     </div>
 
-                    <div class="dashboard-card" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <div class="dashboard-card"
+                        style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
                         <h2 class="dashboard-card-title" style="margin-top: 0; color: #16a34a;">
                             <span class="dashicons dashicons-yes-alt" style="font-size: 30px;"></span>
                             <span><?php echo esc_html($available_lots->found_posts); ?></span>
                         </h2>
                         <p style="margin: 0; font-size: 16px;">Available Lots</p>
-                        <a href="<?php echo admin_url('edit.php?post_type=bh_lot&bh_lot_status=available'); ?>" class="button" style="margin-top: 10px;">
+                        <a href="<?php echo admin_url('edit.php?post_type=bh_lot&bh_lot_status=available'); ?>" class="button"
+                            style="margin-top: 10px;">
                             View Available
                         </a>
                     </div>
@@ -242,17 +248,20 @@ class Burgland_Homes_Admin
                     <h2>Content Management</h2>
                     <p>Manage global settings for your archive pages and price disclaimers.</p>
                     <p>
-                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-archive-settings'); ?>" class="button button-primary">
+                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-archive-settings'); ?>"
+                            class="button button-primary">
                             <span class="dashicons dashicons-admin-settings" style="vertical-align: middle;"></span>
                             Manage Archive Settings
                         </a>
-                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-price-disclaimers'); ?>" class="button button-primary" style="margin-left: 10px;">
+                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-price-disclaimers'); ?>"
+                            class="button button-primary" style="margin-left: 10px;">
                             <span class="dashicons dashicons-info" style="vertical-align: middle;"></span>
                             Manage Price Disclaimers
                         </a>
                     </p>
                     <p class="description" style="margin-top: 10px;">
-                        Configure title, subtitle, and featured images for archive pages, and set universal price disclaimers for each post type.
+                        Configure title, subtitle, and featured images for archive pages, and set universal price disclaimers
+                        for each post type.
                     </p>
                 </div>
             </div>
@@ -276,9 +285,11 @@ class Burgland_Homes_Admin
         }
 
         // Check for main plugin dashboard and community management pages
-        if ($screen && ($screen->id === 'toplevel_page_burgland-homes' ||
-            $screen->id === 'burgland-homes_page_burgland-homes-manage-community' ||
-            $screen->id === 'burgland-homes_page_burgland-homes-archive-settings')) {
+        if (
+            $screen && ($screen->id === 'toplevel_page_burgland-homes' ||
+                $screen->id === 'burgland-homes_page_burgland-homes-manage-community' ||
+                $screen->id === 'burgland-homes_page_burgland-homes-archive-settings')
+        ) {
             $is_plugin_page = true;
         }
 
@@ -588,14 +599,14 @@ class Burgland_Homes_Admin
         // Only show on Communities list page and at the top of the table
         if ($typenow === 'bh_community' && $which === 'top') {
             $status_url = admin_url('edit-tags.php?taxonomy=bh_community_status&post_type=bh_community');
-        ?>
+            ?>
             <div class="alignleft actions">
                 <a href="<?php echo esc_url($status_url); ?>" class="button">
                     <span class="dashicons dashicons-category" style="margin-top: 3px;"></span>
                     <?php _e('Manage Status', 'burgland-homes'); ?>
                 </a>
             </div>
-        <?php
+            <?php
         }
     }
 
@@ -701,7 +712,8 @@ class Burgland_Homes_Admin
                     <p style="margin: 0; color: #666;"><?php _e('Total Lots', 'burgland-homes'); ?></p>
                 </div>
                 <div style="background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h3 style="margin: 0 0 5px 0; font-size: 28px; color: #16a34a;"><?php echo esc_html($available_lots); ?></h3>
+                    <h3 style="margin: 0 0 5px 0; font-size: 28px; color: #16a34a;"><?php echo esc_html($available_lots); ?>
+                    </h3>
                     <p style="margin: 0; color: #666;"><?php _e('Available', 'burgland-homes'); ?></p>
                 </div>
                 <div style="background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-radius: 4px;">
@@ -713,7 +725,8 @@ class Burgland_Homes_Admin
                     <p style="margin: 0; color: #666;"><?php _e('Reserved', 'burgland-homes'); ?></p>
                 </div>
                 <div style="background: #fff; padding: 15px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h3 style="margin: 0 0 5px 0; font-size: 28px; color: #059669;"><?php echo esc_html($total_floor_plans); ?></h3>
+                    <h3 style="margin: 0 0 5px 0; font-size: 28px; color: #059669;"><?php echo esc_html($total_floor_plans); ?>
+                    </h3>
                     <p style="margin: 0; color: #666;"><?php _e('Floor Plans', 'burgland-homes'); ?></p>
                 </div>
             </div>
@@ -758,7 +771,7 @@ class Burgland_Homes_Admin
                 ?>
             </div>
         </div>
-    <?php
+        <?php
     }
 
     /**
@@ -774,7 +787,7 @@ class Burgland_Homes_Admin
         $price_range = get_post_meta($community_id, 'community_price_range', true);
         $amenities = get_post_meta($community_id, 'community_amenities', true);
 
-    ?>
+        ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
             <h2><?php _e('Community Information', 'burgland-homes'); ?></h2>
 
@@ -812,7 +825,7 @@ class Burgland_Homes_Admin
                 </div>
             <?php endif; ?>
         </div>
-    <?php
+        <?php
     }
 
     /**
@@ -822,7 +835,7 @@ class Burgland_Homes_Admin
     {
         $add_lot_url = admin_url('post-new.php?post_type=bh_lot&community_id=' . $community_id);
 
-    ?>
+        ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="margin: 0;"><?php _e('Lots in this Community', 'burgland-homes'); ?></h2>
@@ -846,7 +859,7 @@ class Burgland_Homes_Admin
             ));
 
             if ($lots_query->have_posts()):
-            ?>
+                ?>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -859,7 +872,8 @@ class Burgland_Homes_Admin
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($lots_query->have_posts()): $lots_query->the_post();
+                        <?php while ($lots_query->have_posts()):
+                            $lots_query->the_post();
                             $lot_id = get_the_ID();
                             $status_terms = wp_get_post_terms($lot_id, 'bh_lot_status');
                             $status = $status_terms && !is_wp_error($status_terms) ? $status_terms[0]->name : '—';
@@ -867,7 +881,7 @@ class Burgland_Homes_Admin
                             $floor_plan_name = $floor_plan_id ? get_the_title($floor_plan_id) : '—';
                             $price = get_post_meta($lot_id, 'lot_price', true);
                             $size = get_post_meta($lot_id, 'lot_size', true);
-                        ?>
+                            ?>
                             <tr>
                                 <td><strong><?php the_title(); ?></strong></td>
                                 <td><?php echo esc_html($status); ?></td>
@@ -883,10 +897,10 @@ class Burgland_Homes_Admin
                         <?php endwhile; ?>
                     </tbody>
                 </table>
-            <?php
+                <?php
                 wp_reset_postdata();
             else:
-            ?>
+                ?>
                 <p style="text-align: center; padding: 40px 0; color: #666;">
                     <?php _e('No lots added yet.', 'burgland-homes'); ?>
                     <br><br>
@@ -896,7 +910,7 @@ class Burgland_Homes_Admin
                 </p>
             <?php endif; ?>
         </div>
-    <?php
+        <?php
     }
 
     /**
@@ -906,7 +920,7 @@ class Burgland_Homes_Admin
     {
         $add_floor_plan_url = admin_url('post-new.php?post_type=bh_floor_plan&community_id=' . $community_id);
 
-    ?>
+        ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="margin: 0;"><?php _e('Floor Plans in this Community', 'burgland-homes'); ?></h2>
@@ -934,7 +948,7 @@ class Burgland_Homes_Admin
             $floor_plans_query = new WP_Query($floor_plan_query_args);
 
             if ($floor_plans_query->have_posts()):
-            ?>
+                ?>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -947,13 +961,14 @@ class Burgland_Homes_Admin
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($floor_plans_query->have_posts()): $floor_plans_query->the_post();
+                        <?php while ($floor_plans_query->have_posts()):
+                            $floor_plans_query->the_post();
                             $fp_id = get_the_ID();
                             $bedrooms = get_post_meta($fp_id, 'floor_plan_bedrooms', true);
                             $bathrooms = get_post_meta($fp_id, 'floor_plan_bathrooms', true);
                             $sqft = get_post_meta($fp_id, 'floor_plan_square_feet', true);
                             $price = get_post_meta($fp_id, 'floor_plan_price', true);
-                        ?>
+                            ?>
                             <tr>
                                 <td><strong><?php the_title(); ?></strong></td>
                                 <td><?php echo $bedrooms ? esc_html($bedrooms) : '—'; ?></td>
@@ -969,10 +984,10 @@ class Burgland_Homes_Admin
                         <?php endwhile; ?>
                     </tbody>
                 </table>
-            <?php
+                <?php
                 wp_reset_postdata();
             else:
-            ?>
+                ?>
                 <p style="text-align: center; padding: 40px 0; color: #666;">
                     <?php _e('No floor plans added yet.', 'burgland-homes'); ?>
                     <br><br>
@@ -982,7 +997,7 @@ class Burgland_Homes_Admin
                 </p>
             <?php endif; ?>
         </div>
-    <?php
+        <?php
     }
 
     /**
@@ -993,15 +1008,14 @@ class Burgland_Homes_Admin
         $latitude = get_post_meta($community_id, '_geocoded_latitude', true);
         $longitude = get_post_meta($community_id, '_geocoded_longitude', true);
 
-    ?>
+        ?>
         <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
             <h2><?php _e('Community Map', 'burgland-homes'); ?></h2>
 
             <?php if ($latitude && $longitude): ?>
                 <div id="community-admin-map"
                     style="height: 500px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center;"
-                    data-lat="<?php echo esc_attr($latitude); ?>"
-                    data-lng="<?php echo esc_attr($longitude); ?>">
+                    data-lat="<?php echo esc_attr($latitude); ?>" data-lng="<?php echo esc_attr($longitude); ?>">
                     <div style="text-align: center; color: #666;">
                         <p style="font-size: 18px; margin: 0 0 10px 0;"><?php _e('Map Integration Ready', 'burgland-homes'); ?></p>
                         <p style="margin: 0;">
@@ -1020,7 +1034,8 @@ class Burgland_Homes_Admin
                 <div class="notice notice-warning inline">
                     <p>
                         <?php _e('Please add latitude and longitude coordinates to enable map display.', 'burgland-homes'); ?>
-                        <a href="<?php echo get_edit_post_link($community_id); ?>"><?php _e('Edit Community Details', 'burgland-homes'); ?></a>
+                        <a
+                            href="<?php echo get_edit_post_link($community_id); ?>"><?php _e('Edit Community Details', 'burgland-homes'); ?></a>
                     </p>
                 </div>
             <?php endif; ?>
@@ -1099,7 +1114,7 @@ class Burgland_Homes_Admin
             ));
 
             if (!empty($orphaned_lots)) {
-        ?>
+                ?>
                 <div class="notice notice-warning">
                     <p>
                         <strong><?php _e('Warning:', 'burgland-homes'); ?></strong>
@@ -1109,7 +1124,7 @@ class Burgland_Homes_Admin
                         ); ?>
                     </p>
                 </div>
-            <?php
+                <?php
             }
         }
     }
@@ -1137,7 +1152,7 @@ class Burgland_Homes_Admin
                     <?php endif; ?>
                 </p>
             </div>
-        <?php
+            <?php
         }
     }
 
@@ -1197,9 +1212,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="communities_title" name="communities_title"
-                                        value="<?php echo esc_attr($communities_title); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Main heading for the communities archive page', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($communities_title); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Main heading for the communities archive page', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1208,9 +1223,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="communities_subtitle" name="communities_subtitle"
-                                        value="<?php echo esc_attr($communities_subtitle); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($communities_subtitle); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1221,10 +1236,12 @@ class Burgland_Homes_Admin
                                     <div class="bh-image-upload-wrapper">
                                         <input type="hidden" id="communities_image" name="communities_image"
                                             value="<?php echo esc_attr($communities_image); ?>" />
-                                        <button type="button" class="button bh-upload-image-button" data-target="communities_image">
+                                        <button type="button" class="button bh-upload-image-button"
+                                            data-target="communities_image">
                                             <?php _e('Choose Image', 'burgland-homes'); ?>
                                         </button>
-                                        <button type="button" class="button bh-remove-image-button" data-target="communities_image"
+                                        <button type="button" class="button bh-remove-image-button"
+                                            data-target="communities_image"
                                             style="<?php echo empty($communities_image) ? 'display:none;' : ''; ?>">
                                             <?php _e('Remove Image', 'burgland-homes'); ?>
                                         </button>
@@ -1235,7 +1252,8 @@ class Burgland_Homes_Admin
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                    <p class="description">
+                                        <?php _e('Background image for the header section', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                         </table>
@@ -1255,9 +1273,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="floor_plans_title" name="floor_plans_title"
-                                        value="<?php echo esc_attr($floor_plans_title); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Main heading for the floor plans archive page', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($floor_plans_title); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Main heading for the floor plans archive page', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1266,9 +1284,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="floor_plans_subtitle" name="floor_plans_subtitle"
-                                        value="<?php echo esc_attr($floor_plans_subtitle); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($floor_plans_subtitle); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1279,10 +1297,12 @@ class Burgland_Homes_Admin
                                     <div class="bh-image-upload-wrapper">
                                         <input type="hidden" id="floor_plans_image" name="floor_plans_image"
                                             value="<?php echo esc_attr($floor_plans_image); ?>" />
-                                        <button type="button" class="button bh-upload-image-button" data-target="floor_plans_image">
+                                        <button type="button" class="button bh-upload-image-button"
+                                            data-target="floor_plans_image">
                                             <?php _e('Choose Image', 'burgland-homes'); ?>
                                         </button>
-                                        <button type="button" class="button bh-remove-image-button" data-target="floor_plans_image"
+                                        <button type="button" class="button bh-remove-image-button"
+                                            data-target="floor_plans_image"
                                             style="<?php echo empty($floor_plans_image) ? 'display:none;' : ''; ?>">
                                             <?php _e('Remove Image', 'burgland-homes'); ?>
                                         </button>
@@ -1293,7 +1313,8 @@ class Burgland_Homes_Admin
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                    <p class="description">
+                                        <?php _e('Background image for the header section', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                         </table>
@@ -1313,9 +1334,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="lots_title" name="lots_title"
-                                        value="<?php echo esc_attr($lots_title); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Main heading for the lots/homes archive page', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($lots_title); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Main heading for the lots/homes archive page', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1324,9 +1345,9 @@ class Burgland_Homes_Admin
                                 </th>
                                 <td>
                                     <input type="text" id="lots_subtitle" name="lots_subtitle"
-                                        value="<?php echo esc_attr($lots_subtitle); ?>"
-                                        class="regular-text" />
-                                    <p class="description"><?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
+                                        value="<?php echo esc_attr($lots_subtitle); ?>" class="regular-text" />
+                                    <p class="description">
+                                        <?php _e('Subtitle text below the main heading', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -1351,7 +1372,8 @@ class Burgland_Homes_Admin
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <p class="description"><?php _e('Background image for the header section', 'burgland-homes'); ?></p>
+                                    <p class="description">
+                                        <?php _e('Background image for the header section', 'burgland-homes'); ?></p>
                                 </td>
                             </tr>
                         </table>
@@ -1370,11 +1392,11 @@ class Burgland_Homes_Admin
         </div>
 
         <script>
-            jQuery(document).ready(function($) {
+            jQuery(document).ready(function ($) {
                 // Media uploader
                 var mediaUploader;
 
-                $('.bh-upload-image-button').on('click', function(e) {
+                $('.bh-upload-image-button').on('click', function (e) {
                     e.preventDefault();
                     var button = $(this);
                     var targetId = button.data('target');
@@ -1390,7 +1412,7 @@ class Burgland_Homes_Admin
                         multiple: false
                     });
 
-                    mediaUploader.on('select', function() {
+                    mediaUploader.on('select', function () {
                         var attachment = mediaUploader.state().get('selection').first().toJSON();
                         targetInput.val(attachment.id);
                         wrapper.find('.bh-image-preview').html('<img src="' + attachment.url + '" style="max-width: 300px; height: auto; display: block;" />');
@@ -1399,7 +1421,7 @@ class Burgland_Homes_Admin
 
                     mediaUploader.open();
                 });
-                $('.bh-remove-image-button').on('click', function(e) {
+                $('.bh-remove-image-button').on('click', function (e) {
                     e.preventDefault();
                     var button = $(this);
                     var targetId = button.data('target');
@@ -1410,7 +1432,7 @@ class Burgland_Homes_Admin
                 });
             });
         </script>
-    <?php
+        <?php
     }
 
     /**
@@ -1481,10 +1503,11 @@ class Burgland_Homes_Admin
         $floor_plan_disclaimer = get_option('bh_price_disclaimer_floor_plan', '');
         $lot_disclaimer = get_option('bh_price_disclaimer_lot', '');
 
-    ?>
+        ?>
         <div class="wrap">
             <h1><?php echo esc_html__('Price Disclaimers', 'burgland-homes'); ?></h1>
-            <p><?php _e('Set universal price disclaimers for each post type. These will be displayed alongside prices on the frontend.', 'burgland-homes'); ?></p>
+            <p><?php _e('Set universal price disclaimers for each post type. These will be displayed alongside prices on the frontend.', 'burgland-homes'); ?>
+            </p>
 
             <form method="post" action="">
                 <?php wp_nonce_field('bh_price_disclaimers', 'bh_price_disclaimers_nonce'); ?>
@@ -1504,11 +1527,7 @@ class Burgland_Homes_Admin
                                     <label for="community_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
                                 </th>
                                 <td>
-                                    <textarea
-                                        id="community_disclaimer"
-                                        name="community_disclaimer"
-                                        rows="4"
-                                        class="large-text"
+                                    <textarea id="community_disclaimer" name="community_disclaimer" rows="4" class="large-text"
                                         placeholder="<?php esc_attr_e('e.g., Prices and availability subject to change without notice...', 'burgland-homes'); ?>"><?php echo esc_textarea($community_disclaimer); ?></textarea>
                                     <p class="description">
                                         <?php _e('This disclaimer will appear on all community pages where prices are displayed.', 'burgland-homes'); ?>
@@ -1540,10 +1559,7 @@ class Burgland_Homes_Admin
                                     <label for="floor_plan_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
                                 </th>
                                 <td>
-                                    <textarea
-                                        id="floor_plan_disclaimer"
-                                        name="floor_plan_disclaimer"
-                                        rows="4"
+                                    <textarea id="floor_plan_disclaimer" name="floor_plan_disclaimer" rows="4"
                                         class="large-text"
                                         placeholder="<?php esc_attr_e('e.g., Base prices shown. Options and upgrades available...', 'burgland-homes'); ?>"><?php echo esc_textarea($floor_plan_disclaimer); ?></textarea>
                                     <p class="description">
@@ -1576,11 +1592,7 @@ class Burgland_Homes_Admin
                                     <label for="lot_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
                                 </th>
                                 <td>
-                                    <textarea
-                                        id="lot_disclaimer"
-                                        name="lot_disclaimer"
-                                        rows="4"
-                                        class="large-text"
+                                    <textarea id="lot_disclaimer" name="lot_disclaimer" rows="4" class="large-text"
                                         placeholder="<?php esc_attr_e('e.g., Final price may vary based on lot premium and options selected...', 'burgland-homes'); ?>"><?php echo esc_textarea($lot_disclaimer); ?></textarea>
                                     <p class="description">
                                         <?php _e('This disclaimer will appear on all lot/home pages where prices are displayed.', 'burgland-homes'); ?>
@@ -1617,34 +1629,34 @@ class Burgland_Homes_Admin
 
                 <h3><?php _e('For Community Pages (single-bh_community.php):', 'burgland-homes'); ?></h3>
                 <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
-    $disclaimer = get_option('bh_price_disclaimer_community');
-    if ($disclaimer) {
-        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
-    }
-    ?&gt;</code></pre>
+            $disclaimer = get_option('bh_price_disclaimer_community');
+            if ($disclaimer) {
+                echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+            }
+            ?&gt;</code></pre>
 
                 <h3><?php _e('For Floor Plan Pages (single-bh_floor_plan.php):', 'burgland-homes'); ?></h3>
                 <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
-    $disclaimer = get_option('bh_price_disclaimer_floor_plan');
-    if ($disclaimer) {
-        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
-    }
-    ?&gt;</code></pre>
+            $disclaimer = get_option('bh_price_disclaimer_floor_plan');
+            if ($disclaimer) {
+                echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+            }
+            ?&gt;</code></pre>
 
                 <h3><?php _e('For Lot/Home Pages (single-bh_lot.php):', 'burgland-homes'); ?></h3>
                 <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
-    $disclaimer = get_option('bh_price_disclaimer_lot');
-    if ($disclaimer) {
-        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
-    }
-    ?&gt;</code></pre>
+            $disclaimer = get_option('bh_price_disclaimer_lot');
+            if ($disclaimer) {
+                echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+            }
+            ?&gt;</code></pre>
 
                 <p class="description">
                     <?php _e('You can style the .price-disclaimer class in your theme CSS to customize the appearance.', 'burgland-homes'); ?>
                 </p>
             </div>
         </div>
-<?php
+        <?php
     }
 
     /**
@@ -1668,112 +1680,7 @@ class Burgland_Homes_Admin
         }
     }
 
-    /**
-     * Add price disclaimer meta boxes for each post type
-     */
-    public function add_price_disclaimer_meta_boxes()
-    {
-        add_meta_box(
-            'bh_price_disclaimer_community',
-            __('Price Disclaimer', 'burgland-homes'),
-            array($this, 'render_price_disclaimer_meta_box'),
-            'bh_community',
-            'normal',
-            'high'
-        );
 
-        add_meta_box(
-            'bh_price_disclaimer_floor_plan',
-            __('Price Disclaimer', 'burgland-homes'),
-            array($this, 'render_price_disclaimer_meta_box'),
-            'bh_floor_plan',
-            'normal',
-            'high'
-        );
-
-        add_meta_box(
-            'bh_price_disclaimer_lot',
-            __('Price Disclaimer', 'burgland-homes'),
-            array($this, 'render_price_disclaimer_meta_box'),
-            'bh_lot',
-            'normal',
-            'high'
-        );
-    }
-
-    /**
-     * Render price disclaimer meta box
-     */
-    public function render_price_disclaimer_meta_box($post)
-    {
-        $disclaimer_key = '';
-
-        switch ($post->post_type) {
-            case 'bh_community':
-                $disclaimer_key = 'community_price_disclaimer';
-                break;
-            case 'bh_floor_plan':
-                $disclaimer_key = 'floor_plan_price_disclaimer';
-                break;
-            case 'bh_lot':
-                $disclaimer_key = 'lot_price_disclaimer';
-                break;
-        }
-
-        $disclaimer = get_post_meta($post->ID, $disclaimer_key, true);
-
-        wp_nonce_field('save_price_disclaimer_meta_' . $post->ID, 'price_disclaimer_nonce');
-
-        echo '<table class="form-table" role="presentation">';
-        echo '<tr>';
-        echo '<th scope="row"><label for="price_disclaimer">' . __('Price Disclaimer', 'burgland-homes') . '</label></th>';
-        echo '<td>';
-        echo '<textarea id="price_disclaimer" name="price_disclaimer" rows="4" cols="50" class="widefat">' . esc_textarea($disclaimer) . '</textarea>';
-        echo '<p class="description">' . __('Enter price disclaimer text that will appear below the price in the header.', 'burgland-homes') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        echo '</table>';
-    }
-
-    /**
-     * Save price disclaimer meta box
-     */
-    public function save_price_disclaimer_meta_box($post_id)
-    {
-        if (!isset($_POST['price_disclaimer_nonce']) || !wp_verify_nonce($_POST['price_disclaimer_nonce'], 'save_price_disclaimer_meta_' . $post_id)) {
-            return;
-        }
-
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-
-        $disclaimer_key = '';
-
-        $post_type = get_post_type($post_id);
-        switch ($post_type) {
-            case 'bh_community':
-                $disclaimer_key = 'community_price_disclaimer';
-                break;
-            case 'bh_floor_plan':
-                $disclaimer_key = 'floor_plan_price_disclaimer';
-                break;
-            case 'bh_lot':
-                $disclaimer_key = 'lot_price_disclaimer';
-                break;
-            default:
-                return;
-        }
-
-        if (isset($_POST['price_disclaimer'])) {
-            $disclaimer = sanitize_textarea_field($_POST['price_disclaimer']);
-            update_post_meta($post_id, $disclaimer_key, $disclaimer);
-        }
-    }
 
     /**
      * Get community price disclaimer
