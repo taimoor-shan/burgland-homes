@@ -114,6 +114,16 @@ class Burgland_Homes_Admin
             'burgland-homes-archive-settings',
             array($this, 'render_archive_settings')
         );
+
+        // Add Price Disclaimers page (hidden from menu, accessed via dashboard button)
+        add_submenu_page(
+            null, // Hidden from menu - only accessible via dashboard button
+            __('Price Disclaimers', 'burgland-homes'),
+            __('Price Disclaimers', 'burgland-homes'),
+            'manage_options',
+            'burgland-homes-price-disclaimers',
+            array($this, 'render_price_disclaimers')
+        );
     }
 
     /**
@@ -229,13 +239,21 @@ class Burgland_Homes_Admin
                 </div>
 
                 <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h2>Archive Pages Settings</h2>
-                    <p>Customize the header section for your archive pages (Communities, Floor Plans, and Lots).</p>
-                    <a href="<?php echo admin_url('admin.php?page=burgland-homes-archive-settings'); ?>" class="button button-primary">
-                        <span class="dashicons dashicons-admin-settings" style="vertical-align: middle;"></span>
-                        Manage Archive Settings
-                    </a>
-                    <p class="description" style="margin-top: 10px;">Configure title, subtitle, and featured images for each archive page.</p>
+                    <h2>Content Management</h2>
+                    <p>Manage global settings for your archive pages and price disclaimers.</p>
+                    <p>
+                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-archive-settings'); ?>" class="button button-primary">
+                            <span class="dashicons dashicons-admin-settings" style="vertical-align: middle;"></span>
+                            Manage Archive Settings
+                        </a>
+                        <a href="<?php echo admin_url('admin.php?page=burgland-homes-price-disclaimers'); ?>" class="button button-primary" style="margin-left: 10px;">
+                            <span class="dashicons dashicons-info" style="vertical-align: middle;"></span>
+                            Manage Price Disclaimers
+                        </a>
+                    </p>
+                    <p class="description" style="margin-top: 10px;">
+                        Configure title, subtitle, and featured images for archive pages, and set universal price disclaimers for each post type.
+                    </p>
                 </div>
             </div>
         </div>
@@ -1392,7 +1410,7 @@ class Burgland_Homes_Admin
                 });
             });
         </script>
-<?php
+    <?php
     }
 
     /**
@@ -1440,6 +1458,214 @@ class Burgland_Homes_Admin
         error_log('Archive settings saved: Communities - ' . get_option('bh_archive_communities_title'));
         error_log('Archive settings saved: Floor Plans - ' . get_option('bh_archive_floor_plans_title'));
         error_log('Archive settings saved: Lots - ' . get_option('bh_archive_lots_title'));
+    }
+
+    /**
+     * Render Price Disclaimers page
+     */
+    public function render_price_disclaimers()
+    {
+        // Check user permissions
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have permission to access this page.', 'burgland-homes'));
+        }
+
+        // Handle form submission
+        if (isset($_POST['bh_save_price_disclaimers']) && check_admin_referer('bh_price_disclaimers', 'bh_price_disclaimers_nonce')) {
+            $this->save_price_disclaimers();
+            echo '<div class="notice notice-success is-dismissible"><p>' . __('Price disclaimers saved successfully!', 'burgland-homes') . '</p></div>';
+        }
+
+        // Get current settings
+        $community_disclaimer = get_option('bh_price_disclaimer_community', '');
+        $floor_plan_disclaimer = get_option('bh_price_disclaimer_floor_plan', '');
+        $lot_disclaimer = get_option('bh_price_disclaimer_lot', '');
+
+    ?>
+        <div class="wrap">
+            <h1><?php echo esc_html__('Price Disclaimers', 'burgland-homes'); ?></h1>
+            <p><?php _e('Set universal price disclaimers for each post type. These will be displayed alongside prices on the frontend.', 'burgland-homes'); ?></p>
+
+            <form method="post" action="">
+                <?php wp_nonce_field('bh_price_disclaimers', 'bh_price_disclaimers_nonce'); ?>
+
+                <div style="display: grid; gap: 30px; margin-top: 30px;">
+
+                    <!-- Communities Disclaimer -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-admin-multisite" style="color: #1e40af;"></span>
+                            <?php _e('Communities Price Disclaimer', 'burgland-homes'); ?>
+                        </h2>
+
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="community_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <textarea
+                                        id="community_disclaimer"
+                                        name="community_disclaimer"
+                                        rows="4"
+                                        class="large-text"
+                                        placeholder="<?php esc_attr_e('e.g., Prices and availability subject to change without notice...', 'burgland-homes'); ?>"><?php echo esc_textarea($community_disclaimer); ?></textarea>
+                                    <p class="description">
+                                        <?php _e('This disclaimer will appear on all community pages where prices are displayed.', 'burgland-homes'); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <?php if ($community_disclaimer): ?>
+                            <div style="margin-top: 15px; padding: 10px; background: #f0f9ff; border-left: 4px solid #1e40af;">
+                                <strong><?php _e('Preview:', 'burgland-homes'); ?></strong>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">
+                                    <?php echo esc_html($community_disclaimer); ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Floor Plans Disclaimer -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-layout" style="color: #059669;"></span>
+                            <?php _e('Floor Plans Price Disclaimer', 'burgland-homes'); ?>
+                        </h2>
+
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="floor_plan_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <textarea
+                                        id="floor_plan_disclaimer"
+                                        name="floor_plan_disclaimer"
+                                        rows="4"
+                                        class="large-text"
+                                        placeholder="<?php esc_attr_e('e.g., Base prices shown. Options and upgrades available...', 'burgland-homes'); ?>"><?php echo esc_textarea($floor_plan_disclaimer); ?></textarea>
+                                    <p class="description">
+                                        <?php _e('This disclaimer will appear on all floor plan pages where prices are displayed.', 'burgland-homes'); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <?php if ($floor_plan_disclaimer): ?>
+                            <div style="margin-top: 15px; padding: 10px; background: #f0fdf4; border-left: 4px solid #059669;">
+                                <strong><?php _e('Preview:', 'burgland-homes'); ?></strong>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">
+                                    <?php echo esc_html($floor_plan_disclaimer); ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Lots/Homes Disclaimer -->
+                    <div style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                        <h2 style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                            <span class="dashicons dashicons-location" style="color: #dc2626;"></span>
+                            <?php _e('Lots/Homes Price Disclaimer', 'burgland-homes'); ?>
+                        </h2>
+
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="lot_disclaimer"><?php _e('Disclaimer Text', 'burgland-homes'); ?></label>
+                                </th>
+                                <td>
+                                    <textarea
+                                        id="lot_disclaimer"
+                                        name="lot_disclaimer"
+                                        rows="4"
+                                        class="large-text"
+                                        placeholder="<?php esc_attr_e('e.g., Final price may vary based on lot premium and options selected...', 'burgland-homes'); ?>"><?php echo esc_textarea($lot_disclaimer); ?></textarea>
+                                    <p class="description">
+                                        <?php _e('This disclaimer will appear on all lot/home pages where prices are displayed.', 'burgland-homes'); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <?php if ($lot_disclaimer): ?>
+                            <div style="margin-top: 15px; padding: 10px; background: #fef2f2; border-left: 4px solid #dc2626;">
+                                <strong><?php _e('Preview:', 'burgland-homes'); ?></strong>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">
+                                    <?php echo esc_html($lot_disclaimer); ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
+
+                <p class="submit">
+                    <input type="submit" name="bh_save_price_disclaimers" class="button button-primary"
+                        value="<?php esc_attr_e('Save Disclaimers', 'burgland-homes'); ?>" />
+                    <a href="<?php echo admin_url('admin.php?page=burgland-homes'); ?>" class="button">
+                        <?php _e('Back to Dashboard', 'burgland-homes'); ?>
+                    </a>
+                </p>
+            </form>
+
+            <!-- Usage Instructions -->
+            <div style="margin-top: 30px; background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h2><?php _e('How to Display Disclaimers on Frontend', 'burgland-homes'); ?></h2>
+                <p><?php _e('Add the following code to your template files where you display prices:', 'burgland-homes'); ?></p>
+
+                <h3><?php _e('For Community Pages (single-bh_community.php):', 'burgland-homes'); ?></h3>
+                <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
+    $disclaimer = get_option('bh_price_disclaimer_community');
+    if ($disclaimer) {
+        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+    }
+    ?&gt;</code></pre>
+
+                <h3><?php _e('For Floor Plan Pages (single-bh_floor_plan.php):', 'burgland-homes'); ?></h3>
+                <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
+    $disclaimer = get_option('bh_price_disclaimer_floor_plan');
+    if ($disclaimer) {
+        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+    }
+    ?&gt;</code></pre>
+
+                <h3><?php _e('For Lot/Home Pages (single-bh_lot.php):', 'burgland-homes'); ?></h3>
+                <pre style="background: #f6f7f7; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>&lt;?php
+    $disclaimer = get_option('bh_price_disclaimer_lot');
+    if ($disclaimer) {
+        echo '&lt;p class="price-disclaimer"&gt;' . esc_html($disclaimer) . '&lt;/p&gt;';
+    }
+    ?&gt;</code></pre>
+
+                <p class="description">
+                    <?php _e('You can style the .price-disclaimer class in your theme CSS to customize the appearance.', 'burgland-homes'); ?>
+                </p>
+            </div>
+        </div>
+<?php
+    }
+
+    /**
+     * Save price disclaimers
+     */
+    private function save_price_disclaimers()
+    {
+        // Communities
+        if (isset($_POST['community_disclaimer'])) {
+            update_option('bh_price_disclaimer_community', sanitize_textarea_field($_POST['community_disclaimer']));
+        }
+
+        // Floor Plans
+        if (isset($_POST['floor_plan_disclaimer'])) {
+            update_option('bh_price_disclaimer_floor_plan', sanitize_textarea_field($_POST['floor_plan_disclaimer']));
+        }
+
+        // Lots
+        if (isset($_POST['lot_disclaimer'])) {
+            update_option('bh_price_disclaimer_lot', sanitize_textarea_field($_POST['lot_disclaimer']));
+        }
     }
 
     /**
@@ -1546,6 +1772,69 @@ class Burgland_Homes_Admin
         if (isset($_POST['price_disclaimer'])) {
             $disclaimer = sanitize_textarea_field($_POST['price_disclaimer']);
             update_post_meta($post_id, $disclaimer_key, $disclaimer);
+        }
+    }
+
+    /**
+     * Get community price disclaimer
+     */
+    public static function get_community_disclaimer()
+    {
+        return get_option('bh_price_disclaimer_community', '');
+    }
+
+    /**
+     * Get floor plan price disclaimer
+     */
+    public static function get_floor_plan_disclaimer()
+    {
+        return get_option('bh_price_disclaimer_floor_plan', '');
+    }
+
+    /**
+     * Get lot price disclaimer
+     */
+    public static function get_lot_disclaimer()
+    {
+        return get_option('bh_price_disclaimer_lot', '');
+    }
+
+    /**
+     * Display disclaimer for a specific post type
+     *
+     * @param string $post_type The post type (bh_community, bh_floor_plan, bh_lot)
+     * @param array $args Optional arguments for wrapper class, before, after
+     */
+    public static function display_disclaimer($post_type, $args = array())
+    {
+        $defaults = array(
+            'class' => 'price-disclaimer',
+            'before' => '<p class="%s">',
+            'after' => '</p>',
+        );
+
+        $args = wp_parse_args($args, $defaults);
+
+        $disclaimer = '';
+
+        switch ($post_type) {
+            case 'bh_community':
+                $disclaimer = self::get_community_disclaimer();
+                break;
+            case 'bh_floor_plan':
+                $disclaimer = self::get_floor_plan_disclaimer();
+                break;
+            case 'bh_lot':
+                $disclaimer = self::get_lot_disclaimer();
+                break;
+        }
+
+        if (!empty($disclaimer)) {
+            printf(
+                $args['before'] . '%s' . $args['after'],
+                esc_attr($args['class']),
+                esc_html($disclaimer)
+            );
         }
     }
 }

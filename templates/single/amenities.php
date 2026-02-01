@@ -8,14 +8,14 @@
  * }
  */
 if (!defined('ABSPATH')) exit;
-$title = isset($args['title']) ? $args['title'] : 'Community Amenities';
+$title = isset($args['title']) ? $args['title'] : 'Amenities';
 $items = isset($args['items']) ? $args['items'] : array();
 
 if (empty($items)) return;
 ?>
 <div class="mb-5">
     <div class="">
-        <h2 class="h3 mb-3 text-primary"><?php echo esc_html($title); ?></h2>
+        <h2 class="h3 mb-3 display-6 text-primary"><?php echo esc_html($title); ?></h2>
         <div class="row">
             <?php foreach ($items as $item): ?>
                 <div class="col-md-4 mb-2">

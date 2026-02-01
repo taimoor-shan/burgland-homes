@@ -12,13 +12,14 @@ if (!defined('ABSPATH')) {
 /**
  * Class Burgland_Homes_Data_Provider
  */
-class Burgland_Homes_Data_Provider {
-    
+class Burgland_Homes_Data_Provider
+{
+
     /**
      * Single instance
      */
     private static $instance = null;
-    
+
     /**
      * Spec configuration
      */
@@ -28,7 +29,7 @@ class Burgland_Homes_Data_Provider {
         'square_feet' => array('suffix' => ' ft<sup>2</sup>', 'icon' => 'fa-solid fa-ruler-combined', 'format' => true),
         'garage' => array('suffix' => '', 'icon' => 'fa-solid fa-car'),
     );
-    
+
     /**
      * Status configuration for different post types
      */
@@ -47,34 +48,38 @@ class Burgland_Homes_Data_Provider {
             'sold' => array('label' => 'Sold', 'class' => 'dark'),
         )
     );
-    
+
     /**
      * Get instance
      */
-    public static function get_instance() {
+    public static function get_instance()
+    {
         if (null === self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
     }
-    
+
     /**
      * Constructor
      */
-    private function __construct() {}
-    
+    private function __construct()
+    {
+    }
+
     /**
      * Get standardized card data for any post type
      * 
      * @param int $post_id
      * @return array
      */
-    public function get_card_data($post_id) {
+    public function get_card_data($post_id)
+    {
         // Validate post ID
         if (!$post_id || !get_post($post_id)) {
             return array();
         }
-        
+
         $post_type = get_post_type($post_id);
         $data = array();
 
@@ -95,14 +100,14 @@ class Burgland_Homes_Data_Provider {
                     'address_plain' => $this->format_plain_address($raw),
                     'map_url' => $this->format_map_url($raw)
                 );
-                
+
                 if ($raw['status_label']) {
                     $data['badges'][] = array(
                         'label' => $raw['status_label'],
                         'class' => $raw['status_class']
                     );
                 }
-                
+
                 // Build specs from floor plan ranges
                 $data['specs'] = $this->build_specs_from_ranges($raw['floor_plan_ranges'], false);
                 break;
@@ -171,17 +176,18 @@ class Burgland_Homes_Data_Provider {
      * @param array $args
      * @return array
      */
-    public function get_posts($args = array()) {
+    public function get_posts($args = array())
+    {
         $defaults = array(
             'post_type' => 'bh_community',
             'posts_per_page' => 6,
             'post_status' => 'publish',
         );
-        
+
         $query_args = wp_parse_args($args, $defaults);
         $query = new WP_Query($query_args);
         $data = array();
-        
+
         if ($query->have_posts()) {
             while ($query->have_posts()) {
                 $query->the_post();
@@ -192,7 +198,7 @@ class Burgland_Homes_Data_Provider {
             }
             wp_reset_postdata();
         }
-        
+
         return $data;
     }
 
@@ -202,7 +208,8 @@ class Burgland_Homes_Data_Provider {
      * @param array $args Query arguments
      * @return array Structured data array
      */
-    public function get_featured_communities($args = array()) {
+    public function get_featured_communities($args = array())
+    {
         $defaults = array(
             'limit' => 6,
             'order' => 'ASC',
@@ -210,11 +217,11 @@ class Burgland_Homes_Data_Provider {
             'exclude' => array(),
             'featured' => false,
         );
-        
+
         $args = wp_parse_args($args, $defaults);
-        
+
         $meta_query = array();
-        
+
         if (!empty($args['featured'])) {
             $meta_query[] = array(
                 'key' => 'featured',
@@ -222,7 +229,7 @@ class Burgland_Homes_Data_Provider {
                 'compare' => '==',
             );
         }
-        
+
         $query_args = $this->build_base_query_args('bh_community', array(
             'posts_per_page' => intval($args['limit']),
             'orderby' => $args['orderby'],
@@ -230,54 +237,55 @@ class Burgland_Homes_Data_Provider {
             'post__not_in' => $args['exclude'],
             'meta_query' => $meta_query,
         ));
-        
+
         $communities = new WP_Query($query_args);
         $data = array();
-        
+
         if ($communities->have_posts()) {
             while ($communities->have_posts()) {
                 $communities->the_post();
                 $post_id = get_the_ID();
-                
+
                 $data[] = $this->get_community_data($post_id);
             }
             wp_reset_postdata();
         }
-        
+
         return apply_filters('burgland_homes_featured_communities_data', $data, $args);
     }
-    
+
     /**
      * Get single community data
      * 
      * @param int $community_id
      * @return array
      */
-    public function get_community_data($community_id) {
+    public function get_community_data($community_id)
+    {
         // Validate community ID
         if (!$community_id || !get_post($community_id)) {
             return array();
         }
-        
+
         $utilities = Burgland_Homes_Utilities::get_instance();
         $floor_plan_ranges = $utilities->get_floor_plan_ranges($community_id);
-        
+
         // Get status from hierarchical taxonomy (like Categories)
         $status_terms = wp_get_post_terms($community_id, 'bh_community_status');
         $status_label = '';
         $status_class = 'primary';
-        
+
         if (!empty($status_terms) && !is_wp_error($status_terms)) {
             $status_label = $status_terms[0]->name;
             $status = $status_terms[0]->slug;
-            
+
             $status_config = $this->get_status_config('community');
             $status_class = isset($status_config[$status]) ? $status_config[$status]['class'] : 'primary';
         }
-        
+
         // Get price range directly from community ACF field
         $price_range = get_post_meta($community_id, 'community_price_range', true);
-        
+
         return apply_filters('burgland_homes_community_data', array(
             'id' => $community_id,
             'title' => get_the_title($community_id),
@@ -306,25 +314,26 @@ class Burgland_Homes_Data_Provider {
             'design_package' => get_field('community_design_package', $community_id),
         ), $community_id);
     }
-    
+
     /**
      * Get featured team members data
      * 
      * @param array $args Query arguments
      * @return array Structured data array
      */
-    public function get_featured_team_members($args = array()) {
+    public function get_featured_team_members($args = array())
+    {
         $defaults = array(
             'limit' => 1,
             'order' => 'ASC',
             'orderby' => 'menu_order',
             'featured' => false,
         );
-        
+
         $args = wp_parse_args($args, $defaults);
-        
+
         $meta_query = array();
-        
+
         if (!empty($args['featured'])) {
             $meta_query[] = array(
                 'key' => 'featured',
@@ -332,42 +341,43 @@ class Burgland_Homes_Data_Provider {
                 'compare' => '==',
             );
         }
-        
+
         $query_args = $this->build_base_query_args('team', array(
             'posts_per_page' => intval($args['limit']),
             'orderby' => $args['orderby'],
             'order' => $args['order'],
             'meta_query' => $meta_query,
         ));
-        
+
         $team_members = new WP_Query($query_args);
         $data = array();
-        
+
         if ($team_members->have_posts()) {
             while ($team_members->have_posts()) {
                 $team_members->the_post();
                 $post_id = get_the_ID();
-                
+
                 $data[] = $this->get_team_member_data($post_id);
             }
             wp_reset_postdata();
         }
-        
+
         return apply_filters('burgland_homes_featured_team_members_data', $data, $args);
     }
-    
+
     /**
      * Get single team member data
      * 
      * @param int $team_member_id
      * @return array
      */
-    public function get_team_member_data($team_member_id) {
+    public function get_team_member_data($team_member_id)
+    {
         // Validate team member ID
         if (!$team_member_id || !get_post($team_member_id)) {
             return array();
         }
-        
+
         return apply_filters('burgland_homes_team_member_data', array(
             'id' => $team_member_id,
             'title' => get_the_title($team_member_id),
@@ -382,14 +392,15 @@ class Burgland_Homes_Data_Provider {
             'position' => get_post_meta($team_member_id, 'team_position', true),
         ), $team_member_id);
     }
-    
+
     /**
      * Get available lots
      * 
      * @param array $args
      * @return array
      */
-    public function get_available_lots($args = array()) {
+    public function get_available_lots($args = array())
+    {
         $defaults = array(
             'limit' => 6,
             'orderby' => 'menu_order',
@@ -397,9 +408,9 @@ class Burgland_Homes_Data_Provider {
             'exclude_states' => array('sold', 'empty_lot'),
             'featured' => false,
         );
-        
+
         $args = wp_parse_args($args, $defaults);
-        
+
         $meta_query = array(
             'relation' => 'AND',
             array(
@@ -408,7 +419,7 @@ class Burgland_Homes_Data_Provider {
                 'compare' => 'NOT IN'
             )
         );
-        
+
         if (!empty($args['featured'])) {
             $meta_query[] = array(
                 'key' => 'featured',
@@ -416,17 +427,17 @@ class Burgland_Homes_Data_Provider {
                 'compare' => '==',
             );
         }
-        
+
         $query_args = $this->build_base_query_args('bh_lot', array(
             'posts_per_page' => intval($args['limit']),
             'orderby' => $args['orderby'],
             'order' => $args['order'],
             'meta_query' => $meta_query,
         ));
-        
+
         $lots = new WP_Query($query_args);
         $data = array();
-        
+
         if ($lots->have_posts()) {
             while ($lots->have_posts()) {
                 $lots->the_post();
@@ -434,17 +445,18 @@ class Burgland_Homes_Data_Provider {
             }
             wp_reset_postdata();
         }
-        
+
         return apply_filters('burgland_homes_available_lots_data', $data, $args);
     }
-    
+
     /**
      * Get single lot data
      * 
      * @param int $lot_id
      * @return array
      */
-    public function get_lot_data($lot_id) {
+    public function get_lot_data($lot_id)
+    {
         // Validate lot ID
         if (!$lot_id || !get_post($lot_id)) {
             return array();
@@ -452,7 +464,7 @@ class Burgland_Homes_Data_Provider {
         $floor_plan_id = get_post_meta($lot_id, 'lot_floor_plan', true);
         $floor_plan_name = '';
         $floor_plan_data = array();
-        
+
         if ($floor_plan_id) {
             $floor_plan = get_post($floor_plan_id);
             if ($floor_plan) {
@@ -461,33 +473,33 @@ class Burgland_Homes_Data_Provider {
                 $floor_plan_data = $this->get_floor_plan_data($floor_plan_id);
             }
         }
-        
+
         // Get parent community to inherit city/state
         $community_id = get_post_meta($lot_id, 'lot_community', true);
         $city = '';
         $state = '';
         $zip = '';
-        
+
         if ($community_id) {
             $city = get_post_meta($community_id, 'community_city', true);
             $state = get_post_meta($community_id, 'community_state', true);
             $zip = get_post_meta($community_id, 'community_zip', true);
         }
-        
+
         $lot_state = get_post_meta($lot_id, 'lot_state', true);
         $status_config = $this->get_status_config('lot');
-        
+
         $status_info = isset($status_config[$lot_state]) ? $status_config[$lot_state] : array(
             'label' => ucfirst(str_replace('_', ' ', $lot_state)),
             'class' => 'primary'
         );
-        
+
         // Get lot specs with floor plan inheritance
         $bedrooms = get_post_meta($lot_id, 'lot_bedrooms', true);
         $bathrooms = get_post_meta($lot_id, 'lot_bathrooms', true);
         $square_feet = get_post_meta($lot_id, 'lot_square_feet', true);
         $garage = get_post_meta($lot_id, 'lot_garage', true);
-        
+
         // Inherit from floor plan if lot values are empty
         if (empty($bedrooms) && !empty($floor_plan_data['bedrooms'])) {
             $bedrooms = $floor_plan_data['bedrooms'];
@@ -501,7 +513,7 @@ class Burgland_Homes_Data_Provider {
         if (empty($garage) && !empty($floor_plan_data['garage'])) {
             $garage = $floor_plan_data['garage'];
         }
-        
+
         return apply_filters('burgland_homes_lot_data', array(
             'id' => $lot_id,
             'title' => get_the_title($lot_id),
@@ -532,46 +544,49 @@ class Burgland_Homes_Data_Provider {
             'garage' => $garage,
             'stories' => get_post_meta($lot_id, 'lot_stories', true),
             'floor_plan_brochure' => !empty($floor_plan_data['brochure']) ? $floor_plan_data['brochure'] : null,
+            'floor_plan_thumbnail' => !empty($floor_plan_data['floor_plan_thumbnail']) ? $floor_plan_data['floor_plan_thumbnail'] : null,
+            'community_site_map' => !empty($community_id) ? get_field('community_site_map', $community_id) : null,
         ), $lot_id);
     }
-    
+
     /**
      * Get lot location data (coordinates and address)
      * 
      * @param int $lot_id Lot post ID
      * @return array Location data including latitude, longitude, and address
      */
-    public function get_lot_location_data($lot_id) {
+    public function get_lot_location_data($lot_id)
+    {
         // Try to get lot's own geocoded coordinates
         $latitude = get_post_meta($lot_id, '_geocoded_latitude', true);
         $longitude = get_post_meta($lot_id, '_geocoded_longitude', true);
-        
+
         // Get lot address
         $lot_address = get_post_meta($lot_id, 'lot_address', true);
-        
+
         // Get parent community for fallback
         $community_id = get_post_meta($lot_id, 'lot_community', true);
-        
+
         // If lot doesn't have coordinates, inherit from community
         if ((empty($latitude) || empty($longitude)) && $community_id) {
             $latitude = get_post_meta($community_id, '_geocoded_latitude', true);
             $longitude = get_post_meta($community_id, '_geocoded_longitude', true);
         }
-        
+
         // Build full address
         $city = '';
         $state = '';
         $zip = '';
-        
+
         if ($community_id) {
             $city = get_post_meta($community_id, 'community_city', true);
             $state = get_post_meta($community_id, 'community_state', true);
             $zip = get_post_meta($community_id, 'community_zip', true);
         }
-        
+
         $address_parts = array_filter(array($lot_address, $city, $state, $zip));
         $full_address = implode(', ', $address_parts);
-        
+
         return array(
             'latitude' => $latitude,
             'longitude' => $longitude,
@@ -583,14 +598,15 @@ class Burgland_Homes_Data_Provider {
             'has_coordinates' => !empty($latitude) && !empty($longitude),
         );
     }
-    
+
     /**
      * Get floor plan data
      * 
      * @param int $floor_plan_id
      * @return array
      */
-    public function get_floor_plan_data($floor_plan_id) {
+    public function get_floor_plan_data($floor_plan_id)
+    {
         return apply_filters('burgland_homes_floor_plan_data', array(
             'id' => $floor_plan_id,
             'title' => get_the_title($floor_plan_id),
@@ -606,9 +622,10 @@ class Burgland_Homes_Data_Provider {
             'features' => get_post_meta($floor_plan_id, 'floor_plan_features', true),
             'brochure' => get_field('floor_plan_brochure', $floor_plan_id),
             'design_package' => get_field('floor_plan_design_package', $floor_plan_id),
+            'floor_plan_thumbnail' => get_field('floor_plan_thumbnail', $floor_plan_id),
         ), $floor_plan_id);
     }
-        
+
     /**
      * Get header data for single post types
      * 
@@ -616,13 +633,14 @@ class Burgland_Homes_Data_Provider {
      * @param string $post_type
      * @return array
      */
-    public function get_header_data($post_id, $post_type) {
+    public function get_header_data($post_id, $post_type)
+    {
         $data = array(
             'post_id' => $post_id,
             'post_type' => $post_type,
             'title' => get_the_title($post_id),
         );
-            
+
         // Add price disclaimer based on post type
         switch ($post_type) {
             case 'bh_community':
@@ -638,14 +656,14 @@ class Burgland_Homes_Data_Provider {
                 $data['price'] = get_post_meta($post_id, 'lot_price', true);
                 break;
         }
-            
+
         // Add other common header data
         $data['address'] = '';
         $data['city'] = '';
         $data['state'] = '';
         $data['zip'] = '';
         $data['map_url'] = '';
-            
+
         // Get address data based on post type
         if ($post_type === 'bh_community') {
             $data['address'] = get_post_meta($post_id, 'community_address', true);
@@ -670,14 +688,14 @@ class Burgland_Homes_Data_Provider {
                 $data['state'] = get_post_meta($first_community_id, 'community_state', true);
             }
         }
-            
+
         // Format map URL
         $address_parts = array_filter(array($data['address'], $data['city'], $data['state'], $data['zip']));
         $full_address = implode(', ', $address_parts);
         if ($full_address) {
             $data['map_url'] = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($full_address);
         }
-            
+
         // Get status badge if applicable
         $data['status'] = array();
         if ($post_type === 'bh_community') {
@@ -698,7 +716,7 @@ class Burgland_Homes_Data_Provider {
             );
             $data['status'] = array('label' => $status_info['label'], 'class' => $status_info['class']);
         }
-            
+
         // Get specs based on post type
         $data['specs'] = array();
         if ($post_type === 'bh_community') {
@@ -722,17 +740,18 @@ class Burgland_Homes_Data_Provider {
             }
             $data['specs'] = $this->build_specs($raw_data, false);
         }
-            
+
         return apply_filters('burgland_homes_header_data', $data, $post_id, $post_type);
     }
-        
+
     /**
      * Format plain address from data array
      *
      * @param array $data Data array containing address components
      * @return string Formatted address
      */
-    private function format_plain_address($data) {
+    private function format_plain_address($data)
+    {
         $address = isset($data['address']) ? $data['address'] : '';
         $city = isset($data['city']) ? $data['city'] : '';
         $state = isset($data['state']) ? $data['state'] : '';
@@ -748,7 +767,8 @@ class Burgland_Homes_Data_Provider {
      * @param array $data Data array containing address components
      * @return string Google Maps URL
      */
-    private function format_map_url($data) {
+    private function format_map_url($data)
+    {
         $address = $this->format_plain_address($data);
         if (!$address) {
             return '';
@@ -764,30 +784,31 @@ class Burgland_Homes_Data_Provider {
      * @param bool $exclude_garage Whether to exclude garage from specs (default: false)
      * @return array Array of formatted spec items
      */
-    private function build_specs($raw_data, $exclude_garage = false) {
+    private function build_specs($raw_data, $exclude_garage = false)
+    {
         $specs = array();
-        
+
         foreach ($this->spec_config as $key => $config) {
             // Skip garage if exclude_garage is true
             if ($exclude_garage && $key === 'garage') {
                 continue;
             }
-            
+
             if (!empty($raw_data[$key])) {
-                $value = isset($config['format']) && $config['format'] 
-                    ? number_format($raw_data[$key]) 
+                $value = isset($config['format']) && $config['format']
+                    ? number_format($raw_data[$key])
                     : $raw_data[$key];
-                
+
                 $specs[] = array(
                     'label' => $value . $config['suffix'],
                     'icon' => $config['icon']
                 );
             }
         }
-        
+
         return $specs;
     }
-    
+
     /**
      * Build specs array from floor plan ranges (for communities)
      * 
@@ -795,15 +816,16 @@ class Burgland_Homes_Data_Provider {
      * @param bool $exclude_garage Whether to exclude garage from specs (default: false)
      * @return array Array of formatted spec items
      */
-    private function build_specs_from_ranges($ranges, $exclude_garage = false) {
+    private function build_specs_from_ranges($ranges, $exclude_garage = false)
+    {
         $specs = array();
-        
+
         foreach ($this->spec_config as $key => $config) {
             // Skip garage if exclude_garage is true
             if ($exclude_garage && $key === 'garage') {
                 continue;
             }
-            
+
             if (isset($ranges[$key]) && !empty($ranges[$key]['formatted'])) {
                 $label = $ranges[$key]['formatted'];
 
@@ -818,20 +840,21 @@ class Burgland_Homes_Data_Provider {
                 );
             }
         }
-        
+
         return $specs;
     }
-    
+
     /**
      * Get status configuration for a post type
      * 
      * @param string $type Post type ('community' or 'lot')
      * @return array Status configuration array
      */
-    private function get_status_config($type) {
+    private function get_status_config($type)
+    {
         return isset($this->status_config[$type]) ? $this->status_config[$type] : array();
     }
-    
+
     /**
      * Build base query arguments for common post type queries
      * 
@@ -839,15 +862,16 @@ class Burgland_Homes_Data_Provider {
      * @param array $additional Additional query arguments to merge
      * @return array Merged query arguments
      */
-    private function build_base_query_args($post_type, $additional = array()) {
+    private function build_base_query_args($post_type, $additional = array())
+    {
         $base_args = array(
             'post_type' => $post_type,
             'post_status' => 'publish',
         );
-        
+
         return wp_parse_args($additional, $base_args);
     }
-    
+
     /**
      * Format full address from data array
      * 
@@ -855,7 +879,8 @@ class Burgland_Homes_Data_Provider {
      * @param bool $with_line_break Whether to add <br> tag between address and city/state/zip
      * @return string Formatted address
      */
-    private function format_full_address($data, $with_line_break = true) {
+    private function format_full_address($data, $with_line_break = true)
+    {
         $address = isset($data['address']) ? $data['address'] : '';
         $city = isset($data['city']) ? $data['city'] : '';
         $state = isset($data['state']) ? $data['state'] : '';

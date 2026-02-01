@@ -12,13 +12,15 @@
  *     @type string $button_link Optional button link
  * }
  */
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH'))
+    exit;
 
 // Extract arguments
 $team_member = isset($args['team_member']) ? $args['team_member'] : null;
 $heading = isset($args['heading']) ? $args['heading'] : (isset($args['title']) ? $args['title'] : 'Our Online New Home Counselors');
 $button_text = isset($args['button_text']) ? $args['button_text'] : 'Get Started';
 $button_link = isset($args['button_link']) ? $args['button_link'] : '#contact';
+$map_url = isset($args['map_url']) ? $args['map_url'] : '';
 
 // If no team member data provided, fetch featured team member automatically
 if (!$team_member) {
@@ -27,7 +29,7 @@ if (!$team_member) {
             'limit' => 1,
             'featured' => true,
         ));
-        
+
         // If no featured member, get any team member
         if (empty($team_members)) {
             $team_members = burgland_homes_get_featured_team_members(array(
@@ -35,7 +37,7 @@ if (!$team_member) {
                 'featured' => false,
             ));
         }
-        
+
         if (!empty($team_members)) {
             $team_member = $team_members[0];
         }
@@ -65,31 +67,39 @@ $image_url = $thumbnail ? $thumbnail : $thumbnail_full;
 <div class="osc-lockup">
     <div class="row align-items-center mb-4">
         <?php if ($image_url): ?>
-        <div class="col-4">
-            <div class="oi-aspect one-one">
-                <img src="<?php echo esc_url($image_url); ?>"
-                    loading="lazy" class="oi-aspect-img img-fluid"
-                    alt="<?php echo esc_attr($name); ?>">
+            <div class="col-4">
+                <div class="oi-aspect one-one">
+                    <img src="<?php echo esc_url($image_url); ?>" loading="lazy" class="oi-aspect-img img-fluid"
+                        alt="<?php echo esc_attr($name); ?>">
+                </div>
             </div>
-        </div>
         <?php endif; ?>
         <div class="<?php echo $image_url ? 'col-8' : 'col-12'; ?>">
             <?php if ($name): ?>
-            <p class="h4 mb-1"><?php echo esc_html($name); ?></p>
+                <p class="h4 mb-4"><?php echo esc_html($name); ?></p>
             <?php endif; ?>
-            <?php if ($position): ?>
-            <p class="text-muted small mb-2"><?php echo esc_html($position); ?></p>
-            <?php endif; ?>
+            <?php //if ($position): 
+            ?>
+            <!-- <p class="text-muted small mb-2"><?php echo esc_html($position); ?></p> -->
+            <?php //endif; 
+            ?>
             <?php if ($phone): ?>
-            <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" class="osc-phone d-block"><?php echo esc_html($phone); ?></a>
+                <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>"
+                    class="osc-phone d-block"><?php echo esc_html($phone); ?></a>
             <?php endif; ?>
             <?php if ($email): ?>
-            <a href="mailto:<?php echo esc_attr($email); ?>" class="d-block mt-1"><?php echo esc_html($email); ?></a>
+                <a href="mailto:<?php echo esc_attr($email); ?>" class="d-block mt-1"><?php echo esc_html($email); ?></a>
             <?php endif; ?>
         </div>
     </div>
 </div>
-
-<?php if (!empty($button_text)): ?>
-<a role="button" href="<?php echo esc_url($button_link); ?>" class="btn btn-outline-primary w-100"><?php echo esc_html($button_text); ?></a>
-<?php endif; ?>
+<div class="d-flex gap-3">
+    <?php if (!empty($button_text)): ?>
+        <a role="button" href="<?php echo esc_url($button_link); ?>"
+            class="btn btn-primary btn-sm w-100 tracking-wide"><?php echo esc_html($button_text); ?></a>
+    <?php endif; ?>
+    <?php if (!empty($map_url)): ?>
+        <a role="button" href="<?php echo esc_url($map_url); ?>" class="btn btn-outline-secondary btn-sm w-100">Get
+            Directions</a>
+    <?php endif; ?>
+</div>

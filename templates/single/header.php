@@ -5,6 +5,7 @@
  * 
  * @param array $args {
  *     @type string $title
+ *     @type string $lot_number
  *     @type string $title_suffix (Optional - additional title text)
  *     @type string $title_suffix_url (Optional - URL for title suffix link)
  *     @type string $address (Optional - for address display)
@@ -26,24 +27,23 @@ $data = $args;
 <section class="plugin-page-header">
     <div class="row align-items-center">
         <div class="col-12">
-            <h1 class="text-primary mb-2 lh-lg">
+            <?php if (!empty($data['status'])): ?>
+                <span class="badge bg-<?php echo esc_attr($data['status']['class']); ?> my-3"><?php echo esc_html($data['status']['label']); ?></span>
+            <?php endif; ?>
+            <h1 class="text-dark mb-2">
                 <?php echo esc_html($data['title']); ?>
-                <?php if (!empty($data['title_suffix'])): ?>
-                    <span class="text-lowercase fw-normal"> at </span>
-                    <?php if (!empty($data['title_suffix_url'])): ?>
-                        <a href="<?php echo esc_url($data['title_suffix_url']); ?>" class="text-decoration-none hover-underline"><?php echo esc_html($data['title_suffix']); ?></a>
-                    <?php else: ?>
-                        <?php echo esc_html($data['title_suffix']); ?>
-                    <?php endif; ?>
-                <?php endif; ?>
+                
             </h1>
+
+            <p class="">Homesite #<?php echo esc_html($data['lot_number']); ?></p>
+
 
             <!-- Address (single-line format for single pages, without <br> tag, clickable to map) -->
             <?php if (!empty($data['address']) || !empty($data['city']) || !empty($data['state']) || !empty($data['zip'])): ?>
 
                 <p class="mb-3">
                     <?php if (!empty($data['map_url'])): ?>
-                        <a href="<?php echo esc_url($data['map_url']); ?>" class="text-muted text-decoration-none hover-underline lh-1" target="_blank" rel="noopener noreferrer">
+                        <a href="<?php echo esc_url($data['map_url']); ?>" class="text-dark locationLink" target="_blank" rel="noopener noreferrer">
                             <?php echo burgland_homes_format_address($data, true); ?>
                         </a>
                     <?php else: ?>
@@ -59,26 +59,26 @@ $data = $args;
                 <!-- Price Disclaimer -->
                 <?php
                 $disclaimer = '';
-                $classes = 'text-muted small lh-sm';
+                $classes = 'small lh-sm';
 
                 // Get price disclaimer based on post type
-                if (!empty($data['post_type']) && !empty($data['post_id'])) {
+                if (!empty($data['post_type'])) {
                     switch ($data['post_type']) {
                         case 'bh_community':
-                            $disclaimer = get_post_meta($data['post_id'], 'community_price_disclaimer', true);
+                            $disclaimer = get_option('bh_price_disclaimer_community');
                             break;
                         case 'bh_floor_plan':
-                            $disclaimer = get_post_meta($data['post_id'], 'floor_plan_price_disclaimer', true);
+                            $disclaimer = get_option('bh_price_disclaimer_floor_plan');
                             break;
                         case 'bh_lot':
-                            $disclaimer = get_post_meta($data['post_id'], 'lot_price_disclaimer', true);
+                            $disclaimer = get_option('bh_price_disclaimer_lot');
                             break;
                     }
                 }
 
                 // Render only if we actually have disclaimer content
                 if (!empty($disclaimer)) {
-                    echo '<p class="' . esc_attr($classes) . '">' . wp_kses_post($disclaimer) . '</p>';
+                    echo '<em class="' . esc_attr($classes) . '">' . wp_kses_post($disclaimer) . '</em>';
                 }
                 ?>
 
@@ -86,7 +86,7 @@ $data = $args;
             <!-- Specs -->
 
             <?php if (!empty($data['specs'])): ?>
-                <div class="mt-4">
+                <div class="mt-5">
                     <div class="row g-5 bh-header-specs">
                         <?php
                         // Map Bootstrap Icons to Font Awesome classes

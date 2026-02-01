@@ -185,8 +185,6 @@ $template_loader->render_single_component('actions', array(
                     'title' => 'Interested in This Floor Plan?',
                     'button_text' => 'Schedule a Tour'
                 )); ?>
-
-
             </div>
         </div>
     </div>

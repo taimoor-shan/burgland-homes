@@ -206,7 +206,8 @@ $template_loader->render_single_component('actions', array(
             <div class="col-12 col-lg-4 py-3">
                 <?php $template_loader->render_single_component('sidebar-contact', array(
                     'title' => 'Interested in This Community?',
-                    'brochure' => $brochure
+                    'brochure' => $brochure,
+                    'map_url' => $community['map_url']
                 )); ?>
             </div>
         </div>
