@@ -8,7 +8,8 @@
  *     @type string $sidebar Sidebar HTML
  * }
  */
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH'))
+    exit;
 ?>
 <main id="site-main" class="bg-white">
     <div class="container-fluid g-0">
@@ -22,8 +23,7 @@ if (!defined('ABSPATH')) exit;
         </div>
         <div class="row" id="contact">
 
-            <div
-                class="col-12 col-lg-6 d-flex flex-column  bg-light  p-3 p-lg-4 p-xl-5 py-xxl-6 px-xxl-6">
+            <div class="col-12 col-lg-6 d-flex flex-column  bg-light  p-3 p-lg-4 p-xl-5 py-xxl-6 px-xxl-6">
                 <div class="bg-white p-3 p-lg-4 p-xl-5">
 
                     <h2 class="fw-light text-primary mb-4 pt-3">Visit Our Community Sales Office</h2>
@@ -48,17 +48,7 @@ if (!defined('ABSPATH')) exit;
                     <div class="container text-white">
                         <div class="row">
                             <div class="col-12">
-                                <p class="text-uppercase text-white tracking-wide fw-300 mb-4">
-
-                                    Contact Us
-
-                                </p>
-                                <h2 class="display-5 text-white mb-3">
-
-                                    Get Connected
-
-                                </h2>
-                                <p class="text-end text-white">* Required Field</p>
+                                            <?php echo do_shortcode('[hubspot type="form" portal="244638360" id="eeea3688-3970-4de4-adc8-be0fd0f03489" version="v4"]'); ?>
                             </div>
                         </div>
                     </div>

@@ -43,7 +43,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
 
             <div class="col-12 col-lg-7 order-1 order-lg-2 pt-4 pe-lg-4">
                 <div class="bh-listings-column">
-                    <div class="bh-listings-grid">
+                    <div class="bh-listings-grid secTitle left">
                        
                             <h2 class="text-primary mt-4">Featured Communities</h2>
                             <p class="mb-4">Browse our featured communities below:</p>
