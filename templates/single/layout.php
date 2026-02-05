@@ -21,7 +21,7 @@ if (!defined('ABSPATH'))
                 </div>
             </div>
         </div>
-        <div class="row" id="contact">
+        <div class="row border-top border-secondary" id="contact">
 
             <div class="col-12 col-lg-6 d-flex flex-column  bg-light  p-3 p-lg-4 p-xl-5 py-xxl-6 px-xxl-6">
                 <div class="bg-white p-3 p-lg-4 p-xl-5">
@@ -43,12 +43,12 @@ if (!defined('ABSPATH'))
 
                 </div>
             </div>
-            <div class="col-12 col-lg-6 pattern-1 p-lg-3 bg-primary">
+            <div class="col-12 col-lg-6  p-lg-3 bg-muted">
                 <div class="py-3 p-lg-4 p-xl-5 h-100 d-flex flex-column justify-content-center single-column">
                     <div class="container text-white">
                         <div class="row">
                             <div class="col-12">
-                                            <?php echo do_shortcode('[hubspot type="form" portal="244638360" id="eeea3688-3970-4de4-adc8-be0fd0f03489" version="v4"]'); ?>
+                                <?php echo do_shortcode('[hubspot type="form" portal="245075458" id="8d4073b6-6f8e-4011-8680-f9239dc2fc19"]'); ?>
                             </div>
                         </div>
                     </div>

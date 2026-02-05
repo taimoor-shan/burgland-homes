@@ -25,7 +25,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
         <div class="row">
             <!-- Right Column: Map -->
 
-              <div class="col-12 col-lg-5 order-2 order-lg-1 ps-lg-0">
+            <div class="col-12 col-lg-5 order-1 order-lg-2 pe-lg-0">
                 <div class="bh-map-column">
                     <div id="communities-map" class="featured-communities-map-canvas" style="background: #e9ecef;">
                         <div class="d-flex align-items-center justify-content-center h-100 text-muted">
@@ -38,26 +38,26 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
                     </div>
                 </div>
             </div>
-           
+
             <!-- Left Column: Community Cards -->
 
-            <div class="col-12 col-lg-7 order-1 order-lg-2 pt-4 pe-lg-4">
+            <div class="col-12 col-lg-7 order-2 order-lg-1 pt-4 ps-lg-4">
                 <div class="bh-listings-column">
                     <div class="bh-listings-grid secTitle left">
-                       
-                            <h2 class="text-primary mt-4">Featured Communities</h2>
-                            <p class="mb-4">Browse our featured communities below:</p>
-                            <div class="featured-communities-grid row g-4 align-items-stretch mb-5">
-                                <?php foreach ($communities as $community): ?>
-                                    <div class="col-md-6 community-card-wrapper"
-                                        data-id="<?php echo esc_attr($community['id']); ?>"
-                                        data-lat="<?php echo esc_attr($community['latitude']); ?>"
-                                        data-lng="<?php echo esc_attr($community['longitude']); ?>">
-                                        <?php $template_loader->render_card($community['id']); ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                     
+
+                        <h2 class="text-primary mt-4">Featured Communities</h2>
+                        <p class="mb-4">Browse our featured communities below:</p>
+                        <div class="featured-communities-grid row g-4 align-items-stretch mb-5">
+                            <?php foreach ($communities as $community): ?>
+                                <div class="col-md-6 community-card-wrapper"
+                                    data-id="<?php echo esc_attr($community['id']); ?>"
+                                    data-lat="<?php echo esc_attr($community['latitude']); ?>"
+                                    data-lng="<?php echo esc_attr($community['longitude']); ?>">
+                                    <?php $template_loader->render_card($community['id']); ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
             return;
         }
 
-        jQuery(function($) {
+        jQuery(function ($) {
             var featuredMap = null;
             var featuredMarkers = [];
             var featuredInfoWindows = [];
@@ -92,7 +92,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
                 let centerLng = 0;
                 let validCount = 0;
 
-                featuredCommunityData.forEach(function(community) {
+                featuredCommunityData.forEach(function (community) {
                     if (community.latitude && community.longitude) {
                         centerLat += parseFloat(community.latitude);
                         centerLng += parseFloat(community.longitude);
@@ -142,7 +142,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
 
                 clearFeaturedMarkers();
 
-                featuredCommunityData.forEach(function(community) {
+                featuredCommunityData.forEach(function (community) {
                     if (!community.latitude || !community.longitude) return;
 
                     const marker = new google.maps.Marker({
@@ -183,7 +183,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
                         maxWidth: 300
                     });
 
-                    marker.addListener('click', function() {
+                    marker.addListener('click', function () {
                         closeAllFeaturedInfoWindows();
                         infoWindow.open(featuredMap, marker);
                     });
@@ -194,12 +194,12 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
 
                 if (featuredMarkers.length > 1) {
                     const bounds = new google.maps.LatLngBounds();
-                    featuredMarkers.forEach(function(marker) {
+                    featuredMarkers.forEach(function (marker) {
                         bounds.extend(marker.getPosition());
                     });
                     featuredMap.fitBounds(bounds);
 
-                    google.maps.event.addListenerOnce(featuredMap, 'bounds_changed', function() {
+                    google.maps.event.addListenerOnce(featuredMap, 'bounds_changed', function () {
                         if (featuredMap.getZoom() > 15) {
                             featuredMap.setZoom(15);
                         }
@@ -208,7 +208,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
             }
 
             function clearFeaturedMarkers() {
-                featuredMarkers.forEach(function(marker) {
+                featuredMarkers.forEach(function (marker) {
                     marker.setMap(null);
                 });
                 featuredMarkers = [];
@@ -218,7 +218,7 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
             }
 
             function closeAllFeaturedInfoWindows() {
-                featuredInfoWindows.forEach(function(infoWindow) {
+                featuredInfoWindows.forEach(function (infoWindow) {
                     infoWindow.close();
                 });
             }
@@ -233,14 +233,14 @@ do_action('burgland_homes_enqueue_featured_communities_assets');
     }
 
     if (typeof jQuery !== 'undefined') {
-        jQuery(document).ready(function() {
+        jQuery(document).ready(function () {
             initFeaturedMapWithJQuery();
         });
     } else {
-        var jqCheckInterval = setInterval(function() {
+        var jqCheckInterval = setInterval(function () {
             if (typeof jQuery !== 'undefined') {
                 clearInterval(jqCheckInterval);
-                jQuery(document).ready(function() {
+                jQuery(document).ready(function () {
                     initFeaturedMapWithJQuery();
                 });
             }

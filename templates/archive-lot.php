@@ -15,24 +15,24 @@ if (!defined('ABSPATH')) {
 
 get_header();
 
-$data_provider   = Burgland_Homes_Data_Provider::get_instance();
+$data_provider = Burgland_Homes_Data_Provider::get_instance();
 $template_loader = Burgland_Homes_Template_Loader::get_instance();
 
 // Query all lots/homes
 $lots_query = new WP_Query(array(
-    'post_type'      => 'bh_lot',
+    'post_type' => 'bh_lot',
     'posts_per_page' => -1,
-    'post_status'    => 'publish',
-    'orderby'        => 'meta_value_num',
-    'meta_key'       => 'lot_price',
-    'order'          => 'ASC',
+    'post_status' => 'publish',
+    'orderby' => 'meta_value_num',
+    'meta_key' => 'lot_price',
+    'order' => 'ASC',
 ));
 
 // Initialize filter data collection
-$bedrooms_options        = array();
-$bathrooms_options       = array();
-$sqft_values             = array();
-$lot_cards_data          = array();
+$bedrooms_options = array();
+$bathrooms_options = array();
+$sqft_values = array();
+$lot_cards_data = array();
 $community_ids_for_filter = array();
 
 if ($lots_query->have_posts()) {
@@ -70,22 +70,22 @@ if ($lots_query->have_posts()) {
 
         // Community relationship for filter
         $lot_community_id = get_post_meta($lot_id, 'lot_community', true);
-        $communities      = array();
+        $communities = array();
         if (!empty($lot_community_id)) {
-            $communities[]           = (int) $lot_community_id;
+            $communities[] = (int) $lot_community_id;
             $community_ids_for_filter[] = (int) $lot_community_id;
         }
 
         // Store lot data for rendering
         $lot_cards_data[] = array(
-            'lot_id'       => $lot_id,
-            'lot_data'     => $lot_data,
+            'lot_id' => $lot_id,
+            'lot_data' => $lot_data,
             'lot_location' => $data_provider->get_lot_location_data($lot_id),
-            'bedrooms'     => $bedrooms,
-            'bathrooms'    => $bathrooms,
+            'bedrooms' => $bedrooms,
+            'bathrooms' => $bathrooms,
             'sqft_numeric' => $sqft_numeric,
-            'price_numeric'=> $price_numeric,
-            'communities'  => $communities,
+            'price_numeric' => $price_numeric,
+            'communities' => $communities,
         );
     }
     wp_reset_postdata();
@@ -102,14 +102,15 @@ sort($bathrooms_options, SORT_NUMERIC);
  * @param int   $total_homes
  * @return array
  */
-function burgland_homes_generate_sqft_ranges_for_archive($sqft_values, $total_homes) {
+function burgland_homes_generate_sqft_ranges_for_archive($sqft_values, $total_homes)
+{
     if (empty($sqft_values)) {
         return array();
     }
 
     sort($sqft_values);
-    $sqft_min     = min($sqft_values);
-    $sqft_max     = max($sqft_values);
+    $sqft_min = min($sqft_values);
+    $sqft_max = max($sqft_values);
     $range_spread = $sqft_max - $sqft_min;
 
     // Edge case: all homes have same or very similar sqft
@@ -137,7 +138,7 @@ function burgland_homes_generate_sqft_ranges_for_archive($sqft_values, $total_ho
 
     // Round step to human-friendly increments
     $step_options = array(100, 250, 500, 750, 1000, 1500, 2000, 2500, 5000, 10000, 25000, 50000);
-    $step         = 500; // default
+    $step = 500; // default
 
     foreach ($step_options as $option) {
         if ($ideal_step <= $option) {
@@ -150,7 +151,7 @@ function burgland_homes_generate_sqft_ranges_for_archive($sqft_values, $total_ho
     $start = (int) floor($sqft_min / $step) * $step;
 
     // Generate ranges
-    $ranges  = array();
+    $ranges = array();
     $current = $start;
 
     while ($current < $sqft_max) {
@@ -191,12 +192,12 @@ if (!empty($community_ids_for_filter)) {
 
     if (!empty($unique_ids)) {
         $communities = get_posts(array(
-            'post_type'      => 'bh_community',
-            'post_status'    => 'publish',
+            'post_type' => 'bh_community',
+            'post_status' => 'publish',
             'posts_per_page' => -1,
-            'post__in'       => $unique_ids,
-            'orderby'        => 'title',
-            'order'          => 'ASC',
+            'post__in' => $unique_ids,
+            'orderby' => 'title',
+            'order' => 'ASC',
         ));
 
         foreach ($communities as $community) {
@@ -214,14 +215,15 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
 <main id="site-main">
     <!-- Page Header Component -->
-    <header class="page-header container-fluid d-flex justify-content-start align-items-end" style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
+    <header class="page-header container-fluid d-flex justify-content-start align-items-end"
+        style="background: <?php echo $background_url ? 'url(' . esc_url($background_url) . ') center center no-repeat' : '#f8f9fa'; ?>; background-size: cover;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 text-start">
                     <h1 class="display-5">
                         <?php echo esc_html($archive_title); ?>
                     </h1>
-                    
+
                     <?php if ($archive_subtitle): ?>
                         <p class="page-excerpt text-uppercase text-white lead">
                             <?php echo esc_html($archive_subtitle); ?>
@@ -231,7 +233,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             </div>
         </div>
     </header>
-    
+
     <div class="lots-archive">
         <!-- Filters Section -->
         <section class="bh-filters filters-section border-bottom py-4 bg-light">
@@ -239,15 +241,18 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                 <div class="row">
                     <div class="col-12">
                         <h6 class="text-dark mb-3">
-                            Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s) across all communities. 
-                            <button type="button" id="reset-filters" class="border-0 text-secondary text-underline ms-3">
+                            Showing <span id="lots-count"><?php echo count($lot_cards_data); ?></span> Inventory Home(s)
+                            across all communities.
+                            <button type="button" id="reset-filters"
+                                class="border-0 text-secondary text-underline ms-3">
                                 Reset Filters
                             </button>
                         </h6>
-                        
+
                         <!-- Mobile Filter Toggle Button -->
                         <div class="d-md-none mb-3">
-                            <button type="button" id="filter-toggle" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between">
+                            <button type="button" id="filter-toggle"
+                                class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between">
                                 <span>Filter By</span>
                                 <i class="bi bi-chevron-down filter-toggle-icon"></i>
                             </button>
@@ -256,65 +261,69 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                         <!-- Filter Form Container -->
                         <div id="filter-form-container" class="filter-form-container">
                             <form id="lots-filters" class="row g-3 align-items-end">
-                            <!-- Community Filter -->
-                            <?php if (!empty($community_options)) : ?>
-                                <div class="col-md-3">
-                                    <label for="community-filter" class="form-label text-info">Community</label>
-                                    <select name="community" id="community-filter" class="form-select">
-                                        <option value="">All Communities</option>
-                                        <?php foreach ($community_options as $community_id => $community_label) : ?>
-                                            <option value="<?php echo esc_attr($community_id); ?>"><?php echo esc_html($community_label); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            <?php endif; ?>
+                                <!-- Community Filter -->
+                                <?php if (!empty($community_options)): ?>
+                                    <div class="col-md-3">
+                                        <label for="community-filter" class="form-label text-info">Community</label>
+                                        <select name="community" id="community-filter" class="form-select">
+                                            <option value="">All Communities</option>
+                                            <?php foreach ($community_options as $community_id => $community_label): ?>
+                                                <option value="<?php echo esc_attr($community_id); ?>">
+                                                    <?php echo esc_html($community_label); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
 
-                            <!-- Square Footage Range -->
-                            <?php if (!empty($sqft_ranges)) : ?>
-                                <div class="col-md-3">
-                                    <label for="sqft-filter" class="form-label text-info">Sqft Range</label>
-                                    <select name="sqft_range" id="sqft-filter" class="form-select">
-                                        <option value="">All Sizes</option>
-                                        <?php foreach ($sqft_ranges as $value => $label) : ?>
-                                            <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            <?php endif; ?>
+                                <!-- Square Footage Range -->
+                                <?php if (!empty($sqft_ranges)): ?>
+                                    <div class="col-md-3">
+                                        <label for="sqft-filter" class="form-label text-info">Sqft Range</label>
+                                        <select name="sqft_range" id="sqft-filter" class="form-select">
+                                            <option value="">All Sizes</option>
+                                            <?php foreach ($sqft_ranges as $value => $label): ?>
+                                                <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
 
-                            <!-- Bedrooms Filter -->
-                            <?php if (!empty($bedrooms_options)) : ?>
-                                <div class="col-md-3">
-                                    <label for="bedrooms-filter" class="form-label text-info">Bedrooms</label>
-                                    <select name="bedrooms" id="bedrooms-filter" class="form-select">
-                                        <option value="">All Bedrooms</option>
-                                        <?php foreach ($bedrooms_options as $bedrooms) : ?>
-                                            <option value="<?php echo esc_attr($bedrooms); ?>">
-                                                <?php echo esc_html($bedrooms); ?> Bed<?php echo $bedrooms > 1 ? 's' : ''; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            <?php endif; ?>
+                                <!-- Bedrooms Filter -->
+                                <?php if (!empty($bedrooms_options)): ?>
+                                    <div class="col-md-3">
+                                        <label for="bedrooms-filter" class="form-label text-info">Bedrooms</label>
+                                        <select name="bedrooms" id="bedrooms-filter" class="form-select">
+                                            <option value="">All Bedrooms</option>
+                                            <?php foreach ($bedrooms_options as $bedrooms): ?>
+                                                <option value="<?php echo esc_attr($bedrooms); ?>">
+                                                    <?php echo esc_html($bedrooms); ?>
+                                                    Bed<?php echo $bedrooms > 1 ? 's' : ''; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
 
-                            <!-- Bathrooms Filter -->
-                            <?php if (!empty($bathrooms_options)) : ?>
-                                <div class="col-md-3">
-                                    <label for="bathrooms-filter" class="form-label text-info">Bathrooms</label>
-                                    <select name="bathrooms" id="bathrooms-filter" class="form-select">
-                                        <option value="">All Bathrooms</option>
-                                        <?php foreach ($bathrooms_options as $bathrooms) : ?>
-                                            <option value="<?php echo esc_attr($bathrooms); ?>">
-                                                <?php echo esc_html($bathrooms); ?> Bath<?php echo $bathrooms > 1 ? 's' : ''; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            <?php endif; ?>
-                        </form>
+                                <!-- Bathrooms Filter -->
+                                <?php if (!empty($bathrooms_options)): ?>
+                                    <div class="col-md-3">
+                                        <label for="bathrooms-filter" class="form-label text-info">Bathrooms</label>
+                                        <select name="bathrooms" id="bathrooms-filter" class="form-select">
+                                            <option value="">All Bathrooms</option>
+                                            <?php foreach ($bathrooms_options as $bathrooms): ?>
+                                                <option value="<?php echo esc_attr($bathrooms); ?>">
+                                                    <?php echo esc_html($bathrooms); ?>
+                                                    Bath<?php echo $bathrooms > 1 ? 's' : ''; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                <?php endif; ?>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
             </div>
         </section>
 
@@ -323,10 +332,10 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
             <div class="container-fluid bg-warning">
                 <div class="row">
                     <!-- Left Column: Lot Cards -->
-                    <div class="col-lg-6 bh-listings-column col-12 col-lg-7 order-1 order-lg-2 pt-4 pe-lg-4">
+                    <div class="col-lg-6 bh-listings-column col-12 col-lg-7 order-2 order-lg-1 pt-4 ps-lg-4">
                         <div id="lots-grid" class="row g-4 align-items-stretch mb-5">
-                            <?php if (!empty($lot_cards_data)) : ?>
-                                <?php foreach ($lot_cards_data as $lot_card) : ?>
+                            <?php if (!empty($lot_cards_data)): ?>
+                                <?php foreach ($lot_cards_data as $lot_card): ?>
                                     <?php
                                     $communities_attr = '';
                                     if (!empty($lot_card['communities'])) {
@@ -346,7 +355,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                         <?php $template_loader->render_card($lot_card['lot_id']); ?>
                                     </div>
                                 <?php endforeach; ?>
-                            <?php else : ?>
+                            <?php else: ?>
                                 <div class="col-12">
                                     <div class="alert alert-info text-center" role="alert">
                                         <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
@@ -354,21 +363,23 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <!-- No Results Message (Hidden by default) -->
                             <div id="no-lots-message" class="col-12" style="display: none;">
                                 <div class="alert alert-info text-center" role="alert">
                                     <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
-                                    <p class="mb-0">No homes found matching your criteria. Please adjust your filters.</p>
+                                    <p class="mb-0">No homes found matching your criteria. Please adjust your filters.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column: Map -->
-                    <div class="col-12 col-lg-5 order-2 order-lg-1 ps-lg-0 bh-map-column">
+                    <div class="col-12 col-lg-5 order-1 order-lg-2 pe-lg-0 bh-map-column">
                         <div class="bh-map-container map-container ">
-                            <div id="lots-map" style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
+                            <div id="lots-map"
+                                style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
                                 <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                                     <div class="text-center">
                                         <i class="bi bi-map fs-1 d-block mb-3"></i>

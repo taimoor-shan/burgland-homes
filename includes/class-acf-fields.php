@@ -47,7 +47,7 @@ class Burgland_Homes_ACF_Fields
 
         // Filter floor plan options based on selected community
         add_filter('acf/fields/post_object/query/name=lot_floor_plan', array($this, 'filter_floor_plans_by_community'), 10, 3);
-        
+
         // Handle orphaned lot reassignment
         add_action('acf/save_post', array($this, 'handle_lot_community_reassignment'), 20);
     }
@@ -135,7 +135,7 @@ class Burgland_Homes_ACF_Fields
                     'name' => 'community_price_range',
                     'type' => 'text',
                     'instructions' => 'e.g., $350,000 - $650,000',
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                     'required' => 0,
@@ -173,7 +173,7 @@ class Burgland_Homes_ACF_Fields
                     'type' => 'url',
                     'instructions' => 'YouTube or Vimeo URL',
                     'required' => 0,
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -255,9 +255,12 @@ class Burgland_Homes_ACF_Fields
                     'key' => 'field_fp_price',
                     'label' => 'Starting Price',
                     'name' => 'floor_plan_price',
-                    'type' => 'text',
-                    // 'instructions' => 'e.g., $450,000',
+                    'type' => 'number',
+                    'instructions' => 'Enter price as a number (e.g., 450000 for $450,000)',
                     'required' => 0,
+                    'min' => 0,
+                    'step' => 1000,
+                    'prepend' => '$',
                     'wrapper' => array(
                         'width' => '50',
                     ),
@@ -278,9 +281,12 @@ class Burgland_Homes_ACF_Fields
                     'key' => 'field_fp_bathrooms',
                     'label' => 'Bathrooms',
                     'name' => 'floor_plan_bathrooms',
-                    'type' => 'text',
-                    // 'instructions' => 'e.g., 2.5',
+                    'type' => 'number',
+                    'instructions' => 'Enter number of bathrooms (use 0.5 increments for half baths)',
                     'required' => 0,
+                    'min' => 0.5,
+                    'max' => 10,
+                    'step' => 0.5,
                     'wrapper' => array(
                         'width' => '50',
                     ),
@@ -297,11 +303,14 @@ class Burgland_Homes_ACF_Fields
                 ),
                 array(
                     'key' => 'field_fp_garage',
-                    'label' => 'Garage',
+                    'label' => 'Garage Spaces',
                     'name' => 'floor_plan_garage',
-                    'type' => 'text',
-                    // 'instructions' => 'e.g., 2-Car Garage',
+                    'type' => 'number',
+                    'instructions' => 'Number of garage spaces (e.g., 2 for 2-car garage)',
                     'required' => 0,
+                    'min' => 0,
+                    'max' => 4,
+                    'step' => 1,
                     'wrapper' => array(
                         'width' => '50',
                     ),
@@ -355,7 +364,7 @@ class Burgland_Homes_ACF_Fields
                         'width' => '50',
                     ),
                 ),
-                   array(
+                array(
                     'key' => 'field_fp_thumbnail',
                     'label' => 'Thumbnail',
                     'name' => 'floor_plan_thumbnail',
@@ -365,7 +374,7 @@ class Burgland_Homes_ACF_Fields
                     'return_format' => 'array',
                     'library' => 'all',
                     'mime_types' => 'jpg,jpeg,png',
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -423,7 +432,7 @@ class Burgland_Homes_ACF_Fields
                     'post_type' => array('bh_community'),
                     'return_format' => 'id',
                     'ui' => 1,
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -446,7 +455,7 @@ class Burgland_Homes_ACF_Fields
                     'multiple' => 0,
                     'ui' => 1,
                     'return_format' => 'value',
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -457,7 +466,7 @@ class Burgland_Homes_ACF_Fields
                     'type' => 'text',
                     'instructions' => 'e.g., Lot 15',
                     'required' => 1,
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -468,7 +477,7 @@ class Burgland_Homes_ACF_Fields
                     'type' => 'text',
                     'instructions' => 'Specific street address for this lot (e.g., 123 Main Street)',
                     'required' => 0,
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -492,7 +501,7 @@ class Burgland_Homes_ACF_Fields
                             ),
                         ),
                     ),
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -511,10 +520,13 @@ class Burgland_Homes_ACF_Fields
                     'key' => 'field_lot_price',
                     'label' => 'Home Price',
                     'name' => 'lot_price',
-                    'type' => 'text',
-                    'instructions' => 'e.g., $485,000',
+                    'type' => 'number',
+                    'instructions' => 'Enter price as a number (e.g., 485000 for $485,000)',
+                    'min' => 0,
+                    'step' => 1000,
+                    'prepend' => '$',
                     'wrapper' => array(
-                        'width' => '50',    
+                        'width' => '50',
                     ),
                     'required' => 0,
                     'conditional_logic' => array(
@@ -544,11 +556,11 @@ class Burgland_Homes_ACF_Fields
                     'instructions' => 'One feature per line (e.g., Corner lot, Cul-de-sac)',
                     'required' => 0,
                     'rows' => 4,
-                        'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
-                
+
                 array(
                     'key' => 'field_lot_availability_date',
                     'label' => 'Availability Date',
@@ -558,7 +570,7 @@ class Burgland_Homes_ACF_Fields
                     'required' => 0,
                     'display_format' => 'm/d/Y',
                     'return_format' => 'Y-m-d',
-                       'wrapper' => array(
+                    'wrapper' => array(
                         'width' => '50',
                     ),
                 ),
@@ -684,17 +696,17 @@ class Burgland_Homes_ACF_Fields
     {
         // Get the community ID for this lot
         $community_id = null;
-        
+
         // For new posts, check URL parameter
         if ($post_id === 'new_post' && isset($_GET['community_id']) && !empty($_GET['community_id'])) {
             $community_id = intval($_GET['community_id']);
-        } 
+        }
         // For existing posts, use raw post meta to avoid ACF recursion
         elseif ($post_id && $post_id !== 'new_post' && is_numeric($post_id)) {
             // Use get_post_meta instead of get_field to prevent recursive ACF loading
             $community_id = get_post_meta($post_id, 'lot_community', true);
         }
-        
+
         // If we have a community, filter floor plans by their ACF relationship field
         if ($community_id) {
             // Query floor plans that have this community in their floor_plans_communities field
@@ -706,7 +718,7 @@ class Burgland_Homes_ACF_Fields
                 ),
             );
         }
-        
+
         return $args;
     }
 
@@ -730,12 +742,12 @@ class Burgland_Homes_ACF_Fields
 
         // Get lot value first
         $lot_value = get_field($lot_field_name, $post_id);
-        
+
         // If lot has its own value, return it
         if ($lot_value !== false && $lot_value !== null && $lot_value !== '') {
             return $lot_value;
         }
-        
+
         // Otherwise, try to inherit from floor plan
         $floor_plan_id = get_field('lot_floor_plan', $post_id);
         if ($floor_plan_id) {
@@ -744,29 +756,30 @@ class Burgland_Homes_ACF_Fields
                 return $floor_plan_value;
             }
         }
-        
+
         return $lot_value;
     }
-    
+
     /**
      * Handle lot community reassignment - clear orphaned flags
      */
-    public function handle_lot_community_reassignment($post_id) {
+    public function handle_lot_community_reassignment($post_id)
+    {
         // Only for lot post type
         if (get_post_type($post_id) !== 'bh_lot') {
             return;
         }
-        
+
         // Check if this lot was orphaned
         $is_orphaned = get_post_meta($post_id, '_bh_orphaned_lot', true);
-        
+
         if (!$is_orphaned) {
             return;
         }
-        
+
         // Check if a community has been assigned
         $community_id = get_post_meta($post_id, 'lot_community', true);
-        
+
         if ($community_id && get_post_status($community_id) === 'publish') {
             // Clear orphaned flags
             delete_post_meta($post_id, '_bh_orphaned_lot');
