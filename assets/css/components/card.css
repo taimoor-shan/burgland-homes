@@ -12,11 +12,13 @@
 .bh-card:hover {
   border-color: var(--info-color);
 }
+
 .oi-aspect {
   position: relative;
   display: block;
   overflow: hidden;
 }
+
 .oi-aspect img.oi-aspect-img,
 .oi-aspect iframe,
 .oi-aspect .oi-aspect-target {
@@ -61,6 +63,7 @@
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
+
 .bh-header-specs.bh-card-specs .spec-label {
   color: #263136;
   font-size: 0.875rem;
@@ -69,9 +72,26 @@
   margin-top: 0;
 }
 
-.bh-header-specs .col-3:not(:last-child) {
-  border-right: 1px solid #e6e7e8;
+.bh-card .bh-header-specs {
+  margin: 1rem auto;
+  padding: 0;
+  list-style: none;
 }
+
+.bh-card .spec-item i {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.separator {
+  width: 1px;
+  height: 100%;
+  background-color: #e6e7e8;
+}
+
+/* .bh-header-specs .col-3:not(:last-child) {
+  border-right: 1px solid #e6e7e8;
+} */
 
 .card .card-body hr {
   margin: 0.75rem auto;
@@ -88,21 +108,21 @@
   font-size: 0.875rem;
   line-height: 1.4;
 }
+
 a.bh-card-footer-link {
   color: var(--dark-color);
   transition: color 0.2s ease;
 }
+
 a.bh-card-footer-link:hover {
   text-decoration: underline;
 }
 
 /* Specific Card Type Variations */
 
-.bh-card-lot {
-}
+.bh-card-lot {}
 
-.bh-card-floor-plan {
-}
+.bh-card-floor-plan {}
 
 .oi-aspect.sixteen-nine:before {
   padding-bottom: 56.25%;

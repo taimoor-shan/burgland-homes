@@ -1,33 +1,29 @@
-
-.bh-header-specs{
+.bh-header-specs {
     margin: 1.5rem auto 1.875rem;
     padding: 0;
     list-style: none;
 }
 
 
-.bh-header-specs .col-auto:not(:last-child) {
-    border-right: 1px solid #E6E7E8;
+
+
+.spec-item i {
+    font-size: 1.3rem;
 }
 
-.spec-item  i {
-    font-size: 1.5rem;
-}
 .spec-item {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: .875rem;
     line-height: 1.3;
-    font-weight: 700;
+    font-weight: 500;
     text-align: center;
+    gap: 10px;
 }
 
 .spec-label {
-       margin-top: .5rem;
+    margin-top: .5rem;
 }
 
 /* Card Specs Styles */
-
-

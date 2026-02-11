@@ -43,20 +43,15 @@ $map_url = !empty($data['map_url']) ? $data['map_url'] : '';
 $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : '';
 ?>
 
-<div
-    class="bh-card card h-100 shadow-sm overflow-hidden bh-card-<?php echo esc_attr($data['type']); ?> community-card"
-    role="link"
-    tabindex="0"
-    data-href="<?php echo esc_url($data['url']); ?>"
-    style="cursor: pointer;">
+<div class="bh-card card h-100 shadow-sm overflow-hidden bh-card-<?php echo esc_attr($data['type']); ?> community-card"
+    role="link" tabindex="0" data-href="<?php echo esc_url($data['url']); ?>" style="cursor: pointer;">
     <div class=" position-relative oi-aspect sixteen-nine">
-        <?php if (!empty($data['image_caption'])) : ?>
+        <?php if (!empty($data['image_caption'])): ?>
             <figcaption class="figCaption">
                 <?php echo esc_html($data['image_caption']); ?>
             </figcaption>
         <?php endif; ?>
-        <img src="<?php echo esc_url($thumbnail); ?>"
-            class="card-img-top oi-aspect-img"
+        <img src="<?php echo esc_url($thumbnail); ?>" class="card-img-top oi-aspect-img"
             alt="<?php echo esc_attr($data['title']); ?>">
 
         <?php if (!empty($data['badges'])): ?>
@@ -81,23 +76,27 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                 <div>
                     <p class="mb-3">
                         <?php if (!empty($map_url)): ?>
-                            <a href="<?php echo esc_url($map_url); ?>" class="bh-card-footer-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">
+                            <a href="<?php echo esc_url($map_url); ?>" class="bh-card-footer-link" target="_blank"
+                                rel="noopener noreferrer" onclick="event.stopPropagation();">
                                 <?php echo wp_kses($data['address'], array('br' => array())); ?>
                             </a>
                         <?php else: ?>
-                            <span class="bh-card-footer-link"><?php echo wp_kses($data['address'], array('br' => array())); ?></span>
+                            <span
+                                class="bh-card-footer-link"><?php echo wp_kses($data['address'], array('br' => array())); ?></span>
                         <?php endif; ?>
                     </p>
                 </div>
             </div>
         <?php endif; ?>
         <?php if ($card_type === 'lot' && !empty($data['floor_plan_name'])): ?>
-            <div class="bh-card-footer <?php echo empty($data['address']) ? 'mt-auto' : ''; ?> d-flex align-items-center justify-content-between w-100 gap-3">
+            <div
+                class="bh-card-footer <?php echo empty($data['address']) ? 'mt-auto' : ''; ?> d-flex align-items-center justify-content-between w-100 gap-3">
                 <div>
                     <p class="">
                         <b>Floor Plan:</b>
                         <?php if (!empty($floor_plan_url)): ?>
-                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info" onclick="event.stopPropagation();">
+                            <a href="<?php echo esc_url($floor_plan_url); ?>" class="bh-card-footer-link text-info"
+                                onclick="event.stopPropagation();">
                                 <?php echo esc_html($data['floor_plan_name']); ?>
                             </a>
                         <?php else: ?>
@@ -121,7 +120,7 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
 
         <?php if (!empty($data['specs'])): ?>
             <div class="">
-                <div class="row g-2 g-lg-3 bh-header-specs bh-card-specs my-0">
+                <div class="row bh-header-specs justify-content-center gx-3">
                     <?php
                     // Map Bootstrap Icons to Font Awesome classes
                     $icon_map = array(
@@ -131,7 +130,11 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                         'car-front' => 'fa-solid fa-car',
                     );
 
+                    $total_specs = count($data['specs']);
+                    $current_spec = 0;
+
                     foreach ($data['specs'] as $spec) {
+                        $current_spec++;
                         // Remove trailing .00 from decimal values
                         $label = $spec['label'];
                         $label = preg_replace('/\.00(?=\s|$)/', '', $label);
@@ -141,23 +144,28 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                         if (!empty($spec['icon'])) {
                             $icon_class = isset($icon_map[$spec['icon']]) ? $icon_map[$spec['icon']] : $spec['icon'];
                         }
-                    ?>
-                        <div class="col-3">
+                        ?>
+                        <div class="col-auto">
                             <span class="spec-item">
                                 <?php if ($icon_class): ?>
                                     <i class="<?php echo esc_attr($icon_class); ?>"></i>
                                 <?php endif; ?>
-                                <span class="spec-label"><?php echo wp_kses($label, array('sup' => array())); ?></span>
+                                <span
+                                    class="spec-label text-muted mt-0"><?php echo wp_kses($label, array('sup' => array())); ?></span>
                             </span>
                         </div>
+                        <?php if ($current_spec < $total_specs): ?>
+                            <div class="col-auto d-flex align-items-center">
+                                <span class="separator"></span>
+                            </div>
+                        <?php endif; ?>
                     <?php } ?>
                 </div>
             </div>
         <?php endif; ?>
-
         <?php
         $button_text = 'Learn More'; // default
-
+        
         if ($card_type === 'lot') {
             $button_text = 'View Home';
         } elseif ($card_type === 'floor-plan') {

@@ -259,7 +259,7 @@ class Burgland_Homes_ACF_Fields
                     'instructions' => 'Enter price as a number (e.g., 450000 for $450,000)',
                     'required' => 0,
                     'min' => 0,
-                    'step' => 1000,
+                    'step' => 500,
                     'prepend' => '$',
                     'wrapper' => array(
                         'width' => '50',

@@ -21,6 +21,11 @@ class Burgland_Homes_Data_Provider
     private static $instance = null;
 
     /**
+     * Utilities instance
+     */
+    private $utilities;
+
+    /**
      * Spec configuration
      */
     private $spec_config = array(
@@ -36,14 +41,14 @@ class Burgland_Homes_Data_Provider
     private $status_config = array(
         'community' => array(
             'active' => array('label' => 'Active', 'class' => 'success'),
-            'selling-fast' => array('label' => 'Selling Fast', 'class' => 'warning'),
+            'selling-fast' => array('label' => 'Selling Fast', 'class' => 'info'),
             'sold-out' => array('label' => 'Sold Out', 'class' => 'secondary'),
             'coming-soon' => array('label' => 'Coming Soon', 'class' => 'info'),
         ),
         'lot' => array(
             'empty_lot' => array('label' => 'Empty Lot', 'class' => 'secondary'),
             'home_assigned' => array('label' => 'Home Assigned', 'class' => 'info'),
-            'under_construction' => array('label' => 'Under Construction', 'class' => 'warning'),
+            'under_construction' => array('label' => 'Under Construction', 'class' => 'info'),
             'move_in_ready' => array('label' => 'Move-in Ready', 'class' => 'success'),
             'sold' => array('label' => 'Sold', 'class' => 'dark'),
         )
@@ -65,6 +70,7 @@ class Burgland_Homes_Data_Provider
      */
     private function __construct()
     {
+        $this->utilities = Burgland_Homes_Utilities::get_instance();
     }
 
     /**
@@ -142,7 +148,7 @@ class Burgland_Homes_Data_Provider
                 if ($raw['premium']) {
                     $data['badges'][] = array(
                         'label' => 'Premium',
-                        'class' => 'warning text-dark'
+                        'class' => 'danger text-dark'
                     );
                 }
 
@@ -267,8 +273,7 @@ class Burgland_Homes_Data_Provider
             return array();
         }
 
-        $utilities = Burgland_Homes_Utilities::get_instance();
-        $floor_plan_ranges = $utilities->get_floor_plan_ranges($community_id);
+        $floor_plan_ranges = $this->utilities->get_floor_plan_ranges($community_id);
 
         // Get status from hierarchical taxonomy (like Categories)
         $status_terms = wp_get_post_terms($community_id, 'bh_community_status');
@@ -301,7 +306,7 @@ class Burgland_Homes_Data_Provider
                 'state' => get_post_meta($community_id, 'community_state', true),
                 'zip' => get_post_meta($community_id, 'community_zip', true),
             )),
-            'price_range' => $price_range,
+            'price_range' => $this->utilities->format_price($price_range),
             'latitude' => get_post_meta($community_id, '_geocoded_latitude', true),
             'longitude' => get_post_meta($community_id, '_geocoded_longitude', true),
             'has_thumbnail' => has_post_thumbnail($community_id),
@@ -534,7 +539,7 @@ class Burgland_Homes_Data_Provider
                 'zip' => $zip,
             )),
             'lot_size' => get_post_meta($lot_id, 'lot_size', true),
-            'price' => get_post_meta($lot_id, 'lot_price', true),
+            'price' => $this->utilities->format_price(get_post_meta($lot_id, 'lot_price', true)),
             'premium' => get_post_meta($lot_id, 'lot_premium', true),
             'status_label' => $status_info['label'],
             'status_class' => $status_info['class'],
@@ -613,7 +618,7 @@ class Burgland_Homes_Data_Provider
             'permalink' => get_permalink($floor_plan_id),
             'thumbnail' => get_the_post_thumbnail_url($floor_plan_id, 'large'),
             'thumbnail_caption' => has_post_thumbnail($floor_plan_id) ? wp_get_attachment_caption(get_post_thumbnail_id($floor_plan_id)) : '',
-            'price' => get_post_meta($floor_plan_id, 'floor_plan_price', true),
+            'price' => $this->utilities->format_price(get_post_meta($floor_plan_id, 'floor_plan_price', true)),
             'bedrooms' => get_post_meta($floor_plan_id, 'floor_plan_bedrooms', true),
             'bathrooms' => get_post_meta($floor_plan_id, 'floor_plan_bathrooms', true),
             'square_feet' => get_post_meta($floor_plan_id, 'floor_plan_square_feet', true),
@@ -645,15 +650,15 @@ class Burgland_Homes_Data_Provider
         switch ($post_type) {
             case 'bh_community':
                 $data['price_disclaimer'] = get_post_meta($post_id, 'community_price_disclaimer', true);
-                $data['price'] = get_post_meta($post_id, 'community_price_range', true);
+                $data['price'] = $this->utilities->format_price(get_post_meta($post_id, 'community_price_range', true));
                 break;
             case 'bh_floor_plan':
                 $data['price_disclaimer'] = get_post_meta($post_id, 'floor_plan_price_disclaimer', true);
-                $data['price'] = get_post_meta($post_id, 'floor_plan_price', true);
+                $data['price'] = $this->utilities->format_price(get_post_meta($post_id, 'floor_plan_price', true));
                 break;
             case 'bh_lot':
                 $data['price_disclaimer'] = get_post_meta($post_id, 'lot_price_disclaimer', true);
-                $data['price'] = get_post_meta($post_id, 'lot_price', true);
+                $data['price'] = $this->utilities->format_price(get_post_meta($post_id, 'lot_price', true));
                 break;
         }
 

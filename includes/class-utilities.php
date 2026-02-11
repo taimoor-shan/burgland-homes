@@ -198,8 +198,8 @@ class Burgland_Homes_Utilities
         }
 
         // Format prices with dollar sign and commas
-        $formatted_min = '$' . number_format($min_price, 0);
-        $formatted_max = '$' . number_format($max_price, 0);
+        $formatted_min = $this->format_price($min_price);
+        $formatted_max = $this->format_price($max_price);
 
         // If min and max are the same, return single price
         if ($min_price == $max_price) {
@@ -208,6 +208,33 @@ class Burgland_Homes_Utilities
 
         // Return price range
         return $formatted_min . ' - ' . $formatted_max;
+    }
+
+    /**
+     * Format a single price value
+     * 
+     * @param mixed $price
+     * @return string Formatted price (e.g., "$300,000")
+     */
+    public function format_price($price)
+    {
+        if (empty($price)) {
+            return '';
+        }
+
+        // If it's already formatted (contains $), return as is to avoid double formatting
+        if (is_string($price) && strpos($price, '$') !== false) {
+            return $price;
+        }
+
+        // Remove non-numeric characters except decimal point
+        $clean = preg_replace('/[^\d.]/', '', $price);
+
+        if (is_numeric($clean)) {
+            return '$' . number_format($clean, 0);
+        }
+
+        return $price;
     }
 
     /**

@@ -169,13 +169,13 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
         <section class="communities-content bh-split-scroll-wrapper">
             <div class="bh-split-section">
-                <div class="container-fluid bg-warning">
+                <div class="container">
                     <div class="row">
 
 
                         <!-- Left Column:Community Cards -->
 
-                        <div class="col-lg-6 bh-listings-column col-12 col-lg-7 pt-4 ps-lg-4">
+                        <div class="col-12 bh-listings-column pt-4">
                             <div id="communities-grid" class="communities-grid bh-listings-grid">
                                 <div class="loading-spinner text-center py-5" style="display: none;">
                                     <div class="spinner-border text-primary" role="status">
@@ -250,7 +250,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                                 continue;
                                             }
                                             ?>
-                                            <div class="col-md-6 community-card-wrapper"
+                                            <div class="col-md-6 col-lg-4 community-card-wrapper"
                                                 data-lat="<?php echo esc_attr($latitude); ?>"
                                                 data-lng="<?php echo esc_attr($longitude); ?>"
                                                 data-id="<?php echo esc_attr($post_id); ?>">
@@ -269,19 +269,6 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                             </div>
                                         </div>
                                     <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Right Column: Map Sec-->
-
-                        <div class="col-12 col-lg-5  pe-lg-0 bh-map-column">
-                            <div id="communities-map">
-                                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                                    <div class="text-center">
-                                        <i class="bi bi-map fs-1 d-block mb-3"></i>
-                                        <p>Map loading...</p>
-                                        <small>Please ensure you have added the Google Maps API key</small>
-                                    </div>
                                 </div>
                             </div>
                         </div>

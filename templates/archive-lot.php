@@ -269,7 +269,8 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                             <option value="">All Communities</option>
                                             <?php foreach ($community_options as $community_id => $community_label): ?>
                                                 <option value="<?php echo esc_attr($community_id); ?>">
-                                                    <?php echo esc_html($community_label); ?></option>
+                                                    <?php echo esc_html($community_label); ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -329,10 +330,10 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
         <!-- Main Content: Two Column Layout -->
         <section class="lots-content">
-            <div class="container-fluid bg-warning">
+            <div class="container">
                 <div class="row">
                     <!-- Left Column: Lot Cards -->
-                    <div class="col-lg-6 bh-listings-column col-12 col-lg-7 order-2 order-lg-1 pt-4 ps-lg-4">
+                    <div class="col-12 bh-listings-column pt-4">
                         <div id="lots-grid" class="row g-4 align-items-stretch mb-5">
                             <?php if (!empty($lot_cards_data)): ?>
                                 <?php foreach ($lot_cards_data as $lot_card): ?>
@@ -343,7 +344,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                     }
                                     $lot_location = $lot_card['lot_location'];
                                     ?>
-                                    <div class="col-md-6 lot-card-wrapper"
+                                    <div class="col-md-6 col-lg-4 lot-card-wrapper"
                                         data-lat="<?php echo esc_attr($lot_location['latitude']); ?>"
                                         data-lng="<?php echo esc_attr($lot_location['longitude']); ?>"
                                         data-id="<?php echo esc_attr($lot_card['lot_id']); ?>"
@@ -370,22 +371,6 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                     <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
                                     <p class="mb-0">No homes found matching your criteria. Please adjust your filters.
                                     </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Map -->
-                    <div class="col-12 col-lg-5 order-1 order-lg-2 pe-lg-0 bh-map-column">
-                        <div class="bh-map-container map-container ">
-                            <div id="lots-map"
-                                style="height: calc(100vh - 180px); min-height: 600px; background: #e9ecef; border-radius: 8px;">
-                                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                                    <div class="text-center">
-                                        <i class="bi bi-map fs-1 d-block mb-3"></i>
-                                        <p>Map loading...</p>
-                                        <small>Please ensure you have added the Google Maps API key</small>
-                                    </div>
                                 </div>
                             </div>
                         </div>
