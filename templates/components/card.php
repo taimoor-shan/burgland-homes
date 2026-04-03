@@ -109,18 +109,14 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
         <?php if (!empty($data['price'])): ?>
             <h3 class="text-info h4 border-bottom pb-3">
                 <?php if ($show_from_label): ?>
-                    <span class="me-1 small">From<sup>*</sup></span>
+                    <span class="me-1 small">Starting From<sup>*</sup></span>
                 <?php endif; ?>
                 <span class="fw"><?php echo esc_html($data['price']); ?></span>
             </h3>
         <?php endif; ?>
-
-
-
-
         <?php if (!empty($data['specs'])): ?>
             <div class="">
-                <div class="row bh-header-specs justify-content-center gx-3">
+                <div class="row bh-header-specs justify-content-center gx-2">
                     <?php
                     // Map Bootstrap Icons to Font Awesome classes
                     $icon_map = array(
@@ -129,6 +125,12 @@ $floor_plan_url = !empty($data['floor_plan_url']) ? $data['floor_plan_url'] : ''
                         'arrows-angle-expand' => 'fa-solid fa-ruler-combined',
                         'car-front' => 'fa-solid fa-car',
                     );
+
+                    // Filter out garage specs for card view
+                    $data['specs'] = array_filter($data['specs'], function ($spec) {
+                        $is_garage = ($spec['icon'] === 'car-front') || (strpos(strtolower($spec['label']), 'garage') !== false);
+                        return !$is_garage;
+                    });
 
                     $total_specs = count($data['specs']);
                     $current_spec = 0;

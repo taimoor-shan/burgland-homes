@@ -7,19 +7,21 @@
  *     @type array $items
  * }
  */
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH'))
+    exit;
 $title = isset($args['title']) ? $args['title'] : 'Amenities';
 $items = isset($args['items']) ? $args['items'] : array();
 
-if (empty($items)) return;
+if (empty($items))
+    return;
 ?>
 <div class="mb-5">
     <div class="">
         <h2 class="h3 mb-3 display-6 text-primary"><?php echo esc_html($title); ?></h2>
         <div class="row">
             <?php foreach ($items as $item): ?>
-                <div class="col-md-4 mb-2">
-                    <div class="d-flex align-items-center gap-2">
+                <div class="col-md-6 mb-2">
+                    <div class="d-flex gap-2">
                         <i class="bi bi-check2-circle text-success"></i>
                         <span><?php echo esc_html($item); ?></span>
                     </div>

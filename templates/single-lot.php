@@ -110,7 +110,7 @@ ob_start();
                 </div>
                 <div class="col-12">
                     <?php if ($lot['map_url']) { ?>
-                    <?php $template_loader->render_single_component('sidebar-location', array(
+                        <?php $template_loader->render_single_component('sidebar-location', array(
                             'map_url' => $lot['map_url']
                         ));
                     } ?>
@@ -221,8 +221,7 @@ $template_loader->render_single_component('actions', array(
                             <a href="<?php echo esc_url($community_site_map['url']); ?>" data-fancybox="single-gallery-map"
                                 data-caption="Community Site Map">
                                 <img src="<?php echo esc_url($community_site_map['sizes']['large']); ?>"
-                                    alt="Community Site Map" class="img-fluid hover-shadow-lg"
-                                    style="width:100%;">
+                                    alt="Community Site Map" class="img-fluid hover-shadow-lg" style="max-width:450px;">
                             </a>
                         </figure>
 

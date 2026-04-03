@@ -31,7 +31,7 @@ if (!$has_nav_items && !$has_buttons) {
     return;
 }
 ?>
-<nav id="subnav-detail" class="d-none d-lg-block navbar-subnav navbar navbar-expand-lg border-bottom bg-grey py-0" style="position: sticky; top: var(--header-height, 134px); z-index: 1020;" aria-label="Secondary Navigation">
+<nav id="subnav-detail" class="d-none d-lg-block navbar-subnav navbar navbar-expand-lg border-bottom bg-grey py-0" style="position: sticky; top: var(--header-height, 144px); z-index: 10;" aria-label="Secondary Navigation">
     <div class="container-fluid">
         <?php if ($has_nav_items): ?>
             <ul class="navbar-nav me-auto" id="scrollspy-nav">

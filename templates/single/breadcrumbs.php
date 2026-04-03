@@ -23,14 +23,18 @@ $data = $args;
     }
 </style>
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb mb-3">
-        <?php foreach ($data['breadcrumbs'] as $crumb): ?>
-            <?php if (!empty($crumb['url'])): ?>
-                <li class="breadcrumb-item text-info"><a
-                        href="<?php echo esc_url($crumb['url']); ?>"><?php echo esc_html($crumb['label']); ?></a></li>
+<?php if (false): ?>
 
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-3">
+            <?php foreach ($data['breadcrumbs'] as $crumb): ?>
+                <?php if (!empty($crumb['url'])): ?>
+                    <li class="breadcrumb-item text-info"><a
+                            href="<?php echo esc_url($crumb['url']); ?>"><?php echo esc_html($crumb['label']); ?></a></li>
+
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </ol>
+    </nav>
+
+<?php endif; ?>

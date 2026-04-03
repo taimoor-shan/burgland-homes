@@ -169,21 +169,33 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
 
         <section class="communities-content bh-split-scroll-wrapper">
             <div class="bh-split-section">
-                <div class="container">
+                <div class="container-fluid">
                     <div class="row">
+                        <!-- Right Column: Map -->
+                        <div class="col-12 col-lg-5 order-1 order-lg-2 pe-lg-0">
+                            <div class="bh-map-column">
+                                <div id="communities-map" class="featured-communities-map-canvas" style="background: #e9ecef;">
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                        <div class="text-center">
+                                            <i class="bi bi-map fs-1 d-block mb-3"></i>
+                                            <p>Map loading...</p>
+                                            <small>Please ensure you have added the Google Maps API key</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-
-                        <!-- Left Column:Community Cards -->
-
-                        <div class="col-12 bh-listings-column pt-4">
-                            <div id="communities-grid" class="communities-grid bh-listings-grid">
+                        <!-- Left Column: Community Cards -->
+                        <div class="col-12 col-lg-7 order-2 order-lg-1 pt-4 ps-lg-4">
+                            <div class="bh-listings-column">
+                                <div id="communities-grid" class="communities-grid bh-listings-grid">
                                 <div class="loading-spinner text-center py-5" style="display: none;">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                     <p class="text-muted mt-3">Loading communities...</p>
                                 </div>
-
                                 <div id="communities-list" class="row g-4 align-items-stretch mb-5">
                                     <?php
                                     // Build optimized query
@@ -232,14 +244,11 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                     if (!empty($meta_query)) {
                                         $query_args['meta_query'] = $meta_query;
                                     }
-
                                     $communities = new WP_Query($query_args);
-
                                     if ($communities->have_posts()):
                                         while ($communities->have_posts()):
                                             $communities->the_post();
                                             $post_id = get_the_ID();
-
                                             // Get meta data
                                             $latitude = get_post_meta($post_id, '_geocoded_latitude', true);
                                             $longitude = get_post_meta($post_id, '_geocoded_longitude', true);
@@ -250,7 +259,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                                 continue;
                                             }
                                             ?>
-                                            <div class="col-md-6 col-lg-4 community-card-wrapper"
+                                            <div class="col-md-6 community-card-wrapper"
                                                 data-lat="<?php echo esc_attr($latitude); ?>"
                                                 data-lng="<?php echo esc_attr($longitude); ?>"
                                                 data-id="<?php echo esc_attr($post_id); ?>">
@@ -272,7 +281,7 @@ $background_url = $archive_image_id ? wp_get_attachment_url($archive_image_id) :
                                 </div>
                             </div>
                         </div>
-
+                        </div>
                     </div>
                 </div>
             </div>

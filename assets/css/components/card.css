@@ -59,12 +59,16 @@
 }
 
 /* Card Specs Styles */
-.bh-header-specs.bh-card-specs .spec-item i {
+.bh-card .spec-item {
+  gap: 4px;
+}
+
+.bh-card .spec-item i {
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
 
-.bh-header-specs.bh-card-specs .spec-label {
+.bh-card .spec-label {
   color: #263136;
   font-size: 0.875rem;
   font-weight: 700;
@@ -76,12 +80,15 @@
   margin: 1rem auto;
   padding: 0;
   list-style: none;
+  gap: 8px;
 }
 
 .bh-card .spec-item i {
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
+
+
 
 .separator {
   width: 1px;

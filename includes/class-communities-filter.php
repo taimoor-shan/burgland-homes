@@ -121,7 +121,7 @@ class Burgland_Homes_Communities_Filter {
                 $latitude = get_post_meta(get_the_ID(), '_geocoded_latitude', true);
                 $longitude = get_post_meta(get_the_ID(), '_geocoded_longitude', true);
                 ?>
-                <div class="col-md-6 community-card-wrapper" 
+                <div class="col-md-6 col-lg-4 community-card-wrapper" 
                      data-lat="<?php echo esc_attr($latitude); ?>" 
                      data-lng="<?php echo esc_attr($longitude); ?>"
                      data-id="<?php echo esc_attr(get_the_ID()); ?>">
